@@ -1,0 +1,2 @@
+### Description model catalog (providers + models)
+GET http://localhost:7015/api/v1/model-catalog/description HTTP/1.1

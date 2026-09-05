@@ -1,0 +1,42 @@
+@baseUrl = http://localhost:7015/api/v1
+@authToken = paste-a-token-from-auth.http-here
+
+### Seed the 8 BZT ground-truth documents from L1_Feedback_Skill/*.md (idempotent)
+POST {{baseUrl}}/l1-feedback/ground-truth/seed HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### List ground-truth documents
+GET {{baseUrl}}/l1-feedback/ground-truth?client=BZT HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Get one document
+GET {{baseUrl}}/l1-feedback/ground-truth/{{documentId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### List a document's version history
+GET {{baseUrl}}/l1-feedback/ground-truth/{{documentId}}/versions HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Get one version's content
+GET {{baseUrl}}/l1-feedback/ground-truth/versions/{{versionId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Promote a version to live
+POST {{baseUrl}}/l1-feedback/ground-truth/{{documentId}}/promote HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "versionId": "{{versionId}}"
+}
+
+### Reset every ground-truth document to a clean v1 built from current Live,
+### and wipe all L1FeedbackBatch/L1SkuTrace/L1GenericFeedbackRequest history.
+### Irreversible.
+POST {{baseUrl}}/l1-feedback/ground-truth/reset HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "confirm": true
+}

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partner Framework Fetch API</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e6edf3;
+      --muted: #8b9cb3;
+      --accent: #58a6ff;
+      --accent-dim: #1f3a5f;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --code-bg: #0d1117;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .layout {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    h2 {
+      margin: 2.5rem 0 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      margin: 1.5rem 0 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    p { margin: 0.75rem 0; }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      overflow-x: auto;
+    }
+
+    .method {
+      background: var(--success);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface);
+      font-weight: 600;
+    }
+
+    td code, th code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: var(--code-bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+
+    .required { color: var(--danger); font-size: 0.8em; font-weight: 600; }
+    .optional { color: var(--muted); font-size: 0.8em; }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+
+    .note {
+      background: var(--accent-dim);
+      border-left: 3px solid var(--accent);
+      padding: 0.85rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .note strong { color: var(--accent); }
+
+    ul { margin: 0.5rem 0; padding-left: 1.4rem; }
+    li { margin: 0.35rem 0; }
+
+    .status {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .status-200 { background: #1a3d2e; color: var(--success); }
+    .status-400 { background: #3d2a1a; color: var(--warning); }
+    .status-401 { background: #3d1a1a; color: var(--danger); }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Partner Framework Fetch API</h1>
+      <p class="subtitle">
+        Read-only endpoint for external integrations to resolve the active production
+        framework for a client and optional constraint dimensions.
+      </p>
+    </header>
+
+    <section>
+      <h2>Base URL</h2>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span>/api/v1/partner/framework</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Authentication</h2>
+      <p>All requests require a valid partner API key in the <code>x-api-key</code> header.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Header</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>x-api-key</code></td>
+            <td><span class="required">Yes</span></td>
+            <td>Partner API key from <code>PARTNER_API_KEYS</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>401 Unauthorized</h3>
+      <p>Returned when the API key is missing or invalid.</p>
+      <pre>{ "message": "Invalid or missing API key" }</pre>
+    </section>
+
+    <section>
+      <h2>Fetch active production framework</h2>
+      <p>
+        Resolves the best-matching framework group for the given client and optional
+        constraints, then returns the group's active production framework version together
+        with knowledge fields, framework vocab, and category registry.
+      </p>
+
+      <h3>Query parameters</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>client</code></td>
+            <td>string</td>
+            <td><span class="required">Yes</span></td>
+            <td>Client code (e.g. <code>CLIENT_A</code>)</td>
+          </tr>
+          <tr>
+            <td><code>gender</code></td>
+            <td>string</td>
+            <td><span class="optional">No</span></td>
+            <td>Gender constraint used during framework group resolution</td>
+          </tr>
+          <tr>
+            <td><code>season</code></td>
+            <td>string</td>
+            <td><span class="optional">No</span></td>
+            <td>Season constraint used during framework group resolution</td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>string</td>
+            <td><span class="optional">No</span></td>
+            <td>Category constraint used during framework group resolution</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Framework group resolution</h3>
+      <p>Groups are matched using the following rules:</p>
+      <ul>
+        <li>Only groups for the requested <code>client</code> are considered.</li>
+        <li>
+          A group with a <code>null</code> value for <code>gender</code>, <code>season</code>,
+          or <code>category</code> acts as a wildcard for that dimension.
+        </li>
+        <li>
+          If a group constrains a dimension (non-null), the request must include the same
+          value for that dimension or the group does not match.
+        </li>
+        <li>
+          Among matching groups, the one with the highest <code>specificity</code> wins
+          (more constrained dimensions = more specific).
+        </li>
+        <li>
+          If specificity is tied, the group with the higher <code>priority</code> wins.
+        </li>
+      </ul>
+
+      <div class="note">
+        <strong>Example:</strong> A request with <code>client=CLIENT_A&amp;gender=women&amp;season=ss26</code>
+        can match a group scoped to <code>women + ss26</code>, or a less-specific group with
+        wildcards such as <code>gender=women</code> only, or a client-wide default group with
+        all dimensions null.
+      </div>
+
+      <h3>Example request</h3>
+      <pre>GET /api/v1/partner/framework?client=CLIENT_A&amp;gender=women&amp;season=ss26&amp;category=dresses HTTP/1.1
+x-api-key: your-partner-api-key</pre>
+
+      <h3>Success response — <span class="status status-200">200 OK</span></h3>
+      <pre>{
+  "data": {
+    "frameworkGroup": {
+      "_id": "665f1a2b3c4d5e6f7a8b9c0d",
+      "client": "CLIENT_A",
+      "gender": "women",
+      "season": "ss26",
+      "category": "dresses",
+      "name": "Women SS26 Dresses"
+    },
+    "frameworkVersion": {
+      "_id": "665f1a2b3c4d5e6f7a8b9c01",
+      "frameworkGroupId": "665f1a2b3c4d5e6f7a8b9c0d",
+      "client": "CLIENT_A",
+      "version": "3",
+      "name": "SS26 Dresses v3",
+      "status": "promoted",
+      "domains": ["silhouette", "fabric", "color"]
+    },
+    "knowledgeFields": {
+      "silhouette": {
+        "type": "s3",
+        "bucket": "prompt-bucket",
+        "key": "framework-outputs/665f1a2b3c4d5e6f7a8b9c01/silhouette/final.md",
+        "url": "https://d1234.cloudfront.net/framework-outputs/...?Expires=...&Signature=..."
+      },
+      "fabric": {
+        "type": "s3",
+        "bucket": "prompt-bucket",
+        "key": "framework-outputs/665f1a2b3c4d5e6f7a8b9c01/fabric/final.md",
+        "url": "https://d1234.cloudfront.net/framework-outputs/...?Expires=...&Signature=..."
+      }
+    },
+    "frameworkVocab": {
+      "_id": "665f1a2b3c4d5e6f7a8b9c02",
+      "name": "SS26 vocab",
+      "vocab": { "...": "..." },
+      "contentHash": "abc123...",
+      "createdAt": "2026-06-01T10:00:00.000Z",
+      "updatedAt": "2026-06-08T12:00:00.000Z"
+    },
+    "categoryRegistry": {
+      "_id": "665f1a2b3c4d5e6f7a8b9c03",
+      "name": "SS26 categories",
+      "registry": { "...": "..." },
+      "contentHash": "def456...",
+      "createdAt": "2026-06-01T10:00:00.000Z",
+      "updatedAt": "2026-06-08T12:00:00.000Z"
+    }
+  }
+}</pre>
+
+      <h3>Response fields</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>data.frameworkGroup</code></td>
+            <td>The resolved framework group metadata</td>
+          </tr>
+          <tr>
+            <td><code>data.frameworkVersion</code></td>
+            <td>The group's <code>activeProductionFrameworkVersionId</code> document (metadata only)</td>
+          </tr>
+          <tr>
+            <td><code>data.knowledgeFields</code></td>
+            <td>
+              Per-domain S3 storage objects for generated framework knowledge markdown.
+              Each entry includes a signed <strong>CloudFront CDN URL</strong> on <code>url</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>data.frameworkVocab</code></td>
+            <td>Full framework vocab document, including the <code>vocab</code> payload</td>
+          </tr>
+          <tr>
+            <td><code>data.categoryRegistry</code></td>
+            <td>Full category registry document, including the <code>registry</code> payload</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Error responses</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Condition</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status status-400">400</span></td>
+            <td>Missing <code>client</code> query parameter (Joi validation error)</td>
+          </tr>
+          <tr>
+            <td><span class="status status-400">400</span></td>
+            <td><code>{ "message": "Client not found: UNKNOWN_CLIENT" }</code></td>
+          </tr>
+          <tr>
+            <td><span class="status status-400">400</span></td>
+            <td>
+              <code>{ "message": "No framework group found for client \"CLIENT_A\" with the given constraints" }</code>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="status status-400">400</span></td>
+            <td>
+              <code>{ "message": "No active production framework version for framework group: ..." }</code>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="status status-400">400</span></td>
+            <td>Active production framework version, vocab, or registry document not found</td>
+          </tr>
+          <tr>
+            <td><span class="status status-401">401</span></td>
+            <td>Invalid or missing <code>x-api-key</code> header</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Notes</h2>
+      <ul>
+        <li>
+          Knowledge field <code>url</code> values are signed CloudFront URLs generated at
+          request time from the stored S3 <code>bucket</code> and <code>key</code>. URLs expire
+          per CloudFront signer configuration (default: 2 days).
+        </li>
+        <li>
+          New knowledge field uploads also persist CloudFront URLs (not raw S3 URLs) when
+          framework domain outputs are saved.
+        </li>
+        <li>
+          This endpoint is separate from the internal <code>/api/v1/framework-group</code> and
+          <code>/api/v1/framework-version</code> CRUD APIs and is intended for partner /
+          front-office integrations only.
+        </li>
+        <li>
+          VS Code REST Client examples are available in
+          <code>test/partnerFramework.http</code>.
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      AI Styling Asset Service &middot; Partner Framework Fetch API
+    </footer>
+  </div>
+</body>
+</html>

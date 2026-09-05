@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:7015/api/v1
+@authToken = paste-a-token-from-auth.http-here
+
+### Get a pre-signed S3 upload URL for one attached image
+GET {{baseUrl}}/l1-feedback/generic/getUploadUrl?fileName=render.jpg HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Submit generic feedback (text only; images is optional and can carry
+### { key, mimeType } pairs from the getUploadUrl + PUT flow above)
+POST {{baseUrl}}/l1-feedback/generic HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Body pixel ratio to face pixel ratio must always be 7.5.",
+  "images": [],
+  "createdBy": "qa@flixstock.com"
+}
+
+### List generic feedback requests
+GET {{baseUrl}}/l1-feedback/generic HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Get one generic feedback request (poll while status is "processing")
+GET {{baseUrl}}/l1-feedback/generic/{{genericFeedbackId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Approve candidate_0 on target 0
+POST {{baseUrl}}/l1-feedback/generic/{{genericFeedbackId}}/decision HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "targetIndex": 0,
+  "decision": "candidate_0",
+  "comment": "Agreed, matches the intended ratio.",
+  "decidedBy": "qa@flixstock.com"
+}

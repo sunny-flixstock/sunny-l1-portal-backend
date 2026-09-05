@@ -1,0 +1,18 @@
+### List angle presets for partner — happy path
+GET http://localhost:7015/api/v1/partner/angle-preset?clientName=CLIENT_A HTTP/1.1
+x-api-key: your-partner-api-key
+
+### List angle presets — missing API key
+GET http://localhost:7015/api/v1/partner/angle-preset?clientName=CLIENT_A HTTP/1.1
+
+### List angle presets — invalid API key
+GET http://localhost:7015/api/v1/partner/angle-preset?clientName=CLIENT_A HTTP/1.1
+x-api-key: invalid-key
+
+### List angle presets — missing clientName
+GET http://localhost:7015/api/v1/partner/angle-preset HTTP/1.1
+x-api-key: your-partner-api-key
+
+### List angle presets — unknown client
+GET http://localhost:7015/api/v1/partner/angle-preset?clientName=BETTY HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6

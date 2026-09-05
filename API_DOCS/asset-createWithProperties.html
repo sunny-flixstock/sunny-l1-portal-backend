@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Assets with SKU Properties API</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e6edf3;
+      --muted: #8b9cb3;
+      --accent: #58a6ff;
+      --accent-dim: #1f3a5f;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --code-bg: #0d1117;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .layout {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    h2 {
+      margin: 2.5rem 0 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      margin: 1.5rem 0 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    p { margin: 0.75rem 0; }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      overflow-x: auto;
+    }
+
+    .method {
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .method-get { background: var(--success); color: #000; }
+    .method-post { background: var(--accent); color: #000; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface);
+      font-weight: 600;
+    }
+
+    td code, th code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: var(--code-bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+
+    .required { color: var(--danger); font-size: 0.8em; font-weight: 600; }
+    .optional { color: var(--muted); font-size: 0.8em; }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+
+    .note {
+      background: var(--accent-dim);
+      border-left: 3px solid var(--accent);
+      padding: 0.85rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .note strong { color: var(--accent); }
+
+    ul, ol { margin: 0.5rem 0; padding-left: 1.4rem; }
+    li { margin: 0.35rem 0; }
+
+    .status {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .status-200 { background: #1a3d2e; color: var(--success); }
+    .status-400 { background: #3d2a1a; color: var(--warning); }
+    .status-500 { background: #3d1a1a; color: var(--danger); }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Create Assets with SKU Properties API</h1>
+      <p class="subtitle">
+        Bulk-creates image assets for one or more barcodes and optionally merges caller-supplied
+        <code>skuProperties</code> into each SKU&rsquo;s <code>patternDict</code>. Extension of
+        <code>POST /api/v1/asset/create</code> that propagates property updates to the SKU, all
+        existing assets for that barcode, and newly created assets.
+      </p>
+    </header>
+
+    <section>
+      <h2>Base URL</h2>
+      <div class="endpoint">
+        <span>/api/v1/asset</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Authentication</h2>
+      <p>None. This is an internal service endpoint (same as <code>POST /api/v1/asset/create</code>).</p>
+    </section>
+
+    <section>
+      <h2>Create assets with optional SKU properties</h2>
+      <p>
+        Resolves SKUs by barcode, merges <code>skuProperties</code> into <code>patternDict</code>
+        when provided, creates one asset per image, and returns per-barcode success/failure results.
+      </p>
+
+      <h3>Request</h3>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span>/api/v1/asset/createWithProperties</span>
+      </div>
+      <p><code>Content-Type: application/json</code></p>
+
+      <h3>Request body</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>clientName</code></td>
+            <td>string</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>Client code (e.g. <code>TEST</code>, <code>FLIXSTOCK</code>). Used for SKU lookup, asset scoping, and filter sync.</td>
+          </tr>
+          <tr>
+            <td><code>createWithoutCSVData</code></td>
+            <td>boolean</td>
+            <td><span class="optional">No</span></td>
+            <td><code>false</code></td>
+            <td>When <code>false</code>, missing SKUs require ingested CSV data (<code>SkuCsv</code>) before a SKU can be created. When <code>true</code>, SKUs are created with an empty <code>patternDict</code> if no CSV exists.</td>
+          </tr>
+          <tr>
+            <td><code>files</code></td>
+            <td>array</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>Min length 1. One entry per barcode to process.</td>
+          </tr>
+          <tr>
+            <td><code>files[].barcode</code></td>
+            <td>string</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>Product barcode (trimmed). Must be unique within the request for SKU resolution.</td>
+          </tr>
+          <tr>
+            <td><code>files[].skuProperties</code></td>
+            <td>object</td>
+            <td><span class="optional">No</span></td>
+            <td>&mdash;</td>
+            <td>Arbitrary key-value pairs merged into the SKU&rsquo;s existing <code>patternDict</code> (shallow merge). Omitted or empty object &rarr; behaves like <code>/create</code>.</td>
+          </tr>
+          <tr>
+            <td><code>files[].images</code></td>
+            <td>array</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>Min length 1. One asset is created per image.</td>
+          </tr>
+          <tr>
+            <td><code>files[].images[].name</code></td>
+            <td>string</td>
+            <td><span class="optional">No</span></td>
+            <td>&mdash;</td>
+            <td>Display name. Defaults to the filename portion of <code>imagePath.key</code> on save.</td>
+          </tr>
+          <tr>
+            <td><code>files[].images[].imagePath</code></td>
+            <td>object</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>S3 location of the uploaded image.</td>
+          </tr>
+          <tr>
+            <td><code>files[].images[].imagePath.key</code></td>
+            <td>string</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>S3 object key (from pre-signed upload flow).</td>
+          </tr>
+          <tr>
+            <td><code>files[].images[].imagePath.host</code></td>
+            <td>string</td>
+            <td><span class="required">Yes</span></td>
+            <td>&mdash;</td>
+            <td>S3 bucket name (e.g. <code>metamodels-ai</code>).</td>
+          </tr>
+          <tr>
+            <td><code>files[].images[].characteristics</code></td>
+            <td>object</td>
+            <td><span class="optional">No</span></td>
+            <td>&mdash;</td>
+            <td>Optional metadata stored on the image subdocument.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Typical workflow</h3>
+      <ol>
+        <li>
+          <strong>Upload images to S3</strong> &mdash;
+          <code>GET /api/v1/asset/getUploadUrl?fileName={name}&amp;clientName={client}</code>
+          returns <code>{ key, url }</code>. <code>PUT</code> the file to <code>url</code>.
+        </li>
+        <li>
+          <strong>Create assets</strong> &mdash; Call this endpoint with the returned <code>key</code>
+          and bucket <code>host</code> in each <code>imagePath</code>.
+        </li>
+        <li>
+          <strong>Optional properties</strong> &mdash; Include <code>skuProperties</code> on any file
+          entry to merge fields into <code>patternDict</code> before assets are created.
+        </li>
+      </ol>
+
+      <h3>Example &mdash; with SKU properties</h3>
+      <pre>POST http://localhost:7015/api/v1/asset/createWithProperties HTTP/1.1
+Content-Type: application/json
+
+{
+    "clientName": "TEST",
+    "createWithoutCSVData": true,
+    "files": [
+        {
+            "barcode": "8721222146063",
+            "skuProperties": { "fabric": "cotton", "color": "blue" },
+            "images": [
+                {
+                    "imagePath": {
+                        "key": "NanoBanan/7d914d67-b99b-41e4-a28b-eb2f0a350fc9.jpg",
+                        "host": "metamodels-ai"
+                    }
+                }
+            ]
+        }
+    ]
+}</pre>
+
+      <h3>Example &mdash; without SKU properties (same as <code>/create</code>)</h3>
+      <pre>POST http://localhost:7015/api/v1/asset/createWithProperties HTTP/1.1
+Content-Type: application/json
+
+{
+    "clientName": "TEST",
+    "createWithoutCSVData": true,
+    "files": [
+        {
+            "barcode": "8721222146063",
+            "images": [
+                {
+                    "imagePath": {
+                        "key": "assets/TEST/1234567890_front.jpg",
+                        "host": "metamodels-ai"
+                    }
+                }
+            ]
+        }
+    ]
+}</pre>
+
+      <h3>Example &mdash; bulk mixed barcodes</h3>
+      <pre>{
+    "clientName": "TEST",
+    "createWithoutCSVData": false,
+    "files": [
+        {
+            "barcode": "8721222146063",
+            "skuProperties": { "season": "SS26" },
+            "images": [
+                { "imagePath": { "key": "path/front.jpg", "host": "metamodels-ai" } },
+                { "imagePath": { "key": "path/back.jpg", "host": "metamodels-ai" } }
+            ]
+        },
+        {
+            "barcode": "9999999999999",
+            "images": [
+                { "imagePath": { "key": "path/other.jpg", "host": "metamodels-ai" } }
+            ]
+        }
+    ]
+}</pre>
+    </section>
+
+    <section>
+      <h2>Success response &mdash; <span class="status status-200">200 OK</span></h2>
+      <p>
+        Always returns HTTP 200 when the handler completes. Individual barcodes may succeed or fail
+        inside <code>data</code>.
+      </p>
+      <pre>{
+    "data": [
+        {
+            "barcode": "8721222146063",
+            "success": true,
+            "assets": [
+                {
+                    "_id": "665f1a2b3c4d5e6f7a8b9c0d",
+                    "patternDict": {
+                        "fabric": "cotton",
+                        "color": "blue"
+                    },
+                    "existed": false
+                }
+            ]
+        },
+        {
+            "barcode": "9999999999999",
+            "success": false,
+            "error": "SKU 9999999999999 has no CSV data. Set createWithoutCSVData to true to bypass."
+        }
+    ]
+}</pre>
+
+      <h3>Response fields</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>data</code></td>
+            <td>array</td>
+            <td>One result object per entry in <code>files</code>, in request order.</td>
+          </tr>
+          <tr>
+            <td><code>data[].barcode</code></td>
+            <td>string</td>
+            <td>Barcode from the request.</td>
+          </tr>
+          <tr>
+            <td><code>data[].success</code></td>
+            <td>boolean</td>
+            <td><code>true</code> if assets were created/resolved and the SKU is not <code>shouldNotProduce</code>.</td>
+          </tr>
+          <tr>
+            <td><code>data[].assets</code></td>
+            <td>array</td>
+            <td>Present when <code>success</code> is <code>true</code>. One item per image in <code>files[].images</code>.</td>
+          </tr>
+          <tr>
+            <td><code>data[].assets[]._id</code></td>
+            <td>string</td>
+            <td>MongoDB ObjectId of the asset document.</td>
+          </tr>
+          <tr>
+            <td><code>data[].assets[].patternDict</code></td>
+            <td>object</td>
+            <td>Merged <code>patternDict</code> used for this asset (after <code>skuProperties</code> merge when applicable).</td>
+          </tr>
+          <tr>
+            <td><code>data[].assets[].existed</code></td>
+            <td>boolean</td>
+            <td><code>true</code> if an active asset already existed for the same SKU + <code>imagePath.host</code> + <code>imagePath.key</code>; <code>false</code> if newly created.</td>
+          </tr>
+          <tr>
+            <td><code>data[].error</code></td>
+            <td>string</td>
+            <td>Present when <code>success</code> is <code>false</code>. Human-readable failure reason for that barcode.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Processing behavior</h2>
+
+      <h3>SKU resolution (<code>resolveSkus</code>)</h3>
+      <ol>
+        <li>Loads existing SKUs for all unique barcodes + <code>clientName</code>.</li>
+        <li>
+          For barcodes with no SKU:
+          <ul>
+            <li>Looks up <code>SkuCsv</code> for CSV data.</li>
+            <li>
+              If <code>createWithoutCSVData</code> is <code>false</code> and no CSV data exists
+              &rarr; barcode gets <code>{ error: "SKU {barcode} has no CSV data..." }</code> (no SKU created).
+            </li>
+            <li>
+              Otherwise creates a new SKU with <code>patternDict</code> from CSV <code>csvData</code>
+              (or <code>{}</code> when bypassing).
+            </li>
+          </ul>
+        </li>
+        <li>
+          Emits <code>filter-update</code> for SKUs with a non-empty <code>patternDict</code> that
+          are not yet <code>filtersSynced</code>.
+        </li>
+      </ol>
+
+      <h3><code>skuProperties</code> merge (<code>mergeAndPropagatePatternDict</code>)</h3>
+      <p>When at least one file includes <code>skuProperties</code>:</p>
+      <ol>
+        <li>
+          For each such barcode, shallow-merges <code>skuProperties</code> onto the existing
+          <code>patternDict</code>: <code>{ ...existing, ...skuProperties }</code>.
+        </li>
+        <li>
+          Updates the <strong>SKU</strong> document: sets <code>patternDict</code>,
+          <code>filtersSynced: false</code>, <code>embeddingDone: false</code>.
+        </li>
+        <li>
+          Updates <strong>all existing assets</strong> for that barcode + <code>clientName</code>
+          with the merged <code>patternDict</code>.
+        </li>
+        <li>New assets created in the same request use the merged <code>patternDict</code>.</li>
+      </ol>
+      <p>
+        Files without <code>skuProperties</code> use the SKU&rsquo;s current <code>patternDict</code>
+        (unchanged unless another file in the same batch updated the same barcode &mdash; merge runs on
+        all <code>skuProperties</code> entries first).
+      </p>
+
+      <h3>Asset creation (<code>createAsset</code>)</h3>
+      <ul>
+        <li>
+          One asset per image; uniqueness is enforced on active rows:
+          <code>(skuId, image.imagePath.host, image.imagePath.key)</code>.
+        </li>
+        <li>
+          Duplicate image for the same SKU returns the existing asset with <code>existed: true</code>
+          (no duplicate insert).
+        </li>
+        <li>Assets are created in batches of <strong>10</strong> concurrent <code>createAsset</code> calls per barcode.</li>
+        <li>
+          On save, <code>Image</code> pre-save hook generates thumbnail paths and emits
+          <code>thumbnail-generation-init</code>.
+        </li>
+      </ul>
+
+      <h3><code>shouldNotProduce</code> SKUs</h3>
+      <p>If the SKU has <code>shouldNotProduce: true</code>:</p>
+      <ul>
+        <li>Assets are still <strong>persisted</strong> (for traceability).</li>
+        <li>
+          The barcode result is <code>success: false</code> with error
+          <code>SKU {barcode} is marked shouldNotProduce</code>.
+        </li>
+        <li>
+          <code>patternDict</code> / <code>assets</code> are <strong>not</strong> returned to the
+          caller for that barcode.
+        </li>
+      </ul>
+
+      <h3>Post-create side effects</h3>
+      <ul>
+        <li>
+          <strong><code>bumpIngestionSchedule</code></strong> &mdash; For SKUs that received at least
+          one newly created asset (<code>existed: false</code>), sets <code>ingestionScheduledAt</code>
+          on the SKU (debounced 5 minutes) to trigger re-embedding when appropriate.
+        </li>
+        <li>
+          <strong><code>filter-update</code> event</strong> &mdash; Fired during SKU resolution when
+          <code>patternDict</code> is non-empty and filters need syncing.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Error responses</h2>
+
+      <h3>Validation &mdash; <span class="status status-400">400 Bad Request</span></h3>
+      <p>Returned by celebrate/Joi when the body fails schema validation:</p>
+      <pre>{
+    "message": {
+        "body": [
+            "\"clientName\" is required",
+            "\"files\" must contain at least 1 items"
+        ]
+    }
+}</pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Condition</th>
+            <th>Joi message (approx.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Missing <code>clientName</code></td>
+            <td><code>"clientName" is required</code></td>
+          </tr>
+          <tr>
+            <td>Missing or empty <code>files</code></td>
+            <td><code>"files" is required</code> / must contain at least 1 items</td>
+          </tr>
+          <tr>
+            <td>Missing <code>barcode</code> on a file</td>
+            <td><code>"barcode" is required</code></td>
+          </tr>
+          <tr>
+            <td>Missing or empty <code>images</code></td>
+            <td><code>"images" is required</code> / must contain at least 1 items</td>
+          </tr>
+          <tr>
+            <td>Missing <code>imagePath.key</code> or <code>imagePath.host</code></td>
+            <td><code>"imagePath.key" is required</code> etc.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Per-barcode failures (inside <span class="status status-200">200</span> response)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th><code>error</code> value</th>
+            <th>Cause</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>SKU {barcode} has no CSV data. Set createWithoutCSVData to true to bypass.</code></td>
+            <td>No SKU and no CSV when <code>createWithoutCSVData</code> is <code>false</code>.</td>
+          </tr>
+          <tr>
+            <td><code>SKU not found for barcode {barcode}</code></td>
+            <td>SKU missing from map after resolution (unexpected).</td>
+          </tr>
+          <tr>
+            <td><code>SKU {barcode} is marked shouldNotProduce</code></td>
+            <td>SKU flagged <code>shouldNotProduce</code> in CSV/SKU record.</td>
+          </tr>
+          <tr>
+            <td><code>{err.message}</code></td>
+            <td>Uncaught exception while processing that file (e.g. DB error).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Server error &mdash; <span class="status status-500">500 Internal Server Error</span></h3>
+      <p>Unhandled errors in the outer try/catch (e.g. bulk write failure before per-file loop):</p>
+      <pre>{ "message": "..." }</pre>
+    </section>
+
+    <section>
+      <h2>Comparison with <code>POST /api/v1/asset/create</code></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th><code>/create</code></th>
+            <th><code>/createWithProperties</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Request shape</td>
+            <td>Same (<code>clientName</code>, <code>createWithoutCSVData</code>, <code>files[]</code>)</td>
+            <td>Same + optional <code>files[].skuProperties</code></td>
+          </tr>
+          <tr>
+            <td><code>patternDict</code> on new assets</td>
+            <td>SKU&rsquo;s current <code>patternDict</code></td>
+            <td>Merged <code>patternDict</code> when <code>skuProperties</code> provided</td>
+          </tr>
+          <tr>
+            <td>SKU / existing asset updates</td>
+            <td>No</td>
+            <td>Yes &mdash; merges into SKU and all assets for barcode</td>
+          </tr>
+          <tr>
+            <td><code>filtersSynced</code> / <code>embeddingDone</code></td>
+            <td>Unchanged</td>
+            <td>Set to <code>false</code> when properties merged</td>
+          </tr>
+          <tr>
+            <td>Response shape</td>
+            <td>Identical</td>
+            <td>Identical</td>
+          </tr>
+          <tr>
+            <td>Batch size</td>
+            <td>10 assets per barcode</td>
+            <td>10 assets per barcode</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Use <code>/createWithProperties</code> when ingesting assets and updating searchable/filterable
+        SKU metadata in one call. Use <code>/create</code> when <code>patternDict</code> is already
+        correct on the SKU.
+      </p>
+    </section>
+
+    <section>
+      <h2>Related endpoints</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td><code>/api/v1/asset/getUploadUrl</code></td>
+            <td>Pre-signed S3 PUT URL for image upload</td>
+          </tr>
+          <tr>
+            <td><span class="method method-post">POST</span></td>
+            <td><code>/api/v1/asset/create</code></td>
+            <td>Bulk asset create without property merge</td>
+          </tr>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td><code>/api/v1/asset/semanticSearch</code></td>
+            <td>Fuzzy search over assets (uses <code>patternDict</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td><code>/api/v1/filter</code></td>
+            <td>Distinct <code>patternDict</code> values per client (synced via <code>filter-update</code>)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Data model reference</h2>
+
+      <h3>Asset (created document)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>skuId</code></td>
+            <td>ObjectId</td>
+            <td>Ref to SKU</td>
+          </tr>
+          <tr>
+            <td><code>barcode</code></td>
+            <td>string</td>
+            <td>From request</td>
+          </tr>
+          <tr>
+            <td><code>clientName</code></td>
+            <td>string</td>
+            <td>From request</td>
+          </tr>
+          <tr>
+            <td><code>associatedTo</code></td>
+            <td>string</td>
+            <td>Copied from SKU</td>
+          </tr>
+          <tr>
+            <td><code>image</code></td>
+            <td>Image</td>
+            <td><code>name</code>, <code>imagePath</code>, <code>thumbPath</code>, <code>characteristics</code></td>
+          </tr>
+          <tr>
+            <td><code>patternDict</code></td>
+            <td>Mixed</td>
+            <td>Merged dict used for filtering/search</td>
+          </tr>
+          <tr>
+            <td><code>isActive</code></td>
+            <td>boolean</td>
+            <td>Default <code>true</code></td>
+          </tr>
+          <tr>
+            <td><code>shouldNotProduce</code></td>
+            <td>boolean</td>
+            <td>Copied from SKU at create time</td>
+          </tr>
+          <tr>
+            <td><code>usageCounter</code></td>
+            <td>number</td>
+            <td>Default <code>0</code></td>
+          </tr>
+          <tr>
+            <td><code>createdAt</code> / <code>updatedAt</code></td>
+            <td>Date</td>
+            <td>Timestamps</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Indexes relevant to this API</h3>
+      <ul>
+        <li>Unique active asset per <code>(skuId, image.imagePath.host, image.imagePath.key)</code></li>
+        <li><code>(barcode, clientName)</code> for asset updates during property merge</li>
+        <li>Wildcard <code>patternDict.$**</code> for filter/search queries</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Notes</h2>
+      <ul>
+        <li>Request body limit: <strong>50 MB</strong> (<code>body-parser</code> on <code>/api/v1</code>).</li>
+        <li>CORS: <code>*</code> origin; methods include <code>POST</code>.</li>
+        <li>Partial success is normal: one failed barcode does not roll back others.</li>
+        <li>
+          <code>skuProperties</code> keys are not validated &mdash; any JSON object is accepted and
+          stored in <code>patternDict</code>.
+        </li>
+        <li>VS Code REST Client examples are available in <code>test/asset.http</code>.</li>
+        <li>
+          Also available as markdown via
+          <code>GET /api/v1/api-docs/asset-createWithProperties.md</code>.
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      AI Styling Asset Service &middot; Create Assets with SKU Properties API
+    </footer>
+  </div>
+</body>
+</html>

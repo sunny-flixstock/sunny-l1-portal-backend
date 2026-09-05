@@ -1,0 +1,379 @@
+{
+    "referenceImages": {
+        "goodExamples": {
+            "type": "array<object>",
+            "description": "Examples that correctly represent the base shot definition.",
+            "itemSchema": {
+                "imageId": {
+                    "type": "string | ObjectId",
+                    "description": "Internal image/file identifier."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "Public/private image URL or storage path."
+                },
+                "sourceType": {
+                    "type": "enum",
+                    "values": [
+                        "client_provided",
+                        "internal_reference",
+                        "generated_reference",
+                        "shoot_reference",
+                        "catalog_reference",
+                        "lookbook_reference",
+                        "campaign_reference",
+                        "competitor_reference",
+                        "stock_reference",
+                        "synthetic_reference",
+                        "annotated_reference"
+                    ]
+                },
+                "exampleQuality": {
+                    "type": "enum",
+                    "values": [
+                        "ideal",
+                        "acceptable",
+                        "borderline_acceptable"
+                    ]
+                },
+                "shotMatchScore": {
+                    "type": "number",
+                    "range": {
+                        "min": 0,
+                        "max": 1
+                    }
+                },
+                "reasonTags": {
+                    "type": "array<enum>",
+                    "values": [
+                        "correct_body_coverage",
+                        "correct_view_direction",
+                        "correct_camera_angle",
+                        "correct_camera_distance",
+                        "correct_subject_position",
+                        "correct_crop_boundaries",
+                        "correct_spacing",
+                        "complete_outfit_visible",
+                        "required_garment_zones_visible",
+                        "required_body_parts_visible",
+                        "footwear_visible",
+                        "face_visible",
+                        "front_design_visible",
+                        "back_design_visible",
+                        "side_profile_visible",
+                        "silhouette_readable",
+                        "fit_readable",
+                        "layering_readable",
+                        "hemline_visible",
+                        "waistband_visible",
+                        "neckline_visible",
+                        "sleeves_visible",
+                        "trouser_break_visible",
+                        "accessories_visible",
+                        "natural_pose",
+                        "arms_not_obscuring_garment",
+                        "legs_not_obscuring_garment",
+                        "commercially_clean_composition",
+                        "clean_background",
+                        "minimal_distraction",
+                        "good_lighting",
+                        "brand_neutral",
+                        "catalog_ready",
+                        "lookbook_ready",
+                        "ecommerce_ready"
+                    ]
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Short explanation of why this image is a good example."
+                },
+                "priority": {
+                    "type": "enum",
+                    "values": [
+                        "primary",
+                        "secondary",
+                        "supporting"
+                    ]
+                },
+                "usage": {
+                    "type": "array<enum>",
+                    "values": [
+                        "human_training",
+                        "ai_prompt_reference",
+                        "qc_reference",
+                        "annotation_reference",
+                        "client_alignment",
+                        "preset_design",
+                        "style_guidance",
+                        "pose_guidance",
+                        "framing_guidance",
+                        "garment_visibility_guidance"
+                    ]
+                },
+                "isApproved": {
+                    "type": "boolean",
+                    "values": [
+                        true,
+                        false
+                    ]
+                }
+            }
+        },
+        "badExamples": {
+            "type": "array<object>",
+            "description": "Examples that violate the base shot definition.",
+            "itemSchema": {
+                "imageId": {
+                    "type": "string | ObjectId",
+                    "description": "Internal image/file identifier."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "Public/private image URL or storage path."
+                },
+                "sourceType": {
+                    "type": "enum",
+                    "values": [
+                        "client_provided",
+                        "internal_reference",
+                        "generated_reference",
+                        "shoot_reference",
+                        "catalog_reference",
+                        "lookbook_reference",
+                        "campaign_reference",
+                        "competitor_reference",
+                        "stock_reference",
+                        "synthetic_reference",
+                        "annotated_reference",
+                        "failed_generation",
+                        "failed_qc_output",
+                        "rejected_shoot_output"
+                    ]
+                },
+                "failureSeverity": {
+                    "type": "enum",
+                    "values": [
+                        "minor",
+                        "major",
+                        "critical"
+                    ]
+                },
+                "failureCategory": {
+                    "type": "array<enum>",
+                    "values": [
+                        "wrong_shot_type",
+                        "wrong_body_coverage",
+                        "wrong_view_direction",
+                        "wrong_camera_angle",
+                        "wrong_camera_distance",
+                        "wrong_subject_position",
+                        "incorrect_crop",
+                        "insufficient_spacing",
+                        "model_too_close_to_frame_edge",
+                        "head_cropped",
+                        "face_missing",
+                        "torso_cropped",
+                        "arms_cropped",
+                        "hands_cropped",
+                        "legs_cropped",
+                        "feet_cropped",
+                        "footwear_cropped",
+                        "ankles_cropped",
+                        "garment_obscured",
+                        "front_design_not_visible",
+                        "back_design_not_visible",
+                        "side_profile_not_visible",
+                        "silhouette_not_readable",
+                        "fit_not_readable",
+                        "layering_not_readable",
+                        "hemline_missing",
+                        "waistband_missing",
+                        "neckline_missing",
+                        "sleeves_missing",
+                        "trouser_break_missing",
+                        "footwear_missing",
+                        "accessories_obscuring_product",
+                        "pose_too_aggressive",
+                        "pose_too_stiff",
+                        "extreme_twist",
+                        "seated_pose",
+                        "crouching_pose",
+                        "jumping_pose",
+                        "arms_obscure_garment",
+                        "legs_obscure_garment",
+                        "prop_obscures_garment",
+                        "busy_background",
+                        "distracting_background",
+                        "incorrect_background",
+                        "poor_lighting",
+                        "harsh_shadow",
+                        "distorted_lens",
+                        "wide_angle_distortion",
+                        "non_commercial_composition",
+                        "not_catalog_ready",
+                        "not_ecommerce_ready",
+                        "brand_specific_violation",
+                        "ambiguous_failure"
+                    ]
+                },
+                "reasonTags": {
+                    "type": "array<enum>",
+                    "values": [
+                        "body_not_fully_visible",
+                        "outfit_not_fully_visible",
+                        "camera_not_eye_level",
+                        "camera_tilted_up",
+                        "camera_tilted_down",
+                        "model_not_centered",
+                        "model_not_facing_camera",
+                        "model_facing_side",
+                        "model_facing_back",
+                        "partial_body_crop",
+                        "missing_required_body_parts",
+                        "missing_required_garment_zones",
+                        "incorrect_pose_family",
+                        "garment_hidden_by_pose",
+                        "garment_hidden_by_prop",
+                        "garment_hidden_by_accessory",
+                        "background_too_busy",
+                        "composition_not_clean",
+                        "incorrect_commercial_use",
+                        "violates_base_definition"
+                    ]
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Short explanation of why this image is a bad example."
+                },
+                "qcDecision": {
+                    "type": "enum",
+                    "values": [
+                        "reject",
+                        "needs_review",
+                        "acceptable_with_warning"
+                    ]
+                },
+                "usage": {
+                    "type": "array<enum>",
+                    "values": [
+                        "human_training",
+                        "ai_negative_reference",
+                        "qc_reference",
+                        "annotation_reference",
+                        "client_alignment",
+                        "preset_guardrail",
+                        "failure_mode_training",
+                        "rejection_reason_calibration"
+                    ]
+                },
+                "isApprovedAsBadExample": {
+                    "type": "boolean",
+                    "values": [
+                        true,
+                        false
+                    ]
+                }
+            }
+        },
+        "annotationNotes": {
+            "type": "array<object>",
+            "description": "Structured notes explaining how to interpret the good and bad reference examples.",
+            "itemSchema": {
+                "noteType": {
+                    "type": "enum",
+                    "values": [
+                        "definition_clarification",
+                        "framing_note",
+                        "view_direction_note",
+                        "body_visibility_note",
+                        "garment_visibility_note",
+                        "pose_note",
+                        "composition_note",
+                        "camera_note",
+                        "background_note",
+                        "lighting_note",
+                        "qc_note",
+                        "edge_case_note",
+                        "common_failure_note",
+                        "client_override_note",
+                        "preset_usage_note",
+                        "training_note",
+                        "do_note",
+                        "dont_note"
+                    ]
+                },
+                "appliesTo": {
+                    "type": "array<enum>",
+                    "values": [
+                        "goodExamples",
+                        "badExamples",
+                        "both",
+                        "framing",
+                        "view",
+                        "visibility",
+                        "pose",
+                        "garmentApplicability",
+                        "composition",
+                        "validationRules",
+                        "promptFragments",
+                        "presetCompatibility",
+                        "overridePolicy"
+                    ]
+                },
+                "severity": {
+                    "type": "enum",
+                    "values": [
+                        "info",
+                        "warning",
+                        "critical"
+                    ]
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Human-readable annotation note."
+                },
+                "tags": {
+                    "type": "array<enum>",
+                    "values": [
+                        "crop",
+                        "coverage",
+                        "spacing",
+                        "camera_angle",
+                        "camera_distance",
+                        "view_direction",
+                        "face_visibility",
+                        "torso_visibility",
+                        "leg_visibility",
+                        "footwear_visibility",
+                        "garment_visibility",
+                        "silhouette",
+                        "fit",
+                        "layering",
+                        "pose",
+                        "arms",
+                        "legs",
+                        "hands",
+                        "expression",
+                        "background",
+                        "lighting",
+                        "commercial_cleanliness",
+                        "catalog_standard",
+                        "lookbook_standard",
+                        "ecommerce_standard",
+                        "hard_rule",
+                        "soft_rule",
+                        "edge_case",
+                        "common_mistake",
+                        "acceptable_variation",
+                        "not_allowed",
+                        "requires_review"
+                    ]
+                },
+                "linkedExampleIds": {
+                    "type": "array<string | ObjectId>",
+                    "description": "Optional list of good or bad example image IDs this annotation refers to."
+                }
+            }
+        }
+    }
+}

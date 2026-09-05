@@ -1,0 +1,14 @@
+### Digitalized fundus report (clientName only)
+GET http://localhost:7015/api/v1/custom-report/digitalizedFundus?clientName=ZLD HTTP/1.1
+
+###
+
+### Digitalized fundus report with patternDictFilter
+GET http://localhost:7015/api/v1/custom-report/digitalizedFundus?clientName=ZLD&patternDictFilter[FX_Gender]=Male HTTP/1.1
+
+###
+
+### Digitalized fundus report including internal SKUs associated to client
+GET http://localhost:7015/api/v1/custom-report/digitalizedFundus?clientName=ZLD&includeInternal=true HTTP/1.1
+
+###

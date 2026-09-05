@@ -1,0 +1,53 @@
+@baseUrl = http://localhost:7015/api/v1
+
+### List category registries
+GET {{baseUrl}}/category-registry?pageNum=1&pageSize=20
+
+### List with search
+GET {{baseUrl}}/category-registry?q=spring
+
+### Get by id
+GET {{baseUrl}}/category-registry/{{categoryRegistryId}}
+
+### Get by id — not found
+GET {{baseUrl}}/category-registry/000000000000000000000000
+
+### Get by id — invalid id
+GET {{baseUrl}}/category-registry/not-an-object-id
+
+### Create category registry
+POST {{baseUrl}}/category-registry
+Content-Type: application/json
+
+{
+  "name": "Default categories",
+  "registry": {
+    "categories": ["tops", "bottoms"],
+    "mappings": {
+      "shirt": "tops"
+    }
+  }
+}
+
+### Create — missing name
+POST {{baseUrl}}/category-registry
+Content-Type: application/json
+
+{
+  "registry": { "a": 1 }
+}
+
+### Create — invalid registry (primitive)
+POST {{baseUrl}}/category-registry
+Content-Type: application/json
+
+{
+  "name": "Bad registry",
+  "registry": "not-an-object"
+}
+
+### Delete category registry
+DELETE {{baseUrl}}/category-registry/{{categoryRegistryId}}
+
+### Delete — not found
+DELETE {{baseUrl}}/category-registry/000000000000000000000000

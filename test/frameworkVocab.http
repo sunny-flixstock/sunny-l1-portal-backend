@@ -1,0 +1,53 @@
+@baseUrl = http://localhost:7015/api/v1
+
+### List framework vocabs
+GET {{baseUrl}}/framework-vocab?pageNum=1&pageSize=20
+
+### List with search
+GET {{baseUrl}}/framework-vocab?q=spring
+
+### Get by id
+GET {{baseUrl}}/framework-vocab/{{frameworkVocabId}}
+
+### Get by id — not found
+GET {{baseUrl}}/framework-vocab/000000000000000000000000
+
+### Get by id — invalid id
+GET {{baseUrl}}/framework-vocab/not-an-object-id
+
+### Create framework vocab
+POST {{baseUrl}}/framework-vocab
+Content-Type: application/json
+
+{
+  "name": "Spring outfit terms",
+  "vocab": {
+    "categories": ["tops", "bottoms"],
+    "terms": {
+      "layering": "stacked garments"
+    }
+  }
+}
+
+### Create — missing name
+POST {{baseUrl}}/framework-vocab
+Content-Type: application/json
+
+{
+  "vocab": { "a": 1 }
+}
+
+### Create — invalid vocab (primitive)
+POST {{baseUrl}}/framework-vocab
+Content-Type: application/json
+
+{
+  "name": "Bad vocab",
+  "vocab": "not-an-object"
+}
+
+### Delete framework vocab
+DELETE {{baseUrl}}/framework-vocab/{{frameworkVocabId}}
+
+### Delete — not found
+DELETE {{baseUrl}}/framework-vocab/000000000000000000000000

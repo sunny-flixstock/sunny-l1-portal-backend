@@ -1,0 +1,139 @@
+@PARTNER_API_KEY = YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+### Create DescriptionModel
+POST http://localhost:7015/api/v1/description-model HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "modelIdentity": "model-001",
+  "name": "OptimusPrime",
+  "heightInCM": 170000
+}
+
+###
+
+### List DescriptionModels
+GET http://localhost:7015/api/v1/description-model?pageNum=1&pageSize=20 HTTP/1.1
+x-api-key: {{PARTNER_API_KEY}}
+
+###
+
+### Get DescriptionModel by modelIdentity
+GET http://localhost:7015/api/v1/description-model/model-001 HTTP/1.1
+x-api-key: {{PARTNER_API_KEY}}
+
+###
+
+### Update DescriptionModel
+PUT http://localhost:7015/api/v1/description-model/model-001 HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "heightInCM": 9999
+}
+
+###
+
+### Toggle DescriptionModel visibility
+PATCH http://localhost:7015/api/v1/description-model/model-001/visibility HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "isActive": true
+}
+
+###
+
+### Presign original image upload
+POST http://localhost:7015/api/v1/description-model/image/presign HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "modelIdentity": "model-001",
+  "fileName": "front.jpg",
+  "type": "original"
+}
+
+###
+
+### Presign cropped image upload
+POST http://localhost:7015/api/v1/description-model/image/presign HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "modelIdentity": "model-001",
+  "fileName": "front_crop.jpg",
+  "type": "cropped"
+}
+
+###
+
+### Create DescriptionModelImage
+POST http://localhost:7015/api/v1/description-model/image HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "modelIdentity": "model-001",
+  "originalImageKey": "test.jpg",
+  "cropImageKey": "test.jpg",
+  "cropLocation": { "x1": 100, "y1": 50, "x2": 612, "y2": 818 }
+}
+
+###
+
+### List DescriptionModelImages
+GET http://localhost:7015/api/v1/description-model/image/list?modelIdentity=model-001 HTTP/1.1
+x-api-key: {{PARTNER_API_KEY}}
+
+###
+
+### Update DescriptionModelImage
+PUT http://localhost:7015/api/v1/description-model/image/6a54e80e50a6189f6459676b HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "cropImageKey": "test.jpg",
+}
+
+###
+
+### Toggle DescriptionModelImage visibility
+PATCH http://localhost:7015/api/v1/description-model/image/6a54e7d550a6189f64596750/visibility HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "isActive": false
+}
+
+###
+
+### Presign search crop image upload
+POST http://localhost:7015/api/v1/description-model/search/presign HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "fileName": "query_crop.jpg"
+}
+
+###
+
+### Search by face image
+POST http://localhost:7015/api/v1/description-model/search HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "imageKey": "test.jpg",
+  "modelIdentities": ["model-001", "model-002"],
+  "pageNum": 1,
+  "pageSize": 20
+}

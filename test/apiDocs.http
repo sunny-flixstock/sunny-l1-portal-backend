@@ -1,0 +1,14 @@
+### List API documentation files
+GET http://localhost:7015/api/v1/api-docs HTTP/1.1
+
+### Get markdown API doc
+GET http://localhost:7015/api/v1/api-docs/API_DOCS.md HTTP/1.1
+
+### Get HTML API doc
+GET http://localhost:7015/api/v1/api-docs/framework_fetch.html HTTP/1.1
+
+### Get API doc — invalid name (path traversal)
+GET http://localhost:7015/api/v1/api-docs/../package.json HTTP/1.1
+
+### Get API doc — not found
+GET http://localhost:7015/api/v1/api-docs/missing.md HTTP/1.1

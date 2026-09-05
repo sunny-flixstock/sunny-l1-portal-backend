@@ -1,0 +1,111 @@
+@baseUrl = http://localhost:3000/api/v1
+
+### List framework versions
+GET {{baseUrl}}/framework-version?pageNum=1&pageSize=20
+
+### List with filters
+GET {{baseUrl}}/framework-version?client=ACME&status=draft
+
+### Get by id
+GET {{baseUrl}}/framework-version/{{frameworkVersionId}}
+
+### Get domain descriptions
+GET {{baseUrl}}/framework-version/{{frameworkVersionId}}/domain-descriptions
+
+### Update domain description
+PATCH {{baseUrl}}/framework-version/{{frameworkVersionId}}/domain-descriptions/outfit_combination HTTP/1.1
+Content-Type: application/json
+
+{
+  "contentMarkdown": "# Outfit combination\n\nManually edited framework description."
+}
+
+### Update domain description — missing content (400)
+PATCH {{baseUrl}}/framework-version/{{frameworkVersionId}}/domain-descriptions/styling HTTP/1.1
+Content-Type: application/json
+
+{}
+
+### Archive framework version (in_review → archived)
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/archive
+
+### Archive — not in review
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/archive
+
+### Make framework version live (in_review → promoted; sets group activeProductionFrameworkVersionId)
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/make-live
+
+### Demote framework version to in review (promoted → in_review; clears group activeProductionFrameworkVersionId)
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/demote-to-in-review
+
+### Make live — not in review (400)
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/make-live
+
+### Make live — invalid id (400)
+POST {{baseUrl}}/framework-version/not-an-object-id/make-live
+
+### Make live — not found (400)
+POST {{baseUrl}}/framework-version/000000000000000000000000/make-live
+
+### Start framework creation (draft → in_progress; builds per-domain domainCacheKeys from inputSet.ruleHash, framework vocab, and category registry; seeds ImageDescription rows and cached DescriptionGroup / FrameworkDomainFinalOutput rows)
+POST {{baseUrl}}/framework-version/{{frameworkVersionId}}/start-creation
+
+### Start creation — not found
+POST {{baseUrl}}/framework-version/000000000000000000000000/start-creation
+
+### Start creation — invalid id
+POST {{baseUrl}}/framework-version/not-an-object-id/start-creation
+
+### Create framework version
+POST {{baseUrl}}/framework-version
+Content-Type: application/json
+
+{
+  "frameworkGroupId": "{{frameworkGroupId}}",
+  "client": "ACME",
+  "name": "Spring lookbook v1",
+  "domains": ["outfit_combination", "styling", "pose"],
+  "descriptionGenerationInstructions": [
+    {
+      "domain": "outfit_combination",
+      "instructionId": "{{descriptionInstructionId}}",
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    },
+    {
+      "domain": "styling",
+      "instructionId": "{{descriptionInstructionId}}",
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    },
+    {
+      "domain": "pose",
+      "instructionId": "{{descriptionInstructionId}}",
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    }
+  ],
+  "frameworkCreationInstructions": [
+    {
+      "domain": "outfit_combination",
+      "instructionId": "{{frameworkInstructionId}}",
+      "provider": "google",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "domain": "styling",
+      "instructionId": "{{frameworkInstructionId}}",
+      "provider": "google",
+      "model": "gemini-2.5-flash"
+    },
+    {
+      "domain": "pose",
+      "instructionId": "{{frameworkInstructionId}}",
+      "provider": "google",
+      "model": "gemini-2.5-flash"
+    }
+  ],
+  "inputSet": "{{inputSetId}}",
+  "frameworkVocabId": "{{frameworkVocabId}}",
+  "categoryRegistryId": "{{categoryRegistryId}}"
+}

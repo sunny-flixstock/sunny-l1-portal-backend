@@ -1,0 +1,91 @@
+{
+    "overridePolicy": {
+        "clientCanOverride": {
+            "description": "Fields that a client-specific shot definition can override directly without changing the meaning of the base shot.",
+            "type": "array<string>",
+            "possibleValues": [
+                "name",
+                "description",
+                "shotPurpose",
+                "framing.aspectRatio",
+                "framing.requiredMargins.top",
+                "framing.requiredMargins.bottom",
+                "framing.requiredMargins.leftRight",
+                "framing.cropTolerance",
+                "visibility.optionalBodyParts",
+                "visibility.accessoryEligibility",
+                "pose.allowedPoseFamilies",
+                "pose.disallowedPoseFamilies",
+                "pose.symmetryRequirement",
+                "pose.armRules",
+                "pose.legRules",
+                "pose.expressionRules",
+                "garmentApplicability.garmentPriorityZones",
+                "garmentApplicability.fitVisibilityRequirement",
+                "garmentApplicability.detailVisibilityRequirement",
+                "garmentApplicability.layerVisibilityRequirement",
+                "composition.modelPosition",
+                "composition.sideSpacing",
+                "composition.cameraDistance",
+                "composition.lensFeel",
+                "composition.backgroundRequirement",
+                "composition.allowedBackgrounds",
+                "composition.disallowedBackgrounds",
+                "composition.shadowRequirement",
+                "promptFragments.positive",
+                "promptFragments.negative",
+                "promptFragments.strictRules",
+                "validationRules.warningConditions",
+                "useCases",
+                "presetCompatibility.allowedPresetTypes",
+                "presetCompatibility.blockedPresetTypes",
+                "presetCompatibility.defaultPresetIds",
+                "presetCompatibility.requiredInputs",
+                "referenceImages.goodExamples",
+                "referenceImages.badExamples",
+                "referenceImages.annotationNotes"
+            ]
+        },
+        "lockedFields": {
+            "description": "Fields that define the identity and canonical meaning of the base shot. These should not be overridden by client-specific definitions.",
+            "type": "array<string>",
+            "possibleValues": [
+                "code",
+                "slug",
+                "shotFamily",
+                "bodyCoverage",
+                "viewDirection",
+                "orientation",
+                "framing.type",
+                "framing.coverage",
+                "view.modelFacing",
+                "view.faceVisibility",
+                "view.torsoDirection",
+                "view.legDirection",
+                "view.cameraAngle",
+                "view.cameraTilt",
+                "view.cameraPosition"
+            ]
+        },
+        "requiresApprovalFor": {
+            "description": "Fields that may be overridden only with admin or taxonomy-owner approval because they can alter the operational meaning of the shot.",
+            "type": "array<string>",
+            "possibleValues": [
+                "framing.topBoundary",
+                "framing.bottomBoundary",
+                "framing.subjectPosition",
+                "framing.requiredMargins",
+                "framing.mustInclude",
+                "framing.mustNotCrop",
+                "visibility.requiredBodyParts",
+                "visibility.forbiddenBodyParts",
+                "visibility.requiredGarmentZones",
+                "visibility.requiredProductVisibility",
+                "garmentApplicability.supportedProductTypes",
+                "garmentApplicability.unsupportedProductTypes",
+                "validationRules.requiredChecks",
+                "validationRules.autoRejectConditions"
+            ]
+        }
+    }
+}

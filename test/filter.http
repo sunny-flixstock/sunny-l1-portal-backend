@@ -1,0 +1,14 @@
+### Get all patternDict keys and their distinct values for a client
+GET http://localhost:7015/api/v1/filter?clientName=BZT HTTP/1.1
+
+### Search values for a dynamic filter key (regex on Sku.patternDict[key])
+GET http://localhost:7015/api/v1/filter/searchValues?clientName=BZT&key=color&q=blu&pageNum=1&pageSize=20 HTTP/1.1
+
+### Error: missing required key
+GET http://localhost:7015/api/v1/filter/searchValues?clientName=BZT&q=blu HTTP/1.1
+
+### Error: missing required q
+GET http://localhost:7015/api/v1/filter/searchValues?clientName=BZT&key=color HTTP/1.1
+
+### Error: missing required clientName
+GET http://localhost:7015/api/v1/filter/searchValues?key=color&q=blu HTTP/1.1

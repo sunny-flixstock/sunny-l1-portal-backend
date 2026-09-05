@@ -1,0 +1,77 @@
+@baseUrl = http://localhost:7015/api/v1
+
+### List rules
+GET {{baseUrl}}/rule?pageNum=1&pageSize=20 HTTP/1.1
+
+### List rules — filter by client
+GET {{baseUrl}}/rule?client=demo&pageNum=1&pageSize=20 HTTP/1.1
+
+### Rule metadata (enums)
+GET {{baseUrl}}/rule/meta HTTP/1.1
+
+### Get rule by id
+GET {{baseUrl}}/rule/000000000000000000000000 HTTP/1.1
+
+### Create rule
+POST {{baseUrl}}/rule HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "demo",
+  "ruleType": "styling",
+  "polarity": "must_do",
+  "ruleText": "Always match belt to shoes.",
+  "priority": "high",
+  "source": "client_defined",
+  "createdBy": "qa"
+}
+
+### Bulk create rules
+POST {{baseUrl}}/rule/bulk HTTP/1.1
+Content-Type: application/json
+
+{
+  "rules": [
+    {
+      "client": "demo",
+      "ruleType": "outfit_combination",
+      "polarity": "prefer",
+      "ruleText": "Layer with neutral outerwear.",
+      "priority": "medium",
+      "source": "internal"
+    },
+    {
+      "client": "demo",
+      "ruleType": "pose",
+      "polarity": "avoid",
+      "ruleText": "Avoid clashing patterns.",
+      "priority": "low",
+      "source": "client_defined",
+      "createdBy": "import"
+    }
+  ]
+}
+
+### Bulk create rules — empty array (400)
+POST {{baseUrl}}/rule/bulk HTTP/1.1
+Content-Type: application/json
+
+{
+  "rules": []
+}
+
+### Update rule
+PUT {{baseUrl}}/rule/000000000000000000000000 HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "demo",
+  "ruleType": "styling",
+  "polarity": "must_do",
+  "ruleText": "Updated rule text.",
+  "priority": "high",
+  "source": "client_defined"
+}
+
+### Delete rule
+DELETE {{baseUrl}}/rule/000000000000000000000000 HTTP/1.1

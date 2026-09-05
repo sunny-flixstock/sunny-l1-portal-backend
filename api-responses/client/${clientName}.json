@@ -1,0 +1,28 @@
+{
+    "data": {
+        "_id": "6a1fea5bf5a206e85620f1f1",
+        "code": "BZT",
+        "csvConfig": {
+            "columns": {
+                "FX_Category": {
+                    "required": true
+                },
+                "FX_Gender": {
+                    "required": true,
+                    "allowedValues": [
+                        "Male",
+                        "Female",
+                        "Unisex"
+                    ]
+                },
+                "barcode": {
+                    "sources": [
+                        "barcode",
+                        "Item EAN Code"
+                    ],
+                    "required": true
+                }
+            }
+        }
+    }
+}

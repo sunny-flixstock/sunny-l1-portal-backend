@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:7015/api/v1
+
+### Exchange a Google ID token (from the frontend's Google Sign-In button)
+### for a session token. Rejected with 403 unless the token's email matches
+### ALLOWED_LOGIN_EMAIL.
+POST {{baseUrl}}/auth/google HTTP/1.1
+Content-Type: application/json
+
+{
+  "credential": "{{googleIdToken}}"
+}
+
+### Confirm a stored session token is still valid
+GET {{baseUrl}}/auth/me HTTP/1.1
+Authorization: Bearer {{authToken}}

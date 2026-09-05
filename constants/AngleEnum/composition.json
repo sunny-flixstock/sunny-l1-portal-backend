@@ -1,0 +1,539 @@
+{
+    "compositionRulesFieldValues": {
+        "modelPosition": {
+            "description": "Defines where the model is placed inside the frame.",
+            "type": "enum",
+            "values": [
+                "centered",
+                "slightly_left",
+                "slightly_right",
+                "left_aligned",
+                "right_aligned",
+                "top_centered",
+                "lower_centered",
+                "rule_of_thirds_left",
+                "rule_of_thirds_right",
+                "dynamic_off_center",
+                "full_height_centered",
+                "detail_centered",
+                "client_defined"
+            ]
+        },
+        "sideSpacing": {
+            "description": "Defines horizontal breathing room around the model.",
+            "type": "enum",
+            "values": [
+                "equal",
+                "balanced",
+                "tight",
+                "moderate",
+                "wide",
+                "more_left_space",
+                "more_right_space",
+                "minimal_left_right_margin",
+                "generous_left_right_margin",
+                "client_defined"
+            ]
+        },
+        "verticalSpacing": {
+            "description": "Defines spacing above and below the model or visible garment area.",
+            "type": "enum",
+            "values": [
+                "equal",
+                "balanced",
+                "tight",
+                "moderate",
+                "wide",
+                "small_top_buffer",
+                "small_bottom_buffer",
+                "generous_top_buffer",
+                "generous_bottom_buffer",
+                "no_top_crop",
+                "no_bottom_crop",
+                "client_defined"
+            ]
+        },
+        "cameraDistance": {
+            "description": "Defines how close or far the camera is from the subject.",
+            "type": "enum",
+            "values": [
+                "extreme_close_up",
+                "close_up",
+                "medium_close_up",
+                "upper_body_distance",
+                "half_body_distance",
+                "three_quarter_body_distance",
+                "full_body_distance",
+                "wide_full_body_distance",
+                "detail_distance",
+                "footwear_detail_distance",
+                "accessory_detail_distance",
+                "client_defined"
+            ]
+        },
+        "cameraHeight": {
+            "description": "Defines the vertical height of the camera relative to the model.",
+            "type": "enum",
+            "values": [
+                "eye_level",
+                "chest_level",
+                "waist_level",
+                "hip_level",
+                "knee_level",
+                "foot_level",
+                "slightly_above_eye_level",
+                "slightly_below_eye_level",
+                "high_angle",
+                "low_angle",
+                "overhead",
+                "ground_level",
+                "client_defined"
+            ]
+        },
+        "cameraAngle": {
+            "description": "Defines the directional angle from which the camera captures the model.",
+            "type": "enum",
+            "values": [
+                "straight_on",
+                "front",
+                "back",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "slightly_left",
+                "slightly_right",
+                "profile",
+                "over_the_shoulder",
+                "client_defined"
+            ]
+        },
+        "cameraTilt": {
+            "description": "Defines whether the camera is tilted vertically or horizontally.",
+            "type": "enum",
+            "values": [
+                "none",
+                "slight_upward_tilt",
+                "moderate_upward_tilt",
+                "strong_upward_tilt",
+                "slight_downward_tilt",
+                "moderate_downward_tilt",
+                "strong_downward_tilt",
+                "slight_left_roll",
+                "slight_right_roll",
+                "dutch_angle",
+                "client_defined"
+            ]
+        },
+        "lensFeel": {
+            "description": "Defines the perceived lens/compression style, without requiring actual camera metadata.",
+            "type": "enum",
+            "values": [
+                "natural_commercial_fashion",
+                "catalog_neutral",
+                "lookbook_editorial",
+                "slightly_compressed",
+                "compressed_telephoto",
+                "standard_portrait",
+                "mild_wide_angle",
+                "wide_angle",
+                "no_distortion",
+                "minimal_distortion",
+                "dramatic_perspective",
+                "flat_product_catalog",
+                "client_defined"
+            ]
+        },
+        "perspectiveDistortion": {
+            "description": "Defines how much body, garment, or footwear distortion is acceptable.",
+            "type": "enum",
+            "values": [
+                "none",
+                "minimal",
+                "low",
+                "moderate",
+                "high",
+                "intentional_editorial",
+                "not_allowed",
+                "client_defined"
+            ]
+        },
+        "backgroundRequirement": {
+            "description": "Defines the required background style.",
+            "type": "enum",
+            "values": [
+                "clean_studio",
+                "clean_neutral_background",
+                "plain_white",
+                "plain_light_grey",
+                "plain_dark_grey",
+                "solid_color",
+                "subtle_gradient",
+                "minimal_set",
+                "lifestyle_interior",
+                "outdoor_clean",
+                "ecommerce_white",
+                "lookbook_neutral",
+                "editorial_set",
+                "client_branded_set",
+                "transparent_background",
+                "client_defined"
+            ]
+        },
+        "allowedBackgrounds": {
+            "description": "Defines specific allowed background colors or environment types.",
+            "type": "array_enum",
+            "values": [
+                "white",
+                "off_white",
+                "light_grey",
+                "medium_grey",
+                "dark_grey",
+                "black",
+                "beige",
+                "cream",
+                "neutral_tone",
+                "solid_color",
+                "brand_color",
+                "subtle_gradient",
+                "studio_floor",
+                "seamless_paper",
+                "minimal_interior",
+                "plain_wall",
+                "outdoor_neutral",
+                "transparent",
+                "client_defined"
+            ]
+        },
+        "disallowedBackgrounds": {
+            "description": "Defines background types that should not appear.",
+            "type": "array_enum",
+            "values": [
+                "busy_background",
+                "distracting_background",
+                "cluttered_background",
+                "dark_cluttered_background",
+                "high_contrast_patterned_background",
+                "text_or_logo_background",
+                "mirror_background",
+                "crowded_environment",
+                "visible_studio_equipment",
+                "messy_floor",
+                "strong_texture_background",
+                "unapproved_branding",
+                "outdoor_background",
+                "indoor_lifestyle_background",
+                "client_defined"
+            ]
+        },
+        "floorVisibility": {
+            "description": "Defines whether the floor should be visible.",
+            "type": "enum",
+            "values": [
+                "not_visible",
+                "minimally_visible",
+                "visible",
+                "clearly_visible",
+                "studio_floor_visible",
+                "seamless_floor_visible",
+                "required_for_full_body",
+                "optional",
+                "client_defined"
+            ]
+        },
+        "horizonLineVisibility": {
+            "description": "Defines whether wall/floor separation or horizon line is visible.",
+            "type": "enum",
+            "values": [
+                "not_visible",
+                "subtle",
+                "visible",
+                "clearly_visible",
+                "allowed",
+                "not_allowed",
+                "client_defined"
+            ]
+        },
+        "shadowRequirement": {
+            "description": "Defines expected shadow treatment.",
+            "type": "enum",
+            "values": [
+                "none",
+                "minimal_shadow",
+                "soft_shadow",
+                "natural_studio_shadow",
+                "natural_studio_shadow_or_minimal_shadow",
+                "grounded_shadow",
+                "subtle_floor_shadow",
+                "directional_shadow",
+                "dramatic_shadow",
+                "evenly_lit_no_harsh_shadow",
+                "client_defined"
+            ]
+        },
+        "lightingStyle": {
+            "description": "Defines overall lighting treatment.",
+            "type": "enum",
+            "values": [
+                "even_studio_lighting",
+                "soft_studio_lighting",
+                "bright_commercial_lighting",
+                "flat_catalog_lighting",
+                "natural_soft_light",
+                "directional_soft_light",
+                "high_key_lighting",
+                "low_key_lighting",
+                "editorial_lighting",
+                "dramatic_lighting",
+                "client_defined"
+            ]
+        },
+        "lightingContrast": {
+            "description": "Defines the contrast level in lighting.",
+            "type": "enum",
+            "values": [
+                "very_low",
+                "low",
+                "medium",
+                "high",
+                "very_high",
+                "soft_contrast",
+                "commercial_neutral",
+                "dramatic_contrast",
+                "client_defined"
+            ]
+        },
+        "subjectScale": {
+            "description": "Defines how much of the frame the model occupies.",
+            "type": "enum",
+            "values": [
+                "small_in_frame",
+                "medium_in_frame",
+                "large_in_frame",
+                "fills_most_of_frame",
+                "edge_to_edge_not_allowed",
+                "full_body_with_breathing_room",
+                "tight_crop",
+                "loose_crop",
+                "client_defined"
+            ]
+        },
+        "negativeSpace": {
+            "description": "Defines the amount of empty space around the model.",
+            "type": "enum",
+            "values": [
+                "none",
+                "minimal",
+                "low",
+                "medium",
+                "high",
+                "generous",
+                "balanced",
+                "top_heavy",
+                "side_heavy",
+                "client_defined"
+            ]
+        },
+        "alignment": {
+            "description": "Defines visual alignment of the model/body axis.",
+            "type": "enum",
+            "values": [
+                "vertical_center_axis",
+                "slightly_left_axis",
+                "slightly_right_axis",
+                "aligned_to_frame_center",
+                "aligned_to_garment_center",
+                "aligned_to_face_center",
+                "aligned_to_torso_center",
+                "client_defined"
+            ]
+        },
+        "bodyAxis": {
+            "description": "Defines whether the body axis should appear straight, angled, or dynamic.",
+            "type": "enum",
+            "values": [
+                "straight_vertical",
+                "slightly_angled",
+                "dynamic_angle",
+                "s_curve",
+                "contrapposto",
+                "leaning_left",
+                "leaning_right",
+                "upright",
+                "client_defined"
+            ]
+        },
+        "symmetry": {
+            "description": "Defines visual symmetry expected in the composition.",
+            "type": "enum",
+            "values": [
+                "symmetric",
+                "mostly_symmetric",
+                "balanced_asymmetric",
+                "asymmetric",
+                "dynamic_asymmetric",
+                "not_required",
+                "client_defined"
+            ]
+        },
+        "depthOfField": {
+            "description": "Defines background blur / subject separation treatment.",
+            "type": "enum",
+            "values": [
+                "deep_focus",
+                "shallow_focus",
+                "moderate_background_blur",
+                "strong_background_blur",
+                "sharp_catalog_focus",
+                "subject_fully_sharp",
+                "garment_fully_sharp",
+                "client_defined"
+            ]
+        },
+        "focusRequirement": {
+            "description": "Defines what must be in focus.",
+            "type": "enum",
+            "values": [
+                "full_subject_in_focus",
+                "face_in_focus",
+                "garment_in_focus",
+                "front_garment_in_focus",
+                "detail_area_in_focus",
+                "footwear_in_focus",
+                "accessory_in_focus",
+                "entire_outfit_in_focus",
+                "client_defined"
+            ]
+        },
+        "occlusionPolicy": {
+            "description": "Defines how much the body or garments may be blocked.",
+            "type": "enum",
+            "values": [
+                "no_occlusion",
+                "minimal_occlusion_allowed",
+                "minor_body_occlusion_allowed",
+                "minor_garment_occlusion_allowed",
+                "prop_occlusion_allowed",
+                "hand_occlusion_allowed_if_not_covering_product",
+                "garment_occlusion_not_allowed",
+                "product_zone_occlusion_not_allowed",
+                "client_defined"
+            ]
+        },
+        "propPolicy": {
+            "description": "Defines whether props may appear in the composition.",
+            "type": "enum",
+            "values": [
+                "no_props",
+                "handheld_prop_allowed",
+                "small_prop_allowed",
+                "fashion_accessory_prop_allowed",
+                "set_prop_allowed",
+                "prop_allowed_if_not_distracting",
+                "prop_allowed_if_not_obscuring_garment",
+                "client_defined"
+            ]
+        },
+        "setComplexity": {
+            "description": "Defines how visually complex the set/environment may be.",
+            "type": "enum",
+            "values": [
+                "none",
+                "minimal",
+                "low",
+                "medium",
+                "high",
+                "editorial",
+                "catalog_clean",
+                "client_defined"
+            ]
+        },
+        "commercialCleanliness": {
+            "description": "Defines how clean and production-ready the image must feel.",
+            "type": "enum",
+            "values": [
+                "strict_catalog_clean",
+                "commercial_clean",
+                "lookbook_clean",
+                "editorial_clean",
+                "relaxed_lifestyle",
+                "client_defined"
+            ]
+        },
+        "imagePlaneOrientation": {
+            "description": "Defines whether the model and garment should be parallel to the camera plane.",
+            "type": "enum",
+            "values": [
+                "parallel_to_camera",
+                "slightly_rotated",
+                "three_quarter_to_camera",
+                "profile_to_camera",
+                "back_to_camera",
+                "client_defined"
+            ]
+        },
+        "movementFeel": {
+            "description": "Defines whether the composition should feel static or dynamic.",
+            "type": "enum",
+            "values": [
+                "static",
+                "calm",
+                "natural",
+                "soft_movement",
+                "walking_motion",
+                "dynamic",
+                "editorial_motion",
+                "frozen_motion",
+                "client_defined"
+            ]
+        },
+        "cropStyle": {
+            "description": "Defines the overall crop behavior in the composition.",
+            "type": "enum",
+            "values": [
+                "no_crop",
+                "full_body_crop",
+                "upper_body_crop",
+                "lower_body_crop",
+                "three_quarter_crop",
+                "close_detail_crop",
+                "tight_crop",
+                "loose_crop",
+                "intentional_crop",
+                "client_defined"
+            ]
+        },
+        "edgeSafety": {
+            "description": "Defines how safely the model/product should sit away from frame edges.",
+            "type": "enum",
+            "values": [
+                "strict",
+                "high",
+                "medium",
+                "low",
+                "not_required",
+                "no_body_part_near_edge",
+                "no_product_near_edge",
+                "client_defined"
+            ]
+        },
+        "outputUse": {
+            "description": "Defines the intended production use of the composition.",
+            "type": "enum",
+            "values": [
+                "ecommerce_catalog",
+                "lookbook",
+                "campaign",
+                "marketplace",
+                "product_detail_page",
+                "social_media",
+                "editorial",
+                "ad_creative",
+                "internal_qc",
+                "client_defined"
+            ]
+        }
+    }
+}

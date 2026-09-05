@@ -1,0 +1,132 @@
+@baseUrl = http://localhost:7015/api/v1
+@clientAngleId = 000000000000000000000000
+@clientAngleSeriesKey = client-a/front-view/front-view
+@baseAngleId = 000000000000000000000000
+@systemInstructionId = 000000000000000000000000
+@partnerApiKey = YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+# POST /generate prompt layout:
+# - system: client_angle_definition instruction + base angle definition (REFERENCE DEFINITIONS)
+# - user: image-analysis prompt (baseAngle.name replaces folder_name; client-uploaded images analyzed)
+# - temperature: 0.3
+
+### List client angles (active)
+GET {{baseUrl}}/client-angle HTTP/1.1
+
+### List client angles with filters
+GET {{baseUrl}}/client-angle?client=CLIENT_A&baseAngleSeriesKey=front-view&pageNum=1&pageSize=20 HTTP/1.1
+
+### List ALL client angles for a client (no pagination)
+GET {{baseUrl}}/client-angle/all?client=BZT&status=active HTTP/1.1
+x-api-key: {{partnerApiKey}}
+
+### Get client angle metadata
+GET {{baseUrl}}/client-angle/meta HTTP/1.1
+
+### Get client angle by id
+GET {{baseUrl}}/client-angle/{{clientAngleId}} HTTP/1.1
+
+### Get client angle with markdown content
+GET {{baseUrl}}/client-angle/{{clientAngleId}}?includeContent=true HTTP/1.1
+
+### List version history for series
+GET {{baseUrl}}/client-angle/series/{{clientAngleSeriesKey}}/versions HTTP/1.1
+
+### Presign reference image uploads
+POST {{baseUrl}}/client-angle/presign HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "CLIENT_A",
+  "files": [
+    {
+      "fileName": "reference.jpg",
+      "contentType": "image/jpeg"
+    }
+  ]
+}
+
+### Generate client angle (AI)
+POST {{baseUrl}}/client-angle/generate HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "CLIENT_A",
+  "baseAngleId": "{{baseAngleId}}",
+  "systemInstructionId": "{{systemInstructionId}}",
+  "provider": "google",
+  "model": "gemini-2.0-flash",
+  "referenceImages": [
+    {
+      "imagePath": {
+        "key": "client-angle-images/CLIENT_A/example.jpg",
+        "host": "your-bucket"
+      }
+    }
+  ]
+}
+
+### Generate new version of existing client angle
+POST {{baseUrl}}/client-angle/generate HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "CLIENT_A",
+  "baseAngleId": "{{baseAngleId}}",
+  "systemInstructionId": "{{systemInstructionId}}",
+  "provider": "google",
+  "model": "gemini-2.0-flash",
+  "seriesKey": "{{clientAngleSeriesKey}}",
+  "referenceImages": [
+    {
+      "imagePath": {
+        "key": "client-angle-images/CLIENT_A/example.jpg",
+        "host": "your-bucket"
+      }
+    }
+  ]
+}
+
+### Revise client angle definition (manual edit, new version)
+POST {{baseUrl}}/client-angle HTTP/1.1
+Content-Type: application/json
+
+{
+  "seriesKey": "{{clientAngleSeriesKey}}",
+  "definitionMarkdown": "# Client Front View\n\nManually edited definition."
+}
+
+### Revise client angle — missing definition (400)
+POST {{baseUrl}}/client-angle HTTP/1.1
+Content-Type: application/json
+
+{
+  "seriesKey": "{{clientAngleSeriesKey}}"
+}
+
+### Rename active client angle
+PATCH {{baseUrl}}/client-angle/{{clientAngleId}}/name HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Client Front View"
+}
+
+### Archive client angle version
+POST {{baseUrl}}/client-angle/{{clientAngleId}}/archive HTTP/1.1
+
+### Generate — missing reference images (400)
+POST {{baseUrl}}/client-angle/generate HTTP/1.1
+Content-Type: application/json
+
+{
+  "client": "CLIENT_A",
+  "baseAngleId": "{{baseAngleId}}",
+  "systemInstructionId": "{{systemInstructionId}}",
+  "provider": "google",
+  "model": "gemini-2.0-flash",
+  "referenceImages": []
+}
+
+### Get client angle — invalid id (400)
+GET {{baseUrl}}/client-angle/not-an-object-id HTTP/1.1

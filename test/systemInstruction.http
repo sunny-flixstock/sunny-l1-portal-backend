@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:3000/api/v1
+
+### Instruction types (library)
+GET {{baseUrl}}/system-instruction/types
+
+### Meta
+GET {{baseUrl}}/system-instruction/meta
+
+### List instructions
+GET {{baseUrl}}/system-instruction?instructionType=image_description&status=active&pageNum=1&pageSize=20
+
+### List category identification instructions
+GET {{baseUrl}}/system-instruction?instructionType=category_identification&status=active&pageNum=1&pageSize=20
+
+### Create instruction
+POST {{baseUrl}}/system-instruction
+Content-Type: application/json
+
+{
+  "name": "Example Image Analyzer Instruction",
+  "instructionType": "image_description",
+  "purpose": "Extract outfit, styling, posing, brand-fit, and rule-relevant signals from example images.",
+  "systemPrompt": "# Role\nYou analyze example images for styling signals.\n",
+  "outputSchema": {}
+}
+
+### Get by id (replace id)
+@instructionId = REPLACE_ME
+GET {{baseUrl}}/system-instruction/{{instructionId}}?includeContent=true
+
+### Rename
+PATCH {{baseUrl}}/system-instruction/{{instructionId}}/name
+Content-Type: application/json
+
+{
+  "name": "Example Image Analyzer Instruction (renamed)"
+}
+
+### Archive
+DELETE {{baseUrl}}/system-instruction/{{instructionId}}

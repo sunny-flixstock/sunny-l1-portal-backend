@@ -1,0 +1,278 @@
+{
+    "viewAndBodyOrientationEnums": {
+        "modelFacing": {
+            "description": "Primary direction the model's overall body is facing relative to the camera.",
+            "values": [
+                "camera",
+                "away_from_camera",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "profile_left",
+                "profile_right",
+                "diagonal_left",
+                "diagonal_right",
+                "partially_turned_to_camera",
+                "partially_turned_away_from_camera",
+                "not_applicable"
+            ]
+        },
+        "faceVisibility": {
+            "description": "Whether the model's face should be visible in the shot.",
+            "values": [
+                "required",
+                "optional",
+                "partially_visible",
+                "profile_visible",
+                "back_of_head_visible",
+                "hidden",
+                "cropped_out",
+                "not_applicable"
+            ]
+        },
+        "faceDirection": {
+            "description": "Direction the face is pointing, independent of torso/body direction.",
+            "values": [
+                "toward_camera",
+                "away_from_camera",
+                "left",
+                "right",
+                "slightly_left",
+                "slightly_right",
+                "up",
+                "down",
+                "down_left",
+                "down_right",
+                "up_left",
+                "up_right",
+                "over_left_shoulder",
+                "over_right_shoulder",
+                "not_applicable"
+            ]
+        },
+        "eyeDirection": {
+            "description": "Direction of the model's gaze.",
+            "values": [
+                "looking_at_camera",
+                "looking_away",
+                "looking_left",
+                "looking_right",
+                "looking_down",
+                "looking_up",
+                "looking_down_left",
+                "looking_down_right",
+                "looking_up_left",
+                "looking_up_right",
+                "eyes_closed",
+                "not_visible",
+                "not_applicable"
+            ]
+        },
+        "torsoDirection": {
+            "description": "Direction the torso/chest is facing relative to the camera.",
+            "values": [
+                "front",
+                "back",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "slightly_left",
+                "slightly_right",
+                "twisted_left",
+                "twisted_right",
+                "not_applicable"
+            ]
+        },
+        "shoulderDirection": {
+            "description": "Orientation of the shoulder line relative to the camera.",
+            "values": [
+                "square_to_camera",
+                "square_away_from_camera",
+                "left_shoulder_forward",
+                "right_shoulder_forward",
+                "left_shoulder_back",
+                "right_shoulder_back",
+                "angled_left",
+                "angled_right",
+                "asymmetric",
+                "not_applicable"
+            ]
+        },
+        "hipDirection": {
+            "description": "Direction the hips/pelvis are facing relative to the camera.",
+            "values": [
+                "front",
+                "back",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "slightly_left",
+                "slightly_right",
+                "twisted_left",
+                "twisted_right",
+                "not_applicable"
+            ]
+        },
+        "legDirection": {
+            "description": "Primary direction and visibility orientation of the legs/lower body.",
+            "values": [
+                "front",
+                "back",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "crossed_front",
+                "crossed_back",
+                "one_leg_forward",
+                "one_leg_back",
+                "wide_stance",
+                "narrow_stance",
+                "walking_forward",
+                "walking_away",
+                "walking_left",
+                "walking_right",
+                "not_applicable"
+            ]
+        },
+        "footDirection": {
+            "description": "Direction the feet are pointing.",
+            "values": [
+                "both_forward",
+                "both_away",
+                "both_left",
+                "both_right",
+                "left_foot_forward_right_foot_angled",
+                "right_foot_forward_left_foot_angled",
+                "toes_out",
+                "toes_in",
+                "one_foot_crossed_over",
+                "one_foot_behind",
+                "walking_step",
+                "not_visible",
+                "not_applicable"
+            ]
+        },
+        "bodyTurn": {
+            "description": "Degree of body rotation relative to camera.",
+            "values": [
+                "none",
+                "slight_left",
+                "slight_right",
+                "moderate_left",
+                "moderate_right",
+                "strong_left",
+                "strong_right",
+                "full_back_turn",
+                "twisted_pose",
+                "not_applicable"
+            ]
+        },
+        "bodyPosture": {
+            "description": "Overall body posture and vertical alignment.",
+            "values": [
+                "upright",
+                "relaxed_upright",
+                "slight_lean_left",
+                "slight_lean_right",
+                "slight_lean_forward",
+                "slight_lean_backward",
+                "arched_back",
+                "curved_spine",
+                "seated_upright",
+                "seated_relaxed",
+                "crouched",
+                "bent_forward",
+                "reclining",
+                "not_applicable"
+            ]
+        },
+        "cameraAngle": {
+            "description": "Camera height and vertical angle relative to the model.",
+            "values": [
+                "eye_level",
+                "chest_level",
+                "waist_level",
+                "hip_level",
+                "knee_level",
+                "floor_level",
+                "slightly_high",
+                "high_angle",
+                "top_down",
+                "slightly_low",
+                "low_angle",
+                "worm_eye",
+                "not_applicable"
+            ]
+        },
+        "cameraPosition": {
+            "description": "Horizontal camera position relative to the model.",
+            "values": [
+                "straight_on",
+                "direct_back",
+                "left_side",
+                "right_side",
+                "left_three_quarter",
+                "right_three_quarter",
+                "back_left_three_quarter",
+                "back_right_three_quarter",
+                "diagonal_left",
+                "diagonal_right",
+                "overhead",
+                "not_applicable"
+            ]
+        },
+        "cameraTilt": {
+            "description": "Whether the camera is tilted vertically or horizontally.",
+            "values": [
+                "none",
+                "slight_upward_tilt",
+                "strong_upward_tilt",
+                "slight_downward_tilt",
+                "strong_downward_tilt",
+                "slight_left_roll",
+                "slight_right_roll",
+                "dutch_angle_left",
+                "dutch_angle_right",
+                "not_applicable"
+            ]
+        },
+        "cameraDistance": {
+            "description": "Approximate camera distance/framing relationship.",
+            "values": [
+                "extreme_close_up",
+                "close_up",
+                "medium_close_up",
+                "medium_shot",
+                "three_quarter_body_distance",
+                "full_body_distance",
+                "wide_full_body_distance",
+                "environmental_wide",
+                "not_applicable"
+            ]
+        },
+        "perspectiveDistortion": {
+            "description": "Allowed perspective distortion level.",
+            "values": [
+                "none",
+                "minimal",
+                "natural",
+                "moderate",
+                "strong",
+                "intentionally_distorted",
+                "not_applicable"
+            ]
+        }
+    }
+}

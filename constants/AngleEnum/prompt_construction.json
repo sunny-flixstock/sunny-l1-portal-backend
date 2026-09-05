@@ -1,0 +1,455 @@
+{
+    "promptConstructionFields": {
+        "promptFragments": {
+            "type": "object",
+            "description": "Reusable prompt text blocks derived from the base shot definition. These should be used by the prompt builder while generating final image-generation prompts.",
+            "fields": {
+                "positive": {
+                    "type": "array<string>",
+                    "description": "Positive prompt fragments that describe what must be present in the image.",
+                    "possibleValueCategories": {
+                        "shot_identity": [
+                            "Full-body front-facing commercial fashion shot",
+                            "Full-body back-facing commercial fashion shot",
+                            "Upper-half front-facing commercial fashion shot",
+                            "Upper-half back-facing commercial fashion shot",
+                            "Lower-half commercial fashion shot",
+                            "Side-view commercial fashion shot",
+                            "Three-quarter-view commercial fashion shot",
+                            "Close-up product detail shot",
+                            "Full outfit catalog shot",
+                            "Lookbook-style outfit shot",
+                            "Clean e-commerce product-on-model shot"
+                        ],
+                        "body_coverage": [
+                            "Model visible from top of head to feet",
+                            "Model visible from head to toe",
+                            "Model visible from head to mid-thigh",
+                            "Model visible from head to waist",
+                            "Model visible from shoulder to waist",
+                            "Model visible from waist to feet",
+                            "Model visible from hip to feet",
+                            "Model visible from knees to feet",
+                            "Upper body clearly visible",
+                            "Lower body clearly visible",
+                            "Complete outfit clearly visible",
+                            "Full garment silhouette clearly visible"
+                        ],
+                        "view_direction": [
+                            "Model facing directly toward the camera",
+                            "Model facing away from the camera",
+                            "Model shown from the back",
+                            "Model shown in side profile",
+                            "Model shown in three-quarter front view",
+                            "Model shown in three-quarter back view",
+                            "Torso facing the camera",
+                            "Torso facing away from the camera",
+                            "Lower body facing the camera",
+                            "Face directed toward the camera",
+                            "Face not visible",
+                            "Face partially visible",
+                            "Garment front clearly visible",
+                            "Garment back clearly visible",
+                            "Garment side profile clearly visible"
+                        ],
+                        "camera_and_framing": [
+                            "Eye-level straight-on camera angle",
+                            "Camera positioned directly in front of the model",
+                            "Camera positioned directly behind the model",
+                            "Camera positioned at side profile",
+                            "Camera angle remains neutral and undistorted",
+                            "No upward or downward camera tilt",
+                            "Centered composition",
+                            "Model centered in frame",
+                            "Balanced spacing on both sides",
+                            "Small breathing room above the head",
+                            "Small breathing room below the shoes",
+                            "Clean vertical portrait framing",
+                            "Commercial catalog-style framing",
+                            "Natural full-body camera distance",
+                            "Natural upper-body camera distance",
+                            "Natural lower-body camera distance"
+                        ],
+                        "garment_visibility": [
+                            "Entire outfit including footwear fully visible",
+                            "Front of all garments clearly visible",
+                            "Back of all garments clearly visible",
+                            "Full silhouette of all layered garments clearly readable",
+                            "Upper garment clearly visible",
+                            "Lower garment clearly visible",
+                            "Footwear fully visible",
+                            "Neckline clearly visible",
+                            "Sleeves clearly visible",
+                            "Shoulder line clearly visible",
+                            "Chest area clearly visible",
+                            "Waistband clearly visible",
+                            "Hem lines clearly visible",
+                            "Trouser breaks clearly visible",
+                            "Skirt shape clearly visible",
+                            "Dress length clearly visible",
+                            "Outerwear layering clearly visible",
+                            "Back closure clearly visible",
+                            "Back neckline clearly visible",
+                            "Side seam clearly visible",
+                            "Fit and garment proportions clearly visible",
+                            "Layering relationship between garments clearly visible"
+                        ],
+                        "pose": [
+                            "Natural standing pose",
+                            "Relaxed commercial fashion pose",
+                            "Straight front-facing pose",
+                            "Straight back-facing pose",
+                            "Soft fashion pose",
+                            "Balanced stance",
+                            "Natural weight distribution",
+                            "Arms relaxed naturally at the sides",
+                            "One hand may hold a prop",
+                            "Hands must not obscure key garment areas",
+                            "Legs positioned naturally",
+                            "Footwear remains clearly visible",
+                            "Pose keeps garment silhouette readable",
+                            "Neutral or soft facial expression",
+                            "Commercially clean model posture"
+                        ],
+                        "composition": [
+                            "Clean white studio background",
+                            "Clean light grey studio background",
+                            "Neutral distraction-free background",
+                            "Minimal studio shadow",
+                            "Natural studio shadow",
+                            "No visual clutter",
+                            "Product-focused composition",
+                            "Commercially clean catalog composition",
+                            "Garment-first composition",
+                            "Model and outfit remain the visual focus"
+                        ],
+                        "quality_and_style": [
+                            "High clarity commercial fashion image",
+                            "Sharp garment details",
+                            "Accurate garment proportions",
+                            "Natural fabric drape",
+                            "Realistic studio lighting",
+                            "Clean catalog lighting",
+                            "Consistent e-commerce styling",
+                            "Professional lookbook presentation",
+                            "Realistic on-model fashion photography",
+                            "No exaggerated distortion"
+                        ]
+                    }
+                },
+                "negative": {
+                    "type": "array<string>",
+                    "description": "Negative prompt fragments that describe what must not appear or happen in the image.",
+                    "possibleValueCategories": {
+                        "wrong_crop": [
+                            "Do not crop the head",
+                            "Do not crop the face",
+                            "Do not crop the shoulders",
+                            "Do not crop the torso",
+                            "Do not crop the waist",
+                            "Do not crop the hips",
+                            "Do not crop the legs",
+                            "Do not crop the knees",
+                            "Do not crop the ankles",
+                            "Do not crop the feet",
+                            "Do not crop the footwear",
+                            "Do not crop the garment hem",
+                            "Do not crop the sleeves",
+                            "Do not crop key garment details",
+                            "Do not let the model fill the frame edge to edge"
+                        ],
+                        "wrong_view": [
+                            "Do not rotate the model into a side view",
+                            "Do not rotate the model into a back view",
+                            "Do not rotate the model into a front view",
+                            "Do not change the required view direction",
+                            "Do not use three-quarter view unless required",
+                            "Do not hide the garment front",
+                            "Do not hide the garment back",
+                            "Do not obscure the side profile",
+                            "Do not turn the face away from the camera when face visibility is required",
+                            "Do not show the face when face visibility is forbidden"
+                        ],
+                        "wrong_camera": [
+                            "Do not use upward camera tilt",
+                            "Do not use downward camera tilt",
+                            "Do not use extreme low-angle perspective",
+                            "Do not use extreme high-angle perspective",
+                            "Do not use wide-angle distortion",
+                            "Do not use fisheye distortion",
+                            "Do not use dramatic cinematic perspective",
+                            "Do not use off-center camera placement",
+                            "Do not use tilted horizon",
+                            "Do not use diagonal camera framing"
+                        ],
+                        "wrong_pose": [
+                            "Do not use aggressive posing that obscures garments",
+                            "Do not use extreme twisting",
+                            "Do not use seated pose",
+                            "Do not use crouching pose",
+                            "Do not use jumping pose",
+                            "Do not use leaning pose that distorts garment visibility",
+                            "Do not cross arms over the garment",
+                            "Do not cover the neckline with hands",
+                            "Do not hide the waistband with hands",
+                            "Do not hide the hemline with hands",
+                            "Do not hide footwear with stance",
+                            "Do not use stiff robotic posture",
+                            "Do not use overly dramatic fashion pose"
+                        ],
+                        "garment_obstruction": [
+                            "Do not obscure the garment front",
+                            "Do not obscure the garment back",
+                            "Do not obscure the full silhouette",
+                            "Do not obscure the neckline",
+                            "Do not obscure the sleeves",
+                            "Do not obscure the waistline",
+                            "Do not obscure the hemline",
+                            "Do not obscure trouser breaks",
+                            "Do not obscure footwear",
+                            "Do not let props hide the garment",
+                            "Do not let hair cover key garment details",
+                            "Do not let arms cover key garment areas",
+                            "Do not let bags cover key garment areas"
+                        ],
+                        "composition_errors": [
+                            "Do not use a distracting background",
+                            "Do not use a busy background",
+                            "Do not use dark cluttered background",
+                            "Do not use props that dominate the frame",
+                            "Do not place the model too close to frame edges",
+                            "Do not create unequal side spacing unless specified",
+                            "Do not use excessive shadow",
+                            "Do not use harsh editorial lighting",
+                            "Do not use non-commercial composition",
+                            "Do not make the outfit secondary to the scene"
+                        ],
+                        "quality_errors": [
+                            "Do not distort body proportions",
+                            "Do not distort garment proportions",
+                            "Do not blur garment details",
+                            "Do not create unrealistic fabric drape",
+                            "Do not create extra limbs",
+                            "Do not create missing limbs",
+                            "Do not create malformed hands",
+                            "Do not create malformed feet",
+                            "Do not generate inconsistent footwear",
+                            "Do not generate asymmetrical garment errors unless part of the design",
+                            "Do not hallucinate extra garments",
+                            "Do not remove required garments",
+                            "Do not change product color",
+                            "Do not change product pattern",
+                            "Do not change product silhouette"
+                        ]
+                    }
+                },
+                "strictRules": {
+                    "type": "array<string>",
+                    "description": "Non-negotiable rules that must be preserved when this base shot definition is used. These should survive client overrides and preset composition unless explicitly approved.",
+                    "possibleValueCategories": {
+                        "shot_identity_rules": [
+                            "The shot must remain a full-body front-facing shot.",
+                            "The shot must remain a full-body back-facing shot.",
+                            "The shot must remain an upper-half shot.",
+                            "The shot must remain a lower-half shot.",
+                            "The shot must remain a side-view shot.",
+                            "The shot must remain a three-quarter-view shot.",
+                            "The shot must remain a close-up detail shot.",
+                            "The shot must preserve the base shot family.",
+                            "The shot must preserve the required body coverage.",
+                            "The shot must preserve the required view direction."
+                        ],
+                        "framing_rules": [
+                            "The frame must include the full body from head to shoes.",
+                            "The frame must include the upper body according to the shot definition.",
+                            "The frame must include the lower body according to the shot definition.",
+                            "The frame must include the required crop boundaries.",
+                            "The frame must not crop any required body part.",
+                            "The frame must not crop any required garment zone.",
+                            "The subject must remain centered unless the shot definition allows otherwise.",
+                            "The image must preserve the required portrait orientation.",
+                            "The required breathing room must be preserved.",
+                            "The model must not fill the frame edge to edge."
+                        ],
+                        "view_rules": [
+                            "The model must face directly toward the camera.",
+                            "The model must face away from the camera.",
+                            "The model must remain in side profile.",
+                            "The model must remain in three-quarter view.",
+                            "The face must be visible.",
+                            "The face must not be visible.",
+                            "The torso direction must match the base shot definition.",
+                            "The leg direction must match the base shot definition.",
+                            "The front of the garment must remain visible.",
+                            "The back of the garment must remain visible.",
+                            "The side profile of the garment must remain visible."
+                        ],
+                        "camera_rules": [
+                            "The camera must be eye-level.",
+                            "The camera must be straight-on.",
+                            "The camera must not tilt upward.",
+                            "The camera must not tilt downward.",
+                            "The camera must not use fisheye distortion.",
+                            "The camera must not use extreme perspective distortion.",
+                            "The camera distance must match the required shot coverage.",
+                            "The camera position must match the required view direction."
+                        ],
+                        "garment_visibility_rules": [
+                            "The complete outfit silhouette must be readable.",
+                            "The required garment zones must be visible.",
+                            "The garment front must be clearly visible.",
+                            "The garment back must be clearly visible.",
+                            "The neckline must be visible.",
+                            "The sleeve shape must be visible.",
+                            "The waistband must be visible.",
+                            "The hemline must be visible.",
+                            "The trouser break must be visible.",
+                            "The footwear must be fully visible.",
+                            "Layered garments must remain visually readable.",
+                            "Fit and garment proportions must remain readable.",
+                            "Accessories must not obscure required garment zones."
+                        ],
+                        "pose_rules": [
+                            "The pose must not obscure required garment zones.",
+                            "The pose must preserve the garment silhouette.",
+                            "The arms must not block important garment details.",
+                            "The hands must not cover required product areas.",
+                            "The legs must not hide footwear when footwear visibility is required.",
+                            "The body must not twist away from the required view direction.",
+                            "The stance must support clear product visibility.",
+                            "The pose must remain commercially clean."
+                        ],
+                        "background_rules": [
+                            "The background must remain clean and neutral.",
+                            "The background must not distract from the outfit.",
+                            "The model and garment must remain the visual focus.",
+                            "Lighting must preserve garment readability.",
+                            "Shadows must not hide garment details."
+                        ],
+                        "product_integrity_rules": [
+                            "The product color must not change.",
+                            "The product pattern must not change.",
+                            "The product silhouette must not change.",
+                            "The product length must not change.",
+                            "The product fit must not change.",
+                            "The product material appearance must remain realistic.",
+                            "The generated image must not invent extra product layers.",
+                            "The generated image must not remove required product layers."
+                        ]
+                    }
+                }
+            }
+        },
+        "promptWeight": {
+            "type": "object",
+            "description": "Optional priority configuration used when merging base shot definition fragments with client shot definitions, presets, and job-level instructions.",
+            "fields": {
+                "priority": {
+                    "type": "enum<string>",
+                    "description": "How important the base shot prompt fragments are during prompt merge.",
+                    "possibleValues": [
+                        "low",
+                        "medium",
+                        "high",
+                        "critical"
+                    ]
+                },
+                "mergeStrategy": {
+                    "type": "enum<string>",
+                    "description": "How the prompt builder should combine this base shot prompt with client, preset, and job-level prompt content.",
+                    "possibleValues": [
+                        "append_only",
+                        "prepend_only",
+                        "base_first",
+                        "client_first",
+                        "preset_first",
+                        "strict_rules_first",
+                        "weighted_merge",
+                        "dedupe_and_merge",
+                        "replace_allowed_fragments",
+                        "lock_base_fragments"
+                    ]
+                },
+                "conflictResolution": {
+                    "type": "enum<string>",
+                    "description": "What should happen when prompt fragments conflict with client definitions or presets.",
+                    "possibleValues": [
+                        "base_wins",
+                        "client_wins",
+                        "preset_wins",
+                        "strict_rules_win",
+                        "highest_priority_wins",
+                        "reject_conflict",
+                        "require_manual_review"
+                    ]
+                },
+                "positiveWeight": {
+                    "type": "number",
+                    "description": "Numeric weight for positive fragments. Suggested range: 0.0 to 1.0.",
+                    "possibleValues": [
+                        0,
+                        0.25,
+                        0.5,
+                        0.75,
+                        1
+                    ],
+                    "recommendedValues": {
+                        "low": 0.25,
+                        "medium": 0.5,
+                        "high": 0.75,
+                        "critical": 1
+                    }
+                },
+                "negativeWeight": {
+                    "type": "number",
+                    "description": "Numeric weight for negative fragments. Suggested range: 0.0 to 1.0.",
+                    "possibleValues": [
+                        0,
+                        0.25,
+                        0.5,
+                        0.75,
+                        1
+                    ],
+                    "recommendedValues": {
+                        "low": 0.25,
+                        "medium": 0.5,
+                        "high": 0.75,
+                        "critical": 1
+                    }
+                },
+                "strictRulesWeight": {
+                    "type": "number",
+                    "description": "Numeric weight for strict rules. In most production cases this should be 1.",
+                    "possibleValues": [
+                        0.5,
+                        0.75,
+                        1
+                    ],
+                    "recommendedValue": 1
+                },
+                "lockedFragmentTypes": {
+                    "type": "array<enum<string>>",
+                    "description": "Prompt fragment groups that cannot be overridden by client or preset configuration.",
+                    "possibleValues": [
+                        "positive",
+                        "negative",
+                        "strictRules"
+                    ]
+                },
+                "overrideableFragmentTypes": {
+                    "type": "array<enum<string>>",
+                    "description": "Prompt fragment groups that client definitions or presets may override.",
+                    "possibleValues": [
+                        "positive",
+                        "negative",
+                        "strictRules"
+                    ],
+                    "recommendedValue": [
+                        "positive",
+                        "negative"
+                    ]
+                }
+            }
+        }
+    }
+}

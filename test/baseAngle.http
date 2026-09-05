@@ -1,0 +1,83 @@
+@baseUrl = http://localhost:7015/api/v1
+@baseAngleId = 000000000000000000000000
+@baseAngleSeriesKey = front-view
+
+### List base angles (active)
+GET {{baseUrl}}/base-angle HTTP/1.1
+
+### List base angles with search
+GET {{baseUrl}}/base-angle?q=front&status=active&pageNum=1&pageSize=20 HTTP/1.1
+
+### Get base angle metadata
+GET {{baseUrl}}/base-angle/meta HTTP/1.1
+
+### Get base angle by id
+GET {{baseUrl}}/base-angle/{{baseAngleId}} HTTP/1.1
+
+### Get base angle with markdown content
+GET {{baseUrl}}/base-angle/{{baseAngleId}}?includeContent=true HTTP/1.1
+
+### List version history for series
+GET {{baseUrl}}/base-angle/series/{{baseAngleSeriesKey}}/versions HTTP/1.1
+
+### Presign sample image uploads
+POST {{baseUrl}}/base-angle/presign HTTP/1.1
+Content-Type: application/json
+
+{
+  "files": [
+    {
+      "fileName": "sample.jpg",
+      "contentType": "image/jpeg"
+    }
+  ]
+}
+
+### Create base angle (v1)
+POST {{baseUrl}}/base-angle HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Front View",
+  "definitionMarkdown": "# Front View\n\nDescribe the front-facing product angle.",
+  "sampleImages": [
+    {
+      "imagePath": {
+        "key": "base-angle-images/example.jpg",
+        "host": "your-bucket"
+      }
+    }
+  ]
+}
+
+### Create new version of existing base angle
+POST {{baseUrl}}/base-angle HTTP/1.1
+Content-Type: application/json
+
+{
+  "seriesKey": "{{baseAngleSeriesKey}}",
+  "definitionMarkdown": "# Front View v2\n\nUpdated definition.",
+  "sampleImages": []
+}
+
+### Rename active base angle
+PATCH {{baseUrl}}/base-angle/{{baseAngleId}}/name HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Front View Updated"
+}
+
+### Archive base angle version
+POST {{baseUrl}}/base-angle/{{baseAngleId}}/archive HTTP/1.1
+
+### Create base angle — missing definition (400)
+POST {{baseUrl}}/base-angle HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Invalid"
+}
+
+### Get base angle — invalid id (400)
+GET {{baseUrl}}/base-angle/not-an-object-id HTTP/1.1

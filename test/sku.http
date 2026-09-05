@@ -1,0 +1,181 @@
+### SKU stats by client (aggregation, no pagination)
+GET http://localhost:7015/api/v1/sku/statsByClient HTTP/1.1
+
+###
+
+### Run aggregation pipeline on Sku collection
+POST http://localhost:7015/api/v1/sku/aggregate HTTP/1.1
+Content-Type: application/json
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+{
+  "pipeline": [
+  {
+    "$match":
+      {
+        "clientName": "ZLD",
+        "patternDict.barcode": {
+          "$exists": true
+        }
+      }
+  }
+]
+}
+
+###
+
+### Search SKUs with date range and embeddingDone filter
+GET http://localhost:7015/api/v1/sku/?clientName=TEST&barcode=019&createdAfter=2024-01-01&createdBefore=2025-12-31&embeddingDone=true&pageNum=1&pageSize=10 HTTP/1.1
+
+###
+
+### Search internal SKUs associated to a client
+GET http://localhost:7015/api/v1/sku/?clientName=BZT&assetType=internal&pageNum=1&pageSize=20 HTTP/1.1
+
+###
+
+### Get SKU by id (includes all assets)
+GET http://localhost:7015/api/v1/sku/66b309153245805b74739602 HTTP/1.1
+
+###
+
+### Lookup SKU by clientName and barcode (includes all assets)
+GET http://localhost:7015/api/v1/sku/lookup?clientName=ZLD&barcode=4068378470647 HTTP/1.1
+
+###
+
+### Partner: Get SKU by clientName and barcode
+GET http://localhost:7015/api/v1/sku/byClientAndBarcode?clientName=ZLD&barcode=4068378470647 HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+###
+
+### Search SKUs (clientName required; filter by any field or filter[] for patternDict keys)
+GET http://localhost:7015/api/v1/sku/?clientName=TEST&filter[fabric]=cotton&pageNum=1&pageSize=20 HTTP/1.1
+
+###
+
+### Search SKUs with multiple values for a single filter (e.g. fabric = velvet OR silk)
+GET http://localhost:7015/api/v1/sku/?clientName=TEST&filter[fabric]=["velvet","silk"]&pageNum=1&pageSize=20 HTTP/1.1
+
+###
+
+### Partner: SKU semantic search (returns _id, barcode, skuImageDescription)
+GET http://localhost:7015/api/v1/sku/semanticSearchPartner?clientName=BZT&fuzzy_text=red+cotton+shirt HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+###
+
+### Partner: SKU semantic search with FX_Gender filter
+GET https://aistylingasset.flixstock.com/api/v1/sku/semanticSearchPartner?clientName=BZT&fuzzy_text=red+cotton+shirt&filter[FX_Gender]=Male HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+###
+
+### Partner: SKU filter-only (no fuzzy_text, pulled from vector store)
+GET http://localhost:7015/api/v1/sku/semanticSearchPartner?clientName=BZT&filter[FX_Gender]=Male HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+###
+
+### Partner: SKU filter — multiple values for FX_Gender (Male OR Female)
+GET http://localhost:7015/api/v1/sku/semanticSearchPartner?clientName=BZT&filter[FX_Gender][]=Male&filter[FX_Gender][]=Female HTTP/1.1
+x-api-key: YW94M5m7SYZov3S8K1gLtrVKdr6nS8J6
+
+###
+
+### Partner SKU semantic — missing/invalid API key (401)
+GET http://localhost:7015/api/v1/sku/semanticSearchPartner?clientName=BZT&fuzzy_text=red+cotton+shirt HTTP/1.1
+
+###
+
+### Import CSV - hero_articles (TEST client)
+# Response: { ingestionId, skusTotal, skusIdentified (existing updated), skusNew (not found, inserted) }
+POST http://localhost:7015/api/v1/sku/importCsv?clientName=TEST HTTP/1.1
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="hero_articles.csv"
+Content-Type: text/csv
+
+< /Users/flixstock/Downloads/Copy of AI image production_Batch 1_data - supporting_articles.csv
+--Boundary--
+
+###
+
+### Import CSV - BZT (re-merge with leading-zero barcodes restored)
+POST http://localhost:7015/api/v1/sku/importCsv?clientName=BZT HTTP/1.1
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="SkuCsv.fixed.slim.csv"
+Content-Type: text/csv
+
+< /Users/flixstock/Documents/Work/current/Flixstock/aistylingasset/scripts/output/SkuCsv.fixed.slim.csv
+--Boundary--
+
+###
+
+### Stop producing for a SKU (upserts SkuCsv flag; cascades to Sku + Assets + vector if Sku exists. Gates reads only.)
+POST http://localhost:7015/api/v1/sku/doNotProduce HTTP/1.1
+Content-Type: application/json
+
+{ "barcode": "0194891764698", "clientName": "BZT", "shouldNotProduce": true }
+
+###
+
+### Re-enable production for a SKU
+POST http://localhost:7015/api/v1/sku/doNotProduce HTTP/1.1
+Content-Type: application/json
+
+{ "barcode": "0194891764698", "clientName": "BZT", "shouldNotProduce": false }
+
+###
+
+### doNotProduce - SKU not yet created (200, upserts SkuCsv stub so flag is honoured at future Sku creation)
+POST http://localhost:7015/api/v1/sku/doNotProduce HTTP/1.1
+Content-Type: application/json
+
+{ "barcode": "DOES_NOT_EXIST", "clientName": "BZT", "shouldNotProduce": true }
+
+###
+
+### doNotProduce - missing shouldNotProduce (celebrate 400)
+POST http://localhost:7015/api/v1/sku/doNotProduce HTTP/1.1
+Content-Type: application/json
+
+{ "barcode": "0194891764698", "clientName": "BZT" }
+
+
+### Save CSV data for a barcode (merges into existing csvData; creates SkuCsv if missing)
+POST http://localhost:7015/api/v1/sku/saveCsvData HTTP/1.1
+Content-Type: application/json
+
+{
+  "barcode": "0194891764695",
+  "clientName": "TEST",
+  "csvData": {
+    "category": "t1",
+    "color": "blue"
+  }
+}
+
+
+### saveCsvData - csvConfig validation failure (missing required column / disallowed value, returns Api400Error)
+POST http://localhost:7015/api/v1/sku/saveCsvData HTTP/1.1
+Content-Type: application/json
+
+{
+  "barcode": "0194891764695",
+  "clientName": "BZT",
+  "csvData": {
+    "color": "not-an-allowed-value"
+  }
+}
+
+
+### saveCsvData - missing csvData (celebrate 400)
+POST http://localhost:7015/api/v1/sku/saveCsvData HTTP/1.1
+Content-Type: application/json
+
+{ "barcode": "0194891764695", "clientName": "BZT" }

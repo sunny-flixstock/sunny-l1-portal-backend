@@ -1,0 +1,35 @@
+const router = require('express').Router();
+const healthRoute = require('./healthRoute');
+const skuRoute = require('./skuRoute');
+const assetRoute = require('./assetRoute');
+
+router.use('/healthcheck', healthRoute);
+router.use('/auth', require('./authRoute'));
+router.use('/sku', skuRoute);
+router.use('/asset', assetRoute);
+router.use('/filter', require('./filterRoute'));
+router.use('/client', require('./clientRoute'));
+router.use('/framework-group', require('./frameworkGroupRoute'));
+router.use('/framework-version', require('./frameworkVersionRoute'));
+router.use('/rule', require('./ruleRoute'));
+router.use('/example-image', require('./exampleImageRoute'));
+router.use('/input-set', require('./inputSetRoute'));
+router.use('/system-instruction', require('./systemInstructionRoute'));
+router.use('/model-catalog', require('./modelCatalogRoute'));
+router.use('/framework-vocab', require('./frameworkVocabRoute'));
+router.use('/category-registry', require('./categoryRegistryRoute'));
+router.use('/base-angle', require('./baseAngleRoute'));
+router.use('/client-angle', require('./clientAngleRoute'));
+router.use('/angle-technical-specification', require('./angleTechnicalSpecificationRoute'));
+router.use('/angle-preset', require('./anglePresetRoute'));
+router.use('/partner/angle-preset', require('./partnerAnglePresetRoute'));
+router.use('/partner/framework', require('./partnerFrameworkRoute'));
+router.use('/description-model', require('./descriptionModelRoute'));
+router.use('/custom-report', require('./customReportRoute'));
+router.use('/l1-feedback/ground-truth', require('./l1GroundTruthRoute'));
+router.use('/l1-feedback/generic', require('./l1GenericFeedbackRoute'));
+router.use('/l1-feedback', require('./l1FeedbackRoute'));
+router.use('/util', require('./utilRoute'));
+router.use('/api-docs', require('./apiDocsRoute'));
+
+module.exports = { router };

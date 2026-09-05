@@ -1,0 +1,404 @@
+{
+    "classificationFields": {
+        "shotFamily": {
+            "description": "High-level grouping of shot types by visual purpose and body coverage.",
+            "type": "enum",
+            "values": [
+                {
+                    "value": "FULL_BODY",
+                    "label": "Full Body",
+                    "description": "Captures the model from head to toe. Used when the complete outfit and full silhouette must be visible."
+                },
+                {
+                    "value": "HALF_BODY",
+                    "label": "Half Body",
+                    "description": "Captures either the upper or lower portion of the body. Used when the shot focuses on a specific garment region."
+                },
+                {
+                    "value": "UPPER_BODY",
+                    "label": "Upper Body",
+                    "description": "Focuses on the head, shoulders, torso, arms, neckline, sleeves, and upper garments."
+                },
+                {
+                    "value": "LOWER_BODY",
+                    "label": "Lower Body",
+                    "description": "Focuses on waist, hips, legs, hems, trouser breaks, skirts, shorts, and footwear."
+                },
+                {
+                    "value": "THREE_QUARTER_BODY",
+                    "label": "Three Quarter Body",
+                    "description": "Captures most of the body but may crop below the knees, calves, or ankles depending on the shot intent."
+                },
+                {
+                    "value": "DETAIL",
+                    "label": "Detail",
+                    "description": "Close-up shot focused on a specific garment construction, trim, texture, logo, closure, accessory, or styling detail."
+                },
+                {
+                    "value": "ACCESSORY",
+                    "label": "Accessory",
+                    "description": "Shot focused primarily on accessories such as bags, jewelry, belts, eyewear, hats, watches, or footwear."
+                },
+                {
+                    "value": "GARMENT_FEATURE",
+                    "label": "Garment Feature",
+                    "description": "Shot focused on a specific garment feature such as neckline, sleeve, hem, waistband, back design, pocket, slit, or closure."
+                },
+                {
+                    "value": "LOOKBOOK",
+                    "label": "Lookbook",
+                    "description": "Editorial or commercial shot where outfit presentation, styling, and brand mood matter more than strict product documentation."
+                },
+                {
+                    "value": "CATALOG",
+                    "label": "Catalog",
+                    "description": "Clean product-focused shot used for e-commerce, catalog pages, marketplaces, and product evaluation."
+                },
+                {
+                    "value": "LIFESTYLE",
+                    "label": "Lifestyle",
+                    "description": "Contextual shot where environment, movement, or scene contributes to the product presentation."
+                }
+            ]
+        },
+        "bodyCoverage": {
+            "description": "Defines how much of the model's body should be visible in the frame.",
+            "type": "enum",
+            "values": [
+                {
+                    "value": "full_body",
+                    "label": "Full Body",
+                    "description": "Model is visible from head to toe, including footwear."
+                },
+                {
+                    "value": "head_to_knee",
+                    "label": "Head to Knee",
+                    "description": "Model is visible from head to approximately the knees."
+                },
+                {
+                    "value": "head_to_mid_calf",
+                    "label": "Head to Mid Calf",
+                    "description": "Model is visible from head to mid-calf. Useful for dresses, coats, and longer silhouettes."
+                },
+                {
+                    "value": "head_to_ankle",
+                    "label": "Head to Ankle",
+                    "description": "Model is visible from head to ankle, usually excluding or partially excluding footwear."
+                },
+                {
+                    "value": "three_quarter_body",
+                    "label": "Three Quarter Body",
+                    "description": "Most of the body is visible, but the lower legs or feet may be cropped depending on intent."
+                },
+                {
+                    "value": "upper_half",
+                    "label": "Upper Half",
+                    "description": "Model is visible from head or neck to waist, hips, or upper thigh depending on crop."
+                },
+                {
+                    "value": "lower_half",
+                    "label": "Lower Half",
+                    "description": "Model is visible from waist or hips down to feet or shoes."
+                },
+                {
+                    "value": "torso_only",
+                    "label": "Torso Only",
+                    "description": "Frame focuses on torso, chest, waist, sleeves, neckline, and upper garment details."
+                },
+                {
+                    "value": "waist_up",
+                    "label": "Waist Up",
+                    "description": "Model is visible from head to waist."
+                },
+                {
+                    "value": "chest_up",
+                    "label": "Chest Up",
+                    "description": "Model is visible from chest to head. Useful for neckline, collar, jewelry, and face styling."
+                },
+                {
+                    "value": "shoulder_up",
+                    "label": "Shoulder Up",
+                    "description": "Model is visible from shoulders to head. Mostly used for beauty, face, neckline, or accessory shots."
+                },
+                {
+                    "value": "neckline_focus",
+                    "label": "Neckline Focus",
+                    "description": "Shot focuses on the neckline, collar, upper chest, and related accessories."
+                },
+                {
+                    "value": "sleeve_focus",
+                    "label": "Sleeve Focus",
+                    "description": "Shot focuses on sleeve shape, length, cuffs, construction, or fabric behavior."
+                },
+                {
+                    "value": "waist_focus",
+                    "label": "Waist Focus",
+                    "description": "Shot focuses on waistline, waistband, belt, tuck, crop length, or garment transition."
+                },
+                {
+                    "value": "hip_focus",
+                    "label": "Hip Focus",
+                    "description": "Shot focuses on hip fit, pockets, drape, garment fall, or lower torso details."
+                },
+                {
+                    "value": "leg_focus",
+                    "label": "Leg Focus",
+                    "description": "Shot focuses on legs, trouser fit, skirt fall, shorts, slit, or lower garment shape."
+                },
+                {
+                    "value": "footwear_focus",
+                    "label": "Footwear Focus",
+                    "description": "Shot focuses on shoes, boots, sandals, socks, trouser break, or hem-footwear relationship."
+                },
+                {
+                    "value": "detail_only",
+                    "label": "Detail Only",
+                    "description": "Frame captures only a specific detail, not a meaningful body region."
+                },
+                {
+                    "value": "accessory_only",
+                    "label": "Accessory Only",
+                    "description": "Frame captures an accessory as the main subject."
+                }
+            ]
+        },
+        "viewDirection": {
+            "description": "Defines the model/product orientation relative to the camera.",
+            "type": "enum",
+            "values": [
+                {
+                    "value": "front",
+                    "label": "Front",
+                    "description": "Model faces directly toward the camera. Front of garment is visible."
+                },
+                {
+                    "value": "back",
+                    "label": "Back",
+                    "description": "Model faces away from the camera. Back of garment is visible."
+                },
+                {
+                    "value": "left_side",
+                    "label": "Left Side",
+                    "description": "Model is turned so the left side of the body or garment is visible."
+                },
+                {
+                    "value": "right_side",
+                    "label": "Right Side",
+                    "description": "Model is turned so the right side of the body or garment is visible."
+                },
+                {
+                    "value": "side",
+                    "label": "Side",
+                    "description": "Generic side-facing shot when left or right side does not need to be specified."
+                },
+                {
+                    "value": "front_left_three_quarter",
+                    "label": "Front Left Three Quarter",
+                    "description": "Model is mostly front-facing but turned slightly toward the left, showing front and one side."
+                },
+                {
+                    "value": "front_right_three_quarter",
+                    "label": "Front Right Three Quarter",
+                    "description": "Model is mostly front-facing but turned slightly toward the right, showing front and one side."
+                },
+                {
+                    "value": "front_three_quarter",
+                    "label": "Front Three Quarter",
+                    "description": "Generic three-quarter front view when left/right direction is not important."
+                },
+                {
+                    "value": "back_left_three_quarter",
+                    "label": "Back Left Three Quarter",
+                    "description": "Model is mostly back-facing but angled to show part of the side."
+                },
+                {
+                    "value": "back_right_three_quarter",
+                    "label": "Back Right Three Quarter",
+                    "description": "Model is mostly back-facing but angled to show part of the side."
+                },
+                {
+                    "value": "back_three_quarter",
+                    "label": "Back Three Quarter",
+                    "description": "Generic three-quarter back view when left/right direction is not important."
+                },
+                {
+                    "value": "over_the_shoulder_front",
+                    "label": "Over Shoulder Toward Camera",
+                    "description": "Body may face away or sideways while the face turns toward the camera."
+                },
+                {
+                    "value": "profile",
+                    "label": "Profile",
+                    "description": "Clean side profile emphasizing silhouette, posture, garment fall, and side construction."
+                },
+                {
+                    "value": "angled",
+                    "label": "Angled",
+                    "description": "Model is intentionally angled but does not map cleanly to a strict side or three-quarter view."
+                },
+                {
+                    "value": "detail_view",
+                    "label": "Detail View",
+                    "description": "View direction is determined by the garment feature being shown rather than full-body orientation."
+                },
+                {
+                    "value": "not_applicable",
+                    "label": "Not Applicable",
+                    "description": "Used when the shot does not involve model orientation, such as flat product/accessory detail shots."
+                }
+            ]
+        },
+        "orientation": {
+            "description": "Defines the output frame orientation or composition format.",
+            "type": "enum",
+            "values": [
+                {
+                    "value": "portrait",
+                    "label": "Portrait",
+                    "description": "Vertical frame. Most common for full-body fashion images."
+                },
+                {
+                    "value": "landscape",
+                    "label": "Landscape",
+                    "description": "Horizontal frame. Useful for campaign, banner, editorial, or multi-subject shots."
+                },
+                {
+                    "value": "square",
+                    "label": "Square",
+                    "description": "Equal width and height. Useful for marketplaces, social grids, and generic product presentation."
+                },
+                {
+                    "value": "vertical_close_crop",
+                    "label": "Vertical Close Crop",
+                    "description": "Vertical frame with tighter crop. Useful for upper-body, detail, or garment-zone shots."
+                },
+                {
+                    "value": "horizontal_close_crop",
+                    "label": "Horizontal Close Crop",
+                    "description": "Horizontal frame with tighter crop. Useful for detail spreads or styling compositions."
+                },
+                {
+                    "value": "freeform",
+                    "label": "Freeform",
+                    "description": "No strict orientation requirement. Use sparingly."
+                }
+            ]
+        },
+        "shotPurpose": {
+            "description": "Defines the primary commercial or production intent of the shot.",
+            "type": "enum",
+            "values": [
+                {
+                    "value": "complete_outfit_overview",
+                    "label": "Complete Outfit Overview",
+                    "description": "Shows the full outfit clearly so buyers can assess the complete look."
+                },
+                {
+                    "value": "primary_catalog_image",
+                    "label": "Primary Catalog Image",
+                    "description": "Main clean product image for catalog, marketplace, or PDP usage."
+                },
+                {
+                    "value": "hero_image",
+                    "label": "Hero Image",
+                    "description": "Main visual image for lookbook, campaign, landing page, or product story."
+                },
+                {
+                    "value": "front_product_view",
+                    "label": "Front Product View",
+                    "description": "Shows the front design, fit, neckline, closure, silhouette, and styling."
+                },
+                {
+                    "value": "back_product_view",
+                    "label": "Back Product View",
+                    "description": "Shows back design, rear fit, back closure, straps, seams, or back silhouette."
+                },
+                {
+                    "value": "side_silhouette_view",
+                    "label": "Side Silhouette View",
+                    "description": "Shows side profile, garment fall, body contour, layering depth, and side construction."
+                },
+                {
+                    "value": "upper_garment_focus",
+                    "label": "Upper Garment Focus",
+                    "description": "Highlights tops, shirts, blouses, jackets, sweaters, neckline, sleeves, and torso fit."
+                },
+                {
+                    "value": "lower_garment_focus",
+                    "label": "Lower Garment Focus",
+                    "description": "Highlights trousers, jeans, skirts, shorts, hems, waistbands, leg shape, and footwear relationship."
+                },
+                {
+                    "value": "fit_and_silhouette_evaluation",
+                    "label": "Fit and Silhouette Evaluation",
+                    "description": "Helps evaluate garment fit, proportions, drape, and overall silhouette."
+                },
+                {
+                    "value": "layering_evaluation",
+                    "label": "Layering Evaluation",
+                    "description": "Shows how multiple garments work together, including overlaps, lengths, and styling hierarchy."
+                },
+                {
+                    "value": "styling_reference",
+                    "label": "Styling Reference",
+                    "description": "Shows how the outfit is styled, accessorized, and presented."
+                },
+                {
+                    "value": "pose_reference",
+                    "label": "Pose Reference",
+                    "description": "Captures a pose standard that can be reused for consistent production."
+                },
+                {
+                    "value": "garment_detail_documentation",
+                    "label": "Garment Detail Documentation",
+                    "description": "Documents specific details like fabric texture, trims, closures, pockets, seams, or embellishments."
+                },
+                {
+                    "value": "fabric_texture_visibility",
+                    "label": "Fabric Texture Visibility",
+                    "description": "Highlights material, surface texture, weave, transparency, shine, print, or fabric behavior."
+                },
+                {
+                    "value": "construction_detail_visibility",
+                    "label": "Construction Detail Visibility",
+                    "description": "Highlights garment construction such as seams, pleats, darts, panels, buttons, zips, cuffs, or collars."
+                },
+                {
+                    "value": "accessory_visibility",
+                    "label": "Accessory Visibility",
+                    "description": "Ensures accessories such as footwear, bags, belts, jewelry, hats, or eyewear are visible."
+                },
+                {
+                    "value": "footwear_visibility",
+                    "label": "Footwear Visibility",
+                    "description": "Ensures shoes, boots, sandals, socks, and lower hem interaction are visible."
+                },
+                {
+                    "value": "campaign_mood",
+                    "label": "Campaign Mood",
+                    "description": "Prioritizes brand mood, aspiration, editorial styling, and visual storytelling."
+                },
+                {
+                    "value": "lookbook_storytelling",
+                    "label": "Lookbook Storytelling",
+                    "description": "Shows the look as part of a styled fashion story rather than pure product documentation."
+                },
+                {
+                    "value": "ecommerce_product_evaluation",
+                    "label": "E-commerce Product Evaluation",
+                    "description": "Helps shoppers or buyers evaluate product shape, fit, styling, and usability."
+                },
+                {
+                    "value": "marketplace_compliance",
+                    "label": "Marketplace Compliance",
+                    "description": "Ensures image follows marketplace-like standards: clean, centered, visible product, minimal distraction."
+                },
+                {
+                    "value": "qc_validation",
+                    "label": "QC Validation",
+                    "description": "Used to validate whether the generated image satisfies a required shot standard."
+                }
+            ]
+        }
+    }
+}

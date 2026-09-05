@@ -1,0 +1,89 @@
+### Create client
+POST http://localhost:7015/api/v1/client HTTP/1.1
+Content-Type: application/json
+
+{
+  "code": "NEWCLIENT",
+  "displayName": "New Client"
+}
+
+### Bulk create clients (idempotent — re-send safe)
+POST http://localhost:7015/api/v1/client/bulk HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "clients": [
+    { "code": "JASCLIENT1", "displayName": "Jasleen Client 1", "enableFXGTOM": true },
+    { "code": "JASCLIENT2", "displayName": "Jasleen Client 2", "enableFXGTOM": false }
+  ]
+}
+
+### Toggle enableFXGTOM for a client
+PATCH http://localhost:7015/api/v1/client/BZT/enableFXGTOM HTTP/1.1
+Content-Type: application/json
+x-api-key: {{PARTNER_API_KEY}}
+
+{
+  "enableFXGTOM": false
+}
+
+### Error: duplicate client code
+POST http://localhost:7015/api/v1/client HTTP/1.1
+Content-Type: application/json
+
+{
+  "code": "BZT"
+}
+
+### Error: missing code
+POST http://localhost:7015/api/v1/client HTTP/1.1
+Content-Type: application/json
+
+{
+  "displayName": "No code"
+}
+
+### List all clients (no pagination)
+GET http://localhost:7015/api/v1/client/all HTTP/1.1
+
+### List clients (paginated)
+GET http://localhost:7015/api/v1/client?pageNum=1&pageSize=20 HTTP/1.1
+
+### Search clients by code
+GET http://localhost:7015/api/v1/client?q=BZ&pageNum=1&pageSize=20 HTTP/1.1
+
+### Get a client by code
+GET http://localhost:7015/api/v1/client/BZT HTTP/1.1
+
+### Update csvConfig for a client
+PATCH http://localhost:7015/api/v1/client/BZT/csvConfig HTTP/1.1
+Content-Type: application/json
+
+{
+  "csvConfig": {
+    "columns": {
+      "FX_Category": {
+        "required": true
+      },
+      "FX_Gender": {
+        "required": true,
+        "allowedValues": [
+          "Male",
+          "Female",
+          "Unisex"
+        ]
+      },
+      "barcode": {
+        "sources": [
+          "barcode",
+          "Item EAN Code"
+        ],
+        "required": true
+      }
+    }
+  }
+}
+
+### Error: client not found
+GET http://localhost:7015/api/v1/client/UNKNOWN HTTP/1.1

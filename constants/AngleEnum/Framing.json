@@ -1,0 +1,517 @@
+{
+    "framingFieldEnums": {
+        "type": {
+            "description": "Defines the broad crop/framing category of the shot.",
+            "values": [
+                "full_body",
+                "three_quarter_body",
+                "upper_body",
+                "upper_half",
+                "lower_body",
+                "lower_half",
+                "mid_body",
+                "torso",
+                "waist_up",
+                "chest_up",
+                "shoulder_up",
+                "head_to_knee",
+                "head_to_mid_thigh",
+                "head_to_waist",
+                "neck_to_waist",
+                "waist_to_feet",
+                "waist_to_knee",
+                "hip_to_feet",
+                "knee_to_feet",
+                "detail_closeup",
+                "garment_detail",
+                "accessory_detail",
+                "footwear_detail",
+                "flat_lay",
+                "hanger_shot",
+                "ghost_mannequin",
+                "product_only"
+            ]
+        },
+        "coverage": {
+            "description": "Defines the visible body/product range inside the frame.",
+            "values": [
+                "top_of_head_to_feet",
+                "top_of_head_to_shoes",
+                "above_head_to_below_shoes",
+                "head_to_ankles",
+                "head_to_knees",
+                "head_to_mid_thigh",
+                "head_to_hips",
+                "head_to_waist",
+                "head_to_chest",
+                "shoulders_to_waist",
+                "shoulders_to_hips",
+                "neck_to_waist",
+                "neck_to_hips",
+                "chest_to_waist",
+                "chest_to_hips",
+                "waist_to_feet",
+                "waist_to_shoes",
+                "waist_to_knees",
+                "hips_to_feet",
+                "hips_to_shoes",
+                "hips_to_knees",
+                "mid_thigh_to_feet",
+                "knees_to_feet",
+                "ankles_to_feet",
+                "garment_only_full",
+                "garment_only_partial",
+                "accessory_only",
+                "footwear_only",
+                "detail_zone_only"
+            ]
+        },
+        "topBoundary": {
+            "description": "Defines the upper crop boundary of the frame.",
+            "values": [
+                "above_head",
+                "top_of_head",
+                "forehead",
+                "eyes",
+                "nose",
+                "mouth",
+                "chin",
+                "neck",
+                "base_of_neck",
+                "shoulders",
+                "upper_chest",
+                "chest",
+                "bust_line",
+                "under_bust",
+                "ribcage",
+                "waist",
+                "high_waist",
+                "natural_waist",
+                "low_waist",
+                "hips",
+                "upper_thigh",
+                "mid_thigh",
+                "knee",
+                "shin",
+                "ankle",
+                "top_of_footwear",
+                "product_top_edge",
+                "detail_zone_top_edge"
+            ]
+        },
+        "bottomBoundary": {
+            "description": "Defines the lower crop boundary of the frame.",
+            "values": [
+                "below_feet",
+                "below_shoes",
+                "feet",
+                "shoes",
+                "ankles",
+                "lower_calf",
+                "mid_calf",
+                "upper_calf",
+                "knees",
+                "above_knees",
+                "mid_thigh",
+                "upper_thigh",
+                "hips",
+                "low_waist",
+                "natural_waist",
+                "high_waist",
+                "ribcage",
+                "under_bust",
+                "bust_line",
+                "chest",
+                "upper_chest",
+                "shoulders",
+                "neck",
+                "chin",
+                "product_bottom_edge",
+                "detail_zone_bottom_edge"
+            ]
+        },
+        "aspectRatio": {
+            "description": "Defines the expected frame aspect ratio.",
+            "values": [
+                "portrait",
+                "landscape",
+                "square",
+                "2:3",
+                "3:4",
+                "4:5",
+                "5:7",
+                "9:16",
+                "16:9",
+                "1:1",
+                "3:2",
+                "4:3",
+                "5:4"
+            ]
+        },
+        "orientation": {
+            "description": "Defines the broad frame orientation.",
+            "values": [
+                "portrait",
+                "landscape",
+                "square"
+            ]
+        },
+        "cropTolerance": {
+            "description": "Defines how strictly crop boundaries must be followed.",
+            "values": [
+                "none",
+                "very_low",
+                "low",
+                "medium",
+                "high",
+                "flexible"
+            ]
+        },
+        "subjectPosition": {
+            "description": "Defines where the subject should sit inside the frame.",
+            "values": [
+                "centered",
+                "slightly_left",
+                "slightly_right",
+                "left_aligned",
+                "right_aligned",
+                "upper_center",
+                "lower_center",
+                "rule_of_thirds_left",
+                "rule_of_thirds_right",
+                "dynamic_off_center",
+                "full_frame_centered",
+                "product_centered",
+                "model_centered"
+            ]
+        },
+        "horizontalAlignment": {
+            "description": "Defines left-right alignment of the subject.",
+            "values": [
+                "center",
+                "left",
+                "right",
+                "slightly_left",
+                "slightly_right",
+                "balanced",
+                "asymmetric"
+            ]
+        },
+        "verticalAlignment": {
+            "description": "Defines top-bottom alignment of the subject.",
+            "values": [
+                "center",
+                "top",
+                "bottom",
+                "slightly_above_center",
+                "slightly_below_center",
+                "full_height_balanced",
+                "headroom_priority",
+                "footroom_priority"
+            ]
+        },
+        "requiredMargins": {
+            "description": "Defines breathing room around the subject.",
+            "schema": {
+                "top": [
+                    "none",
+                    "minimal",
+                    "small",
+                    "medium",
+                    "large",
+                    "small_buffer_above_head",
+                    "medium_buffer_above_head",
+                    "large_buffer_above_head"
+                ],
+                "bottom": [
+                    "none",
+                    "minimal",
+                    "small",
+                    "medium",
+                    "large",
+                    "small_buffer_below_feet",
+                    "small_buffer_below_shoes",
+                    "medium_buffer_below_feet",
+                    "medium_buffer_below_shoes",
+                    "large_buffer_below_feet",
+                    "large_buffer_below_shoes"
+                ],
+                "leftRight": [
+                    "none",
+                    "minimal",
+                    "small",
+                    "medium",
+                    "large",
+                    "equal_spacing",
+                    "balanced",
+                    "asymmetric_allowed",
+                    "tight",
+                    "wide"
+                ]
+            }
+        },
+        "headroom": {
+            "description": "Defines space above the head.",
+            "values": [
+                "none",
+                "minimal",
+                "small",
+                "medium",
+                "large",
+                "too_tight_not_allowed",
+                "flexible"
+            ]
+        },
+        "footroom": {
+            "description": "Defines space below feet or shoes.",
+            "values": [
+                "none",
+                "minimal",
+                "small",
+                "medium",
+                "large",
+                "too_tight_not_allowed",
+                "flexible",
+                "not_applicable"
+            ]
+        },
+        "sideRoom": {
+            "description": "Defines horizontal space around the model/product.",
+            "values": [
+                "none",
+                "minimal",
+                "small",
+                "medium",
+                "large",
+                "equal_spacing",
+                "balanced",
+                "asymmetric_allowed",
+                "tight",
+                "wide"
+            ]
+        },
+        "mustInclude": {
+            "description": "Elements that must be inside the frame.",
+            "values": [
+                "head",
+                "face",
+                "hair",
+                "neck",
+                "neckline",
+                "shoulders",
+                "chest",
+                "torso",
+                "waist",
+                "hips",
+                "arms",
+                "hands",
+                "legs",
+                "knees",
+                "ankles",
+                "feet",
+                "footwear",
+                "complete_outfit",
+                "upper_garment",
+                "lower_garment",
+                "outerwear",
+                "layered_garments",
+                "front_of_garments",
+                "back_of_garments",
+                "side_profile",
+                "hemline",
+                "waistband",
+                "sleeves",
+                "cuffs",
+                "collar",
+                "lapels",
+                "pockets",
+                "buttons",
+                "zipper",
+                "print_or_pattern",
+                "logo",
+                "accessory",
+                "handheld_prop",
+                "product_full_shape",
+                "detail_zone"
+            ]
+        },
+        "mustNotCrop": {
+            "description": "Elements that must not be cut by the frame edge.",
+            "values": [
+                "head",
+                "top_of_head",
+                "face",
+                "chin",
+                "neckline",
+                "shoulders",
+                "hands",
+                "fingers",
+                "arms",
+                "elbows",
+                "waist",
+                "hips",
+                "hemline",
+                "knees",
+                "ankles",
+                "feet",
+                "toes",
+                "footwear",
+                "shoe_tip",
+                "heel",
+                "garment_edge",
+                "sleeve_edge",
+                "cuff",
+                "collar",
+                "product_top_edge",
+                "product_bottom_edge",
+                "accessory",
+                "logo",
+                "detail_zone"
+            ]
+        },
+        "allowedCropping": {
+            "description": "Elements that may be cropped depending on shot type.",
+            "values": [
+                "top_of_head",
+                "hair",
+                "forehead",
+                "face",
+                "chin",
+                "neck",
+                "shoulders",
+                "arms",
+                "hands",
+                "torso",
+                "waist",
+                "hips",
+                "upper_legs",
+                "knees",
+                "lower_legs",
+                "ankles",
+                "feet",
+                "footwear",
+                "background_only",
+                "none"
+            ]
+        },
+        "forbiddenCropping": {
+            "description": "Cropping patterns that invalidate the shot.",
+            "values": [
+                "head_cropped",
+                "face_cropped",
+                "chin_cropped",
+                "shoulders_cropped",
+                "hands_cropped",
+                "garment_edge_cropped",
+                "hemline_cropped",
+                "waistband_cropped",
+                "knees_cropped",
+                "ankles_cropped",
+                "feet_cropped",
+                "footwear_cropped",
+                "product_cropped",
+                "detail_zone_cropped",
+                "crop_through_primary_product",
+                "crop_through_key_design_feature"
+            ]
+        },
+        "cameraDistance": {
+            "description": "Defines camera distance implied by the frame.",
+            "values": [
+                "extreme_closeup",
+                "closeup",
+                "medium_closeup",
+                "medium_shot",
+                "medium_full_shot",
+                "full_body_distance",
+                "wide_full_body_distance",
+                "product_detail_distance",
+                "catalog_standard_distance"
+            ]
+        },
+        "scaleInFrame": {
+            "description": "Defines how much of the frame the subject occupies.",
+            "values": [
+                "tight",
+                "standard",
+                "comfortable",
+                "loose",
+                "wide",
+                "edge_to_edge_not_allowed",
+                "fills_most_of_frame",
+                "moderate_frame_presence",
+                "small_in_frame"
+            ]
+        },
+        "framePaddingPolicy": {
+            "description": "Defines general padding behavior around the subject.",
+            "values": [
+                "strict_padding_required",
+                "small_breathing_room_required",
+                "catalog_standard_padding",
+                "editorial_loose_padding",
+                "tight_crop_allowed",
+                "edge_to_edge_allowed",
+                "edge_to_edge_not_allowed"
+            ]
+        },
+        "bodyCutPolicy": {
+            "description": "Defines whether the frame may cut through body joints or garment zones.",
+            "values": [
+                "no_body_cut_allowed",
+                "no_joint_cut_allowed",
+                "joint_cut_allowed",
+                "crop_only_at_safe_boundaries",
+                "crop_at_neck_allowed",
+                "crop_at_chest_allowed",
+                "crop_at_waist_allowed",
+                "crop_at_hips_allowed",
+                "crop_at_thigh_allowed",
+                "crop_at_knee_allowed",
+                "crop_at_ankle_allowed",
+                "not_applicable"
+            ]
+        },
+        "safeCropBoundaries": {
+            "description": "Preferred crop boundaries that avoid awkward body/product cuts.",
+            "values": [
+                "above_head",
+                "below_shoes",
+                "below_feet",
+                "mid_neck",
+                "upper_chest",
+                "mid_chest",
+                "natural_waist",
+                "low_waist",
+                "upper_thigh",
+                "mid_thigh",
+                "below_knee",
+                "mid_calf",
+                "above_ankle",
+                "product_edge",
+                "detail_zone_edge"
+            ]
+        },
+        "invalidCropBoundaries": {
+            "description": "Crop boundaries that usually create bad fashion framing.",
+            "values": [
+                "through_top_of_head",
+                "through_eyes",
+                "through_mouth",
+                "through_chin",
+                "through_shoulder_joint",
+                "through_elbow_joint",
+                "through_wrist_joint",
+                "through_fingers",
+                "through_bust",
+                "through_garment_logo",
+                "through_waistband",
+                "through_hemline",
+                "through_knee_joint",
+                "through_ankle_joint",
+                "through_shoe",
+                "through_product_detail"
+            ]
+        }
+    }
+}
