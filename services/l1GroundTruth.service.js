@@ -19,6 +19,19 @@ const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 // needs it, to keep it easy to find if/when a second client is added.
 const DEFAULT_CLIENT = 'BZT';
 
+// A `concernedFile`/target `fileName` value of "preamble:<type>" identifies
+// a defect in one of the 5 hardcoded preamble constants in the rendering
+// pipeline's code (gender/identity/hair/hero/jewellery) -- never a
+// ground-truth document, since none backs a preamble. See rca_llm_prompt.md
+// and generic_feedback_llm_prompt.md's "how a prompt is actually composed"
+// sections for the full explanation.
+const PREAMBLE_TYPES = Object.freeze(['gender', 'identity', 'hair', 'hero', 'jewellery']);
+const isPreambleConcern = (concernedFile) => String(concernedFile ?? '').startsWith('preamble:');
+const parsePreambleType = (concernedFile) => {
+    const type = String(concernedFile ?? '').slice('preamble:'.length);
+    return PREAMBLE_TYPES.includes(type) ? type : type || null;
+};
+
 // Seed definitions for client BZT -- the 4 gendered core files + 4
 // ungendered angle files the l1-feedback skill already references.
 const SEED_DOCS = [
@@ -185,13 +198,20 @@ const matchAngleDocKey = (angleName) =>
 /** Resolve which L1GroundTruthDocument a variant's RCA `concernedFile`
  * points at, given the SKU's gender. `concernedFile` values follow the
  * skill's convention: "stylingMd (...)" / "posingMd (...)" / an angle
- * definition URL/name, or "prompt-composition" (never resolvable here). */
+ * definition URL/name, "prompt-composition", or "preamble:<type>" (never
+ * resolvable here -- none of these back a ground-truth document). */
 const resolveDocumentForConcernedFile = async ({ client, gender, concernedFile, angleName }) => {
     const normalized = String(concernedFile ?? '').toLowerCase();
     let docKey = null;
     let docGender = gender;
 
-    if (normalized.startsWith('stylingmd')) {
+    if (isPreambleConcern(concernedFile)) {
+        // Must be checked before the angle-name fallback below -- a
+        // preamble concernedFile doesn't name an angle at all, but the
+        // fallback would otherwise match on the variant's own angleName
+        // regardless of what concernedFile actually says.
+        return null;
+    } else if (normalized.startsWith('stylingmd')) {
         docKey = 'styling';
     } else if (normalized.startsWith('posingmd')) {
         docKey = 'posing';
@@ -387,6 +407,9 @@ const resetToCleanBaseline = async () => {
 
 module.exports = {
     DEFAULT_CLIENT,
+    PREAMBLE_TYPES,
+    isPreambleConcern,
+    parsePreambleType,
     seedGroundTruthDocuments,
     listGroundTruthDocuments,
     getGroundTruthDocumentById,

@@ -1,11 +1,19 @@
 const fs = require('fs');
 const path = require('path');
+const AdmZip = require('adm-zip');
+const mime = require('mime-types');
 const L1GenericFeedbackRequestModel = require('../models/L1GenericFeedbackRequest.model');
 const L1GroundTruthDocumentModel = require('../models/L1GroundTruthDocument.model');
 const Api400Error = require('../errors/api400Error');
 const { generate } = require('./llm/llm.service');
 const { applyEditToDocumentContent } = require('./l1HitlReview.service');
-const { DEFAULT_CLIENT, getAllLiveContents, getOrCreateBatchStagingVersion } = require('./l1GroundTruth.service');
+const {
+    DEFAULT_CLIENT,
+    getAllLiveContents,
+    getOrCreateBatchStagingVersion,
+    isPreambleConcern,
+    parsePreambleType,
+} = require('./l1GroundTruth.service');
 
 const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const PROMPT_PATH = path.join(SOURCE_ROOT, 'generic_feedback_llm_prompt.md');
@@ -69,7 +77,15 @@ const runDiagnosis = async (requestId) => {
             label: `IMAGE ${index + 1}`,
         }));
 
-        const userContent = JSON.stringify({ feedbackText: request.text, groundTruthContent }, null, 2);
+        const userContent = JSON.stringify(
+            {
+                feedbackText: request.text,
+                ...(request.realPrompt ? { realPrompt: request.realPrompt } : {}),
+                groundTruthContent,
+            },
+            null,
+            2
+        );
 
         const response = await generate({
             provider: PROVIDER,
@@ -86,10 +102,30 @@ const runDiagnosis = async (requestId) => {
 
         const targets = [];
         for (const t of rawTargets) {
-            const gt = groundTruthContent[t?.fileName];
-            if (!gt || !t?.candidates?.candidate_0 || !t?.candidates?.candidate_1) {
+            if (!t?.candidates?.candidate_0 || !t?.candidates?.candidate_1) {
                 request.errors.push({
-                    message: `LLM proposed an unrecognized/incomplete target: ${JSON.stringify(t?.fileName ?? t)}`,
+                    message: `LLM proposed a target with incomplete candidates: ${JSON.stringify(t?.fileName ?? t)}`,
+                });
+                continue;
+            }
+
+            if (isPreambleConcern(t.fileName)) {
+                targets.push({
+                    documentId: null,
+                    fileName: t.fileName,
+                    section: null,
+                    candidates: t.candidates,
+                    decision: { status: 'pending' },
+                    isPreambleSuggestion: true,
+                    preambleType: parsePreambleType(t.fileName),
+                });
+                continue;
+            }
+
+            const gt = groundTruthContent[t?.fileName];
+            if (!gt) {
+                request.errors.push({
+                    message: `LLM proposed an unrecognized target: ${JSON.stringify(t?.fileName ?? t)}`,
                 });
                 continue;
             }
@@ -116,20 +152,17 @@ const runDiagnosis = async (requestId) => {
 /** `images` arrives as [{ data: '<base64>', mimeType }] -- the frontend
  * reads each attached/pasted file as base64 client-side and sends it
  * straight in the request body, no separate upload step. */
-const submitGenericFeedback = async ({ text, images, createdBy }) => {
-    if (!text || !text.trim()) {
-        throw new Api400Error('text is required');
-    }
-    const storedImages = (images || []).map((img) => ({
-        data: Buffer.from(img.data, 'base64'),
-        mimeType: img.mimeType,
-    }));
+/** Shared by submitGenericFeedback and submitZipFeedback: create the
+ * record, kick off diagnosis in the background (same fire-and-poll pattern
+ * as l1FeedbackBatch.service), and return the freshly-created record. */
+const createAndDiagnose = async ({ text, storedImages, realPrompt, createdBy, submittedEventType }) => {
     const request = await L1GenericFeedbackRequestModel.create({
         text: text.trim(),
         images: storedImages,
+        realPrompt: realPrompt ?? null,
         status: 'processing',
         createdBy,
-        events: [{ type: 'generic_feedback_submitted', meta: { imageCount: storedImages.length } }],
+        events: [{ type: submittedEventType, meta: { imageCount: storedImages.length, hasRealPrompt: Boolean(realPrompt) } }],
     });
 
     runDiagnosis(request._id).catch(async (err) => {
@@ -140,6 +173,79 @@ const submitGenericFeedback = async ({ text, images, createdBy }) => {
     });
 
     return getGenericFeedbackRequestById(request._id);
+};
+
+/** `images` arrives as [{ data: '<base64>', mimeType }] -- the frontend
+ * reads each attached/pasted file as base64 client-side and sends it
+ * straight in the request body, no separate upload step. */
+const submitGenericFeedback = async ({ text, images, createdBy }) => {
+    if (!text || !text.trim()) {
+        throw new Api400Error('text is required');
+    }
+    const storedImages = (images || []).map((img) => ({
+        data: Buffer.from(img.data, 'base64'),
+        mimeType: img.mimeType,
+    }));
+    return createAndDiagnose({ text, storedImages, createdBy, submittedEventType: 'generic_feedback_submitted' });
+};
+
+/** A generation bundle (e.g. a vertex_*.zip): metadata.json (with the
+ * exact, real prompt actually sent to the image model, plus the list of
+ * output/reference files) + outputs/*.jpg + references/*.jpg. Only the
+ * output render(s) are persisted (the thing actually being diagnosed);
+ * reference images are generation context, not diagnostic evidence, and
+ * are discarded after extraction to keep this simple and Mongo-doc-size
+ * sane. */
+const submitZipFeedback = async ({ zipBuffer, text, createdBy }) => {
+    if (!text || !text.trim()) {
+        throw new Api400Error('text is required');
+    }
+    if (!zipBuffer || !zipBuffer.length) {
+        throw new Api400Error('bundle file is required');
+    }
+
+    let zip;
+    try {
+        zip = new AdmZip(zipBuffer);
+    } catch (err) {
+        throw new Api400Error(`bundle is not a valid zip file: ${err.message}`);
+    }
+
+    const metadataEntry = zip.getEntry('metadata.json');
+    if (!metadataEntry) {
+        throw new Api400Error('bundle is missing metadata.json');
+    }
+    let metadata;
+    try {
+        metadata = JSON.parse(zip.readAsText(metadataEntry));
+    } catch (err) {
+        throw new Api400Error(`metadata.json is not valid JSON: ${err.message}`);
+    }
+
+    const outputFiles = Array.isArray(metadata.outputs) ? metadata.outputs : [];
+    if (!outputFiles.length) {
+        throw new Api400Error('metadata.json has no entries under "outputs"');
+    }
+
+    const storedImages = [];
+    for (const output of outputFiles) {
+        const entry = zip.getEntry(output.file);
+        if (!entry) {
+            throw new Api400Error(`bundle is missing the output file referenced in metadata.json: ${output.file}`);
+        }
+        storedImages.push({
+            data: entry.getData(),
+            mimeType: mime.lookup(output.file) || 'image/jpeg',
+        });
+    }
+
+    return createAndDiagnose({
+        text,
+        storedImages,
+        realPrompt: metadata.prompt ?? null,
+        createdBy,
+        submittedEventType: 'generic_feedback_zip_submitted',
+    });
 };
 
 const listGenericFeedbackRequests = async () => {
@@ -184,6 +290,34 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
     }
     if (decision === 'custom' && !customInstruction?.trim()) {
         throw new Api400Error('customInstruction is required when decision is "custom"');
+    }
+
+    if (target.isPreambleSuggestion) {
+        // No ground-truth document backs a preamble -- record the decision,
+        // no L1GroundTruthVersion touched. See l1HitlReview.service's
+        // equivalent branch for the SKU-based flow.
+        const suggestedChange = decision === 'custom' ? customInstruction : target.candidates[decision].detail;
+        target.decision = {
+            status: 'approved',
+            candidateId: decision,
+            customInstruction: decision === 'custom' ? customInstruction : null,
+            comment,
+            decidedBy,
+            decidedAt: new Date(),
+        };
+        request.events.push({
+            type: 'generic_preamble_suggestion_decided',
+            meta: { targetIndex, decision, preambleType: target.preambleType, suggestedChange },
+        });
+        await request.save();
+
+        return {
+            status: 'preambleSuggestionRecorded',
+            requestId,
+            targetIndex,
+            preambleType: target.preambleType,
+            suggestedChange,
+        };
     }
 
     const groundTruthDoc = await L1GroundTruthDocumentModel.findById(target.documentId);
@@ -238,6 +372,7 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
 
 module.exports = {
     submitGenericFeedback,
+    submitZipFeedback,
     listGenericFeedbackRequests,
     getGenericFeedbackRequestById,
     submitGenericFeedbackDecision,

@@ -13,6 +13,8 @@ const {
     DEFAULT_CLIENT,
     resolveDocumentForConcernedFile,
     getOrCreateBatchStagingVersion,
+    isPreambleConcern,
+    parsePreambleType,
 } = require('./l1GroundTruth.service');
 
 const EDIT_APPLY_SYSTEM_PROMPT = `You apply one approved editorial fix to a ground-truth guidance document.
@@ -155,6 +157,61 @@ const submitDecision = async ({ skuId, clientAngleId, variantIndex, decision, cu
     }
     if (decision === 'custom' && !customInstruction?.trim()) {
         throw new Api400Error('customInstruction is required when decision is "custom"');
+    }
+
+    if (isPreambleConcern(iteration.concernedFile)) {
+        // No ground-truth document backs a preamble -- record the decision
+        // directly on the trace (still closes the issue out of the open
+        // queue, same as a resolved content fix) without touching any
+        // L1GroundTruthVersion. The suggestion is for an engineer to act on
+        // in the rendering pipeline's own code, not something this system
+        // can apply itself.
+        const preambleType = parsePreambleType(iteration.concernedFile);
+        const suggestedChange =
+            decision === 'custom' ? customInstruction : iteration.candidates[decision].detail;
+
+        // Same owner-walk as the content-fix path below -- at depth > 0 the
+        // relevant "current" output lives on a prior approvedFix, not on
+        // the variant itself. No new render happens for a suggestion, so
+        // the existing output carries forward unchanged.
+        let owner = variant;
+        for (let d = 0; d < depth; d += 1) {
+            owner = owner.feedback[`RCA_Iteration_${d}`].approvedFix;
+        }
+
+        iteration.approvedFix = {
+            isPreambleSuggestion: true,
+            preambleType,
+            candidateId: decision,
+            suggestedChange,
+            variantIndex,
+            prompt: owner.prompt ?? null,
+            output: owner.output ?? null,
+            image_description: null,
+            rework: 'none',
+            feedback: nullFeedback(),
+        };
+
+        trace.markModified('data');
+        await trace.save();
+        await logBatchEvent(trace.lastBatchId, 'preamble_suggestion_decided', {
+            skuId,
+            clientAngleId,
+            variantIndex,
+            depth,
+            preambleType,
+            decision,
+        });
+
+        return {
+            status: 'preambleSuggestionRecorded',
+            skuId,
+            clientAngleId,
+            variantIndex,
+            depth,
+            preambleType,
+            suggestedChange,
+        };
     }
 
     const groundTruthDoc = await resolveDocumentForConcernedFile({

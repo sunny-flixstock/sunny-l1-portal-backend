@@ -23,6 +23,29 @@ The image faithfully matches the prompt it was generated from. Do not
 question whether the render is faithful — the prompt itself is what's wrong,
 not the rendering. Never inspect or ask for image content.
 
+# How a prompt is actually composed (know this before diagnosing)
+
+A final prompt is built in two stages, and knowing which stage produced a
+given phrase changes what "the fix" even means:
+
+- **Stage A (an LLM "writer").** Reads the full raw text of `posing.md`,
+  `styling.md`, and the angle/shot-type definition, plus the assembled
+  outfit's garment data, and writes one fused paragraph. This paragraph is
+  where nearly everything sourced from `stylingMd`/`posingMd`/the angle
+  file ends up.
+- **Stage B (fixed code, not a file).** The actual final prompt is:
+  `gender_preamble + identity_preamble + hair_preamble + hero_preamble +
+  jewellery_preamble + <Stage A's paragraph>`. Every one of those five
+  preambles is a **hardcoded constant in the rendering pipeline's code** —
+  none of them come from `stylingMd`, `posingMd`, or any angle file. A
+  defect in one of them can never be fixed by editing a ground-truth
+  document, because none backs it.
+
+This means `concernedFile` must distinguish a *content* defect (fixable by
+editing `stylingMd`/`posingMd`/the angle file) from a *preamble* defect
+(a code-level issue, reported for a human to act on outside this system —
+see the `concernedFile` values below).
+
 # Task
 
 Work through every variant in this SKU, across every angle. For each variant
@@ -47,22 +70,38 @@ For each variant needing a diagnosis:
 3. Fill in, for that variant's target `RCA_Iteration_<N>`:
    - `inferredError` — what's wrong, grounded in a quoted phrase from `prompt`.
    - `inferredFix` — the goal state: what should be true instead.
-   - `concernedFile` — the one file responsible: `stylingMd`, `posingMd`, the
-     angle definition URL, or `"prompt-composition"` if no source file is at
-     fault and the prompt-writing step itself misapplied correct guidance.
-     **Prefer `stylingMd`/`posingMd` whenever the issue can be solved there.**
-     Only point at the angle definition file when the issue genuinely cannot
-     be solved by editing styling or posing guidance — that should be rare;
-     do not reach for it out of convenience.
+   - `concernedFile` — the one source responsible. One of:
+     - `stylingMd`, `posingMd`, or the angle definition URL — a genuine
+       content defect, fixable by editing that ground-truth document.
+       **Prefer these whenever the issue can be solved there.**
+     - `preamble:gender`, `preamble:identity`, `preamble:hair`,
+       `preamble:hero`, or `preamble:jewellery` — use ONLY when the issue is
+       clearly about the model's apparent gender, identity/face fidelity to
+       the reference, hair fidelity/restyling, hero-garment multi-view
+       presentation, or jewellery isolation — never for a scene/pose/styling
+       description problem, since those are Stage A's job, not a preamble's.
+       These are real, common, correctly-diagnosable issues — do not avoid
+       this bucket out of hesitation, but do not reach for it when the issue
+       is actually a styling/posing/angle content problem either.
+     - `"prompt-composition"` — no source file or preamble is at fault; the
+       writer step itself misapplied otherwise-correct guidance. This should
+       be rare; do not reach for it out of convenience, and never as a
+       substitute for correctly identifying a preamble issue.
    - `concernedLocation` — the specific section/heading inside `concernedFile`.
    - `candidate_0` and `candidate_1` — two genuinely different fixes (different
      from each other, and from anything already tried in a prior iteration
      for that variant), each with:
      - `location` — exact before/after reference inside `concernedLocation`
+       for a content defect; for a `preamble:*` defect, just name the
+       preamble again (there is no in-document location)
      - `action` — `update | add | remove`
-     - `detail` — the precise edit, written out in full
+     - `detail` — for a content defect, the precise document edit, written
+       out in full; for a `preamble:*` defect, the desired code-level
+       behavior change described in plain language (there is no document to
+       edit — this is a suggestion for an engineer to implement)
      - `rationale` — why this reaches `inferredFix`, quoting the exact source
-       line being changed
+       line being changed (content defect) or explaining the reasoning
+       directly (preamble defect — nothing to quote)
      - `conflictCheck` — does this edit contradict any OTHER ground-truth
        file? `{status: conflicting | non-conflicting, details: ...}`
      - `confidence` — `{level: high | medium | low, reachesGoalState: yes | no | partially, reasoning: ...}`

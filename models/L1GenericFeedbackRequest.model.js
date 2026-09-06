@@ -56,7 +56,8 @@ const decisionSchema = new mongoose.Schema(
 
 const targetSchema = new mongoose.Schema(
     {
-        documentId: { type: mongoose.Schema.Types.ObjectId, ref: 'l1GroundTruthDocument', required: true },
+        // null for a preamble:* target -- no ground-truth document backs it.
+        documentId: { type: mongoose.Schema.Types.ObjectId, ref: 'l1GroundTruthDocument', default: null },
         fileName: { type: String, required: true },
         section: { type: String, default: null },
         candidates: {
@@ -64,6 +65,8 @@ const targetSchema = new mongoose.Schema(
             candidate_1: { type: candidateSchema, required: true },
         },
         decision: { type: decisionSchema, default: () => ({}) },
+        isPreambleSuggestion: { type: Boolean, default: false },
+        preambleType: { type: String, default: null },
     },
     { _id: false }
 );
@@ -92,6 +95,12 @@ const L1GenericFeedbackRequestSchema = new mongoose.Schema(
     {
         text: { type: String, required: true, trim: true },
         images: { type: [imageSchema], default: [] },
+        // The exact, real prompt actually sent to the image model -- present
+        // when this feedback came with a full generation bundle (a ZIP
+        // upload with metadata.json), not just a bare pasted image. Lets
+        // diagnosis compare real prompt text against ground truth directly,
+        // the same rigor as the SKU-JSON RCA path.
+        realPrompt: { type: String, default: null },
         status: { type: String, enum: L1_GENERIC_FEEDBACK_STATUSES, default: 'processing' },
         diagnosis: { type: diagnosisSchema, default: () => ({}) },
         events: { type: [eventSchema], default: [] },

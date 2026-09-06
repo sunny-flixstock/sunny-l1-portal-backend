@@ -14,6 +14,25 @@ Content-Type: application/json
   "createdBy": "qa@flixstock.com"
 }
 
+### Submit a generation-bundle ZIP (metadata.json + outputs/*.jpg) -- this
+### is a multipart/form-data request; the VS Code REST Client extension
+### supports this natively, but plain copy-paste of this file into another
+### HTTP client may not render the boundary correctly.
+POST {{baseUrl}}/l1-feedback/generic/zip HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----boundary123
+
+------boundary123
+Content-Disposition: form-data; name="text"
+
+The poses in this bundle look wrong -- check the posing rules.
+------boundary123
+Content-Disposition: form-data; name="bundle"; filename="render.zip"
+Content-Type: application/zip
+
+< ./path/to/vertex_bundle.zip
+------boundary123--
+
 ### List generic feedback requests
 GET {{baseUrl}}/l1-feedback/generic HTTP/1.1
 Authorization: Bearer {{authToken}}
