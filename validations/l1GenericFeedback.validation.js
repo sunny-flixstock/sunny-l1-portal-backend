@@ -8,6 +8,7 @@ const postGenericFeedback = celebrate({
                 Joi.object({
                     data: Joi.string().base64().required(),
                     mimeType: Joi.string().required(),
+                    label: Joi.string().valid('bad', 'good').optional(),
                 })
             )
             .default([]),

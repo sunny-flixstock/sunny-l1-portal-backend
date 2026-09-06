@@ -37,9 +37,29 @@ const withDataUrls = (request) => ({
     ...request,
     images: (request.images || []).map((img) => ({
         mimeType: img.mimeType,
+        label: img.label ?? null,
         url: `data:${img.mimeType};base64,${toBuffer(img.data).toString('base64')}`,
     })),
 });
+
+/** Per-label vision labels ("BAD EXAMPLE 1", "GOOD EXAMPLE 2", plain
+ * "IMAGE 1" for an unlabeled attachment) -- indexed within each label
+ * group separately, not globally, so "BAD EXAMPLE 2" always means the
+ * second bad example specifically. */
+const labelImages = (images) => {
+    const counters = { bad: 0, good: 0, plain: 0 };
+    return images.map((img) => {
+        const kind = img.label === 'bad' ? 'BAD EXAMPLE' : img.label === 'good' ? 'GOOD EXAMPLE' : 'IMAGE';
+        const counterKey = img.label === 'bad' ? 'bad' : img.label === 'good' ? 'good' : 'plain';
+        counters[counterKey] += 1;
+        const suffix = counterKey === 'plain' ? ' (the render being diagnosed)' : '';
+        return {
+            buffer: toBuffer(img.data),
+            mimeType: img.mimeType,
+            label: `${kind} ${counters[counterKey]}${suffix}`,
+        };
+    });
+};
 
 const PROVIDER = process.env.L1_GENERIC_FEEDBACK_PROVIDER || process.env.L1_RCA_PROVIDER || 'anthropic';
 const MODEL = process.env.L1_GENERIC_FEEDBACK_MODEL || process.env.L1_RCA_MODEL || 'claude-sonnet-4-6';
@@ -80,11 +100,7 @@ const runDiagnosis = async (requestId, referenceImages = []) => {
         // Already sitting in the document we just loaded -- no external
         // fetch step, so no fetch-failure case to handle here either.
         const images = [
-            ...request.images.map((img, index) => ({
-                buffer: toBuffer(img.data),
-                mimeType: img.mimeType,
-                label: `IMAGE ${index + 1} (the render being diagnosed)`,
-            })),
+            ...labelImages(request.images),
             ...referenceImages.map((img, index) => ({
                 buffer: img.buffer,
                 mimeType: img.mimeType,
@@ -199,9 +215,11 @@ const createAndDiagnose = async ({ text, storedImages, realPrompt, referenceImag
     return getGenericFeedbackRequestById(request._id);
 };
 
-/** `images` arrives as [{ data: '<base64>', mimeType }] -- the frontend
- * reads each attached/pasted file as base64 client-side and sends it
- * straight in the request body, no separate upload step. */
+/** `images` arrives as [{ data: '<base64>', mimeType, label? }] -- the
+ * frontend reads each attached/pasted file as base64 client-side and sends
+ * it straight in the request body, no separate upload step. `label`
+ * ('bad'|'good', optional) marks which side of a before/after comparison
+ * an image is, when the user is submitting evidence in bulk for both. */
 const submitGenericFeedback = async ({ text, images, createdBy }) => {
     if (!text || !text.trim()) {
         throw new Api400Error('text is required');
@@ -209,6 +227,7 @@ const submitGenericFeedback = async ({ text, images, createdBy }) => {
     const storedImages = (images || []).map((img) => ({
         data: Buffer.from(img.data, 'base64'),
         mimeType: img.mimeType,
+        label: img.label === 'bad' || img.label === 'good' ? img.label : null,
     }));
     return createAndDiagnose({ text, storedImages, createdBy, submittedEventType: 'generic_feedback_submitted' });
 };

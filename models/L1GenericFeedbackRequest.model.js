@@ -12,6 +12,11 @@ const imageSchema = new mongoose.Schema(
     {
         data: { type: Buffer, required: true },
         mimeType: { type: String, required: true, trim: true },
+        // Optional: which side of a before/after comparison this image is
+        // ("the ratio is 7 here, 7.5 there") -- lets diagnosis reason from
+        // structured evidence instead of guessing the split from prose.
+        // null for an ordinary single-render attachment.
+        label: { type: String, enum: ['bad', 'good', null], default: null },
     },
     { _id: false }
 );
