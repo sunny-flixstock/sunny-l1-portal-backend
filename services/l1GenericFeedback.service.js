@@ -10,6 +10,17 @@ const { DEFAULT_CLIENT, getAllLiveContents, getOrCreateBatchStagingVersion } = r
 const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const PROMPT_PATH = path.join(SOURCE_ROOT, 'generic_feedback_llm_prompt.md');
 
+// `.lean()` reads return a Buffer-typed field as the driver's raw BSON
+// Binary wrapper (a plain object with a `.buffer` property), not a real
+// Buffer -- Buffer.from() on that produces a silent empty buffer rather
+// than an error. Handle every shape that can actually reach here.
+const toBuffer = (raw) => {
+    if (Buffer.isBuffer(raw)) return raw;
+    if (raw?.buffer) return Buffer.from(raw.buffer);
+    if (Array.isArray(raw?.data)) return Buffer.from(raw.data);
+    return Buffer.from(raw ?? []);
+};
+
 // Images are stored as raw bytes in Mongo (see the model) -- no external
 // object storage involved. For API responses, render each stored image as
 // a data: URI so the frontend can use it directly as an <img>/<Image> src
@@ -18,7 +29,7 @@ const withDataUrls = (request) => ({
     ...request,
     images: (request.images || []).map((img) => ({
         mimeType: img.mimeType,
-        url: `data:${img.mimeType};base64,${Buffer.from(img.data).toString('base64')}`,
+        url: `data:${img.mimeType};base64,${toBuffer(img.data).toString('base64')}`,
     })),
 });
 
@@ -53,7 +64,7 @@ const runDiagnosis = async (requestId) => {
         // Already sitting in the document we just loaded -- no external
         // fetch step, so no fetch-failure case to handle here either.
         const images = request.images.map((img, index) => ({
-            buffer: img.data,
+            buffer: toBuffer(img.data),
             mimeType: img.mimeType,
             label: `IMAGE ${index + 1}`,
         }));
