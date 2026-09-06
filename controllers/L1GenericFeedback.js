@@ -66,10 +66,20 @@ const postGenericFeedbackDecision = async (req, res, next) => {
     }
 };
 
+const deleteGenericFeedback = async (req, res, next) => {
+    try {
+        const data = await l1GenericFeedbackService.deleteGenericFeedbackRequest(req.params.id);
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     postGenericFeedback,
     postGenericFeedbackZip,
     getGenericFeedbackList,
     getGenericFeedbackById,
     postGenericFeedbackDecision,
+    deleteGenericFeedback,
 };

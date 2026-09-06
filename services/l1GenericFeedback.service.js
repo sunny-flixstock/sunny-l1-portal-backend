@@ -80,6 +80,14 @@ const getGenericFeedbackRequestById = async (id) => {
     return withDataUrls(request);
 };
 
+const deleteGenericFeedbackRequest = async (id) => {
+    const result = await L1GenericFeedbackRequestModel.deleteOne({ _id: id });
+    if (!result.deletedCount) {
+        throw new Api400Error(`Generic feedback request not found: ${id}`);
+    }
+    return { deleted: true, id };
+};
+
 /** Runs in the background, same fire-and-poll pattern as
  * l1FeedbackBatch.service's processBatchInBackground -- this call can take
  * minutes (same class of LLM call as per-SKU RCA), so the request record is
@@ -436,5 +444,6 @@ module.exports = {
     submitZipFeedback,
     listGenericFeedbackRequests,
     getGenericFeedbackRequestById,
+    deleteGenericFeedbackRequest,
     submitGenericFeedbackDecision,
 };

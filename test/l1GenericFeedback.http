@@ -52,3 +52,7 @@ Content-Type: application/json
   "comment": "Agreed, matches the intended ratio.",
   "decidedBy": "qa@flixstock.com"
 }
+
+### Delete a generic feedback request (e.g. a test/junk submission)
+DELETE {{baseUrl}}/l1-feedback/generic/{{genericFeedbackId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
