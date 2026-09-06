@@ -63,6 +63,19 @@ const postResetToCleanBaseline = async (req, res, next) => {
     }
 };
 
+const postRefreshGroundTruthContent = async (req, res, next) => {
+    try {
+        const data = await l1GroundTruthService.refreshDocumentContent(
+            req.params.id,
+            req.body.content,
+            req.body.createdBy
+        );
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getGroundTruthDocuments,
     getGroundTruthDocument,
@@ -71,4 +84,5 @@ module.exports = {
     postPromoteGroundTruthVersion,
     postSeedGroundTruthDocuments,
     postResetToCleanBaseline,
+    postRefreshGroundTruthContent,
 };

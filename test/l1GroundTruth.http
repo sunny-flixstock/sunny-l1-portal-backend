@@ -30,6 +30,17 @@ Content-Type: application/json
   "versionId": "{{versionId}}"
 }
 
+### Overwrite live+staging content with an out-of-band copy (e.g. the real
+### current production styling.md/posing.md)
+POST {{baseUrl}}/l1-feedback/ground-truth/{{documentId}}/refresh-content HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "content": "# Styling Rules — BZT Female Sports\n...",
+  "createdBy": "production-refresh"
+}
+
 ### Reset every ground-truth document to a clean v1 built from current Live,
 ### and wipe all L1FeedbackBatch/L1SkuTrace/L1GenericFeedbackRequest history.
 ### Irreversible.

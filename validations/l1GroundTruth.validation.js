@@ -39,6 +39,16 @@ const resetToCleanBaseline = celebrate({
     }),
 });
 
+const refreshGroundTruthContent = celebrate({
+    [Segments.PARAMS]: Joi.object({
+        id: Joi.string().required(),
+    }),
+    [Segments.BODY]: Joi.object({
+        content: Joi.string().required(),
+        createdBy: Joi.string().trim().optional(),
+    }),
+});
+
 module.exports = {
     listGroundTruthDocuments,
     getGroundTruthDocument,
@@ -46,4 +56,5 @@ module.exports = {
     getGroundTruthVersionContent,
     promoteGroundTruthVersion,
     resetToCleanBaseline,
+    refreshGroundTruthContent,
 };

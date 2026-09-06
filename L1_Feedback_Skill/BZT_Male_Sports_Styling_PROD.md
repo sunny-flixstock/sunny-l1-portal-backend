@@ -1,8 +1,146 @@
-# Styling Library — v6
+# Styling Rules — BZT Male Sports
 
-**v6 build notes:** Synthesized from `v1_framework` (last confirmed-good styling baseline) plus `GROUND_TRUTH_FINDINGS.md`, `GROUND_TRUTH_2_FINDINGS.md`, and `RCA_LOG.md`. Per Sunny's own expectation, this file needed far fewer changes than posing.md — most rules below are untouched. One substantive addition: **`co_worn_garment_never_bare`** (new, addresses the "phantom shirtless" bug directly — see its note). All `upper_crop`/`lower_crop` references renamed to `front_upper_crop`/`front_lower_crop` for consistency with the v6 posing files — no behavioral change, naming only. **2026-08-29:** after an exhaustive V1/V4→V6 diff found zero sock-related content or routing difference across every version, `sock_provision_gate` and `sock_height_ceiling` were added to `bottom_never_tucked_into_footwear` as a direct, non-role-gated hard constraint against invented/covering socks — see `RCA_LOG.md` for the full investigation and the known limitation (the strongest evidence for this bug still points to the angle-definition files, left untouched per instruction).
+Styling rules for BZT Male Sports imagery — governs garment visibility, layering, tuck state, accessories, and footwear/sock presentation for every generated shot.
 
-## hero_visibility_standard
+---
+
+## GLOBAL RULES
+
+These are client-agnostic generation-quality principles — they hold regardless of category, brand, or shot type.
+
+### Hero Garment Visibility
+
+**Rule:** The garment tagged `hero_garment` must remain visible per its shot-type threshold (at least 100% visible in standard shots, at least 70% visible in layered shop-the-look shots), unobstructed by hands, hair, or carried props, and must show only the branding, graphics, or logo scale the reference actually carries — never enlarged, duplicated, or invented.
+
+**Why:** The hero garment is the product being sold; if it is occluded, undersized, or shown with fabricated branding, the image fails its basic purpose regardless of how good the rest of the shot looks.
+
+### Co-Worn Garments Never Go Bare
+
+**Rule:** Every garment actually provided as part of the outfit selection must be rendered as worn, in every shot, regardless of which single garment is tagged `hero_garment` for that job. A bottom-hero shot still shows the co-worn top fully clothed; a top-hero shot still shows the co-worn bottom. This holds on every angle, including crops where the torso or legs are always in frame.
+
+**Why:** Hero emphasis governs visual priority, not permission to omit anything else the model is actually wearing. Without this rule, a shot focused on one hero garment can drop the other provided garment entirely, rendering the model bare where a garment should be.
+
+### Lighting & Background Match the Identity Reference
+
+**Rule:** Take lighting (direction, softness, colour temperature) and background (backdrop colour, texture, tone) directly from the identity/model reference, and keep both consistent across every angle of a SKU. Never invent a different setup, colour cast, dramatic shadow, gradient, texture, or prop.
+
+**Why:** Consistency across a SKU's angles and fidelity to the established identity reference are what make a generated set usable together; an invented lighting or background choice breaks that consistency even if it looks acceptable in isolation.
+
+### Accessories & Equipment Are Strictly Provision-Driven
+
+**Rule:** Style an accessory or piece of equipment only when it is an actual provided asset for the job and the selected pose entry places it there; never invent a plausible-looking item, and never silently drop one that was actually provided. Keep accessorizing minimal — provided items are a ceiling, not a starting point for further styling.
+
+**Why:** Inventing an unprovided item and dropping a provided item are both real, equally serious defects — one adds fiction, the other loses information the client actually supplied. Minimalism keeps the presentation reading as authentic rather than overstyled.
+
+---
+
+## BZT SPORTS — MALE-SPECIFIC RULES
+
+Rules below depend on BZT's own garment/category set and angle vocabulary (`full_front`, `full_back`, `front_upper_crop`, `front_lower_crop`).
+
+### Garment Length Fidelity
+
+**Rule:** Reproduce every garment's worn length exactly as its flat/mannequin reference shows — never lengthen or shorten a hem. State where each hem falls relative to a body landmark (e.g. "the hoodie hem sits at the high hip," "the shorts hem hits mid-thigh," "the track pant breaks at the ankle"). This holds for every category: a cropped jacket doesn't extend to the low hip, a hip-length tee doesn't become tunic-length, sleeves end exactly where the reference shows. Where a shot's own framing crops below the stated hem, the garment is simply out of frame — within frame it must read at its true reference length.
+
+**Why:** Worn length is a fixed product property; altering it misrepresents the actual garment being sold.
+
+### Hero-Governed Tuck State
+
+**Rule:** The tuck state of an upper worn over a bottom is decided by shot type and which garment is hero, not by the upper's fit alone. On `full_front`/`full_back`, reproduce exactly the tucked/untucked state the styled reference shows. On `front_upper_crop`/`front_lower_crop`: if the hero is an upper, it is worn over the waistband, hanging loose with its hem level on both sides; if the hero is a bottom, the upper is worn fully inside the waistband so the bottom's waistband and rise read cleanly — the upper stays worn, per Co-Worn Garments Never Go Bare, just tucked in rather than left off. Tuck state is always described as one clean state — fully tucked or fully untucked — never a lopsided, one-sided, or half-in/half-out result.
+
+**Why:** Tying tuck state to shot type and hero role, rather than leaving it to the upper's fit alone, keeps the hero garment's own defining lines (waistband, hem) legible on every crop without an ambiguous or asymmetric result.
+
+### Collared Shirts & Polos — Full Tuck or Full Untuck Only
+
+**Rule:** A collared shirt or polo is always either fully tucked (hem inside the waistband all the way around) or fully untucked (hem over the waistband, level all the way around). Never one side in while the other hangs out, and never a hem caught or hitched behind the waistband on one side only.
+
+**Why:** A half-tucked result reads as a styling error rather than an intentional look, on a garment category where tuck state is one of the main visible style cues.
+
+### Closure State on Crops
+
+**Rule:** On `front_upper_crop`/`front_lower_crop`, a garment with a zip (jacket, hoodie, vest) is worn fully closed, unless the selected pose entry's own arm position naturally requires it open. On `full_front`/`full_back`, closure is reference-led — open if the reference shows it open, closed if closed. On a detail-focused crop, keep one key feature (zip pull, chest pocket, crest, cuff) unobstructed by hair or hands.
+
+**Why:** Closure state materially changes what of the garment is visible; anchoring it to shot type and pose (rather than leaving it arbitrary) keeps results predictable and consistent with the reference.
+
+### Base Layer Under a Zipped Hero Outer
+
+**Rule:** When a base tee or tank is part of an outfit under a hero jacket/hoodie/vest: on `full_front`/`full_back`, reproduce the outer's openness and the base layer's visibility exactly from the reference — the base layer is always shown, never dropped to bare skin. On `front_upper_crop`/`front_lower_crop`, the outer is worn closed and the base layer is worn inside the bottom, with no inner hem hanging out below the hero's hemline.
+
+**Why:** This is the jacket-hero instance of Co-Worn Garments Never Go Bare — kept as its own rule because a zipped outer adds closure-state detail that the general rule doesn't cover on its own.
+
+### Sleeve Length Is Fixed, Sleeve State Is Pose-Led
+
+**Rule:** A garment's sleeve length is a fixed product property and is never changed — sleeveless stays sleeveless, short stays short, long stays long; never add, extend, or invent a sleeve. The state of a genuine long sleeve (worn down vs. pushed up) is pose-led: on still, level entries, sleeves stay worn down by default; on a dynamic pose whose own params imply active exertion, a relaxed push-up/roll reflecting real motion is correct and should not be forced back down. The true sleeve length and cuff construction stay identifiable regardless of state.
+
+**Why:** Length is a product-fidelity fact; state is a natural consequence of motion. Conflating the two either misrepresents the product or produces static-looking "action" shots.
+
+### Bottoms Always Worn Over Footwear
+
+**Rule:** A long bottom's leg (sweatpants, trousers, joggers) always falls down and over the sneaker/cleat collar and any crew sock — it is never inserted, stuffed, or tucked into the sock or footwear shaft. This holds on every shot where the leg-to-footwear transition is visible.
+
+**Why:** Tucking a hem into footwear is a basic styling error that misrepresents how the garment is actually worn.
+
+### Sock Provision Gate
+
+**Rule:** Socks/hosiery of any kind are rendered only when a distinct socks/hosiery item is an actual, provided asset for the job. If no such asset was supplied, the ankle/lower-leg shows bare skin or the shoe's own inner liner — never an invented crew sock, ankle sock, ribbed sock, or any other hosiery, regardless of what a shot-type or framing description otherwise implies.
+
+**Why:** This is a confirmed, currently-effective fix for a recurring defect where socks were invented despite no sock asset being provided. It overrides any general footwear-visibility language elsewhere that isn't itself conditioned on sock provision.
+
+### Sock Height Ceiling
+
+**Rule:** When a sock asset is provided and visible, its height must stay strictly below the bottom garment's own hem line at all times. A sock riding up to reach, cover, or overlap the garment's fabric is a hard error, identical in severity to tucking the hem into the sock — the garment's hem is always the outer, visible boundary.
+
+**Why:** This is a confirmed, currently-effective fix for a recurring defect where socks rode up to cover the garment hem, obscuring the actual product being shown.
+
+### Chest Graphic, Crest & Logo Fidelity
+
+**Rule:** Whatever chest graphic, crest, or branding a garment actually carries stays visible and unobstructed — carried equipment and raised/crossed arms must never cut through or cover it, and it defers to Hero-Governed Tuck State so a graphic is never cropped by the waistband. Never enlarge a logo, add a second branding placement, or introduce branding the reference doesn't have.
+
+**Why:** This is about not hiding or altering what's actually on the product — never about maximizing or amplifying it.
+
+### Muted Base Palette, Accent Colors Stay Accents
+
+**Rule:** The outfit's base palette stays muted and tonal; any bright, saturated, or high-contrast color is used only as an accent (a trim, a color-blocked panel, a sole color, a headband) — never as the dominant tone across multiple garments at once. Where the garment reference itself is color-blocked or graphic, that panel or print is the permitted accent and does not need a second bright garment layered on top of it; reproduce the reference's actual colors rather than adding extra bright pieces to "match the energy."
+
+**Why:** Keeps the look reading clean and functional rather than loud or costume-like — bright accents read as intentional, not as the whole story.
+
+### Repeated Accent Colors
+
+**Rule:** Where a non-neutral accent color is present (a team color, a sponsor accent, a color-blocked panel), repeat it in at least one other element — e.g., matching sole color to a chest stripe, or a headband to the shorts trim — so it reads as an intentional accent rather than scattered color, guiding the eye across the outfit's focal points without turning the base palette loud.
+
+**Why:** Governs how an accent repeats, distinct from Muted Base Palette above, which governs how much of the look an accent is allowed to dominate.
+
+### Minimal, Authentic Accessorizing in Sport Context
+
+**Rule:** Keep accessories minimal — a smartwatch, cap, sports socks, or headband is the ceiling, not a starting point; never stack multiple accessory types onto one shot beyond what's actually provided. No large/fashion handbags, no oversized or stacked jewelry, no heavy or stylized makeup — none of these belong in a sports-performance shot regardless of what's technically in the item data; a provided item that reads as a fashion accessory rather than an athletic one should be flagged rather than styled as a statement piece. The look should read like a real athlete's kit, not a styled editorial moment.
+
+**Why:** Sport-context authenticity is part of the brand's visual identity; overstyling undercuts it even when every individual item is technically provided.
+
+### Accessory & Equipment Selection Follows the Pose Entry
+
+**Rule:** Hand-held equipment (club, racket, ball, dumbbell, bag) appears on whichever shot the selected pose entry's own params place it on. A pose entry describing a held item is only eligible to be selected as-written when that specific item is an actual provided asset for the job; if not, the selection must fall back to that entry's own empty-handed/relaxed-hand alternative — never invent a plausible-sounding prop because a pose entry's default description holds one. A bag is styled on every shot where it's provided and the selected pose places it (carried low by the handle, slung on one shoulder, or worn crossbody). Worn adornment accessories (watch, cap/visor, sunglasses, headband, wristband) are styled on `full_front` (and `full_back` where visible) exactly as the reference shows — never invented if not provided, and never silently dropped when it is provided. Footwear is a worn garment, not an accessory, and follows the shot's own framing.
+
+**Why:** Omitting a real, provided item is exactly as much a defect as inventing one that wasn't provided — both directions of this failure have been observed in real output.
+
+### Accessory & Hardware Color Coordination
+
+**Rule:** Where a bag, cap, or watch is provided, its color/material coordinates with the footwear or a chest accent rather than clashing; avoid mixing mesh/technical fabric with leather within the same accessory group unless the reference shows it. Visible metallic/hardware elements (zip pulls, eyelets, watch case, bag hardware) share the same tone where more than one is provided — gold/brass and silver are not mixed within a single look unless the reference explicitly shows it.
+
+**Why:** Coordinated accessory color and hardware tone read as an intentional kit; mismatched tones read as an assembly error rather than a styling choice.
+
+### Proportional Balance — Wide/Slim Bottoms
+
+**Rule:** Wide or relaxed-volume bottoms (wide-leg, relaxed, oversized sweatpants/trousers/shorts) are balanced by a fitted, slim, or regular-fit top for a clean athletic taper. Slim or skin-tight bottoms (trousers, leggings) are balanced with a relaxed or regular-fit top to avoid a restricted, skin-tight head-to-toe look, with the top's volume draping naturally over the hips per Hero-Governed Tuck State where reference-led.
+
+**Why:** Deliberate proportion contrast between top and bottom keeps the silhouette athletic and structured rather than shapeless or overly restrictive.
+
+---
+
+## ENTRY LIBRARY
+
+The entries below are the operational rule set — their Priority, Applies-when, and Avoid-when fields drive rule selection and must be read exactly as written. This is the full detail behind the summarized rules above, plus the specific outfit-combination entries that only exist at this level.
+
+### hero_visibility_standard
 
 **Label:** Hero Garment Visibility and Recognition
 
@@ -12,7 +150,9 @@
 
 * Roles: hero_garment
 * Categories: t-shirts, tank tops, shirts, polos, shorts, sweatpants, trousers, sweatshirts & hoodies, jackets
-  **Avoid when:**
+
+**Avoid when:**
+
 * Roles: base_layer
 
 **Params:**
@@ -24,7 +164,7 @@
 
 ***
 
-## co_worn_garment_never_bare — NEW 2026-08-27
+### co_worn_garment_never_bare
 
 **Label:** Every Worn Garment Stays On the Model, Regardless of Which Is Hero (HARD RULE)
 
@@ -34,17 +174,16 @@
 
 * Roles: top, bottom, base_layer, outerwear (any role that is NOT `hero_garment` for this specific job)
 
-**Why this exists — root cause of the "phantom shirtless" defect.** RCA Log Entry 5 and the ground truth deck (slides showing "Upper is missing") both independently confirm a recurring defect: lower-body-focused shots (hero_garment = a bottom) sometimes render the model shirtless — no top at all, bare torso — even though a top was part of the outfit. `hero_visibility_standard` above only guarantees visibility for the garment tagged `hero_garment`; nothing in the pre-v6 file required a **non-hero, co-worn** garment to still be rendered. `inner_layer_visibility` (below) came close but only covered the reverse case — a base layer under a jacket HERO. This left a real, unaddressed gap for the far more common case: a bottom is the hero, a top is co-worn, and nothing explicitly says the top must stay on. `front_lower_crop`'s own angle definition covers "forehead to the floor" — the torso is always in frame at this angle, so this isn't a framing/cropping question; if the top disappears, it disappears from the render itself.
+**Why this rule exists:** a co-worn, non-hero garment could otherwise be rendered as missing entirely — leaving bare skin where a garment should be. `hero_visibility_standard` above only guarantees visibility for the garment tagged `hero_garment`; nothing else requires a non-hero, co-worn garment to still be rendered. `inner_layer_visibility` (below) covers the reverse case — a base layer under a jacket hero — but not the far more common case of a bottom-hero shot with a co-worn top. `front_lower_crop`'s own angle definition covers "forehead to the floor," so the torso is always in frame at this angle — this is a content requirement, not a framing/cropping question.
 
 **Params:**
 
 * **presence_guarantee (HARD CONSTRAINT — no exceptions):** every garment actually provided as part of the outfit selection must be rendered as worn, in every shot, regardless of which single garment is tagged `hero_garment` for that job. A bottom-hero shot still shows the co-worn top, fully clothed — never bare chest, never exposed torso. A top-hero shot still shows the co-worn bottom. This holds on every angle (`full_front`, `full_back`, `front_upper_crop`, `front_lower_crop`) — `front_lower_crop`'s "forehead to floor" coverage means the torso is always in frame and always needs a garment on it.
 * **hero_emphasis_without_omission:** the hero garment gets the visual priority and detail treatment per `hero_visibility_standard` — this rule does not compete with that, it just guarantees the *other* garment isn't dropped entirely while the hero gets its emphasis.
-* **residual_risk_note:** this closes the content-level gap that could plausibly cause the defect. If the actual root cause is upstream — the co-worn garment's asset simply never being provided to the generation job at all — no styling.md rule can fix that; it would need the asset-provisioning layer fixed directly. Both are worth checking against real generation logs; this rule is the fix for the content-level half of the risk.
 
 ***
 
-## garment_length_reference_fidelity
+### garment_length_reference_fidelity
 
 **Label:** Garment Worn-Length Fidelity to the Reference (AUTHORITATIVE)
 
@@ -63,7 +202,7 @@
 
 ***
 
-## lighting_background_from_identity
+### lighting_background_from_identity
 
 **Label:** Lighting & Background From the Identity / Model Reference
 
@@ -81,7 +220,7 @@
 
 ***
 
-## accessories_and_equipment_scope
+### accessories_and_equipment_scope
 
 **Label:** Accessories & Equipment Provision-Driven Placement (AUTHORITATIVE)
 
@@ -92,18 +231,18 @@
 * Roles: bag, accessory, watches, headwear, glove
 * Categories: bags, watches, socks, headwear, sunglasses, gloves
 
-**Accessories are NOT restricted to full-front/mood only, because BZT's own pose library builds entire poses around equipment appearing IN the crops (`shoulder_rested_equipment_carry_pose`, `athletic_prop_carry_pose`, `kneeling_equipment_grip_pose`, etc.). Every accessory and every piece of equipment (club, racket, ball, dumbbell, bag) is STRICTLY PROVISION-DRIVEN — styled only when actually part of the outfit selection / this angle's assets, never invented — and kept minimal: no over-accessorizing, no fashion bags, no stacked jewelry (per `minimal_accessories_authentic_styling`).**
+Accessories are NOT restricted to full-front/mood only, because BZT's own pose library builds entire poses around equipment appearing IN the crops (`shoulder_rested_equipment_carry_pose`, `athletic_prop_carry_pose`, `kneeling_equipment_grip_pose`, etc.). Every accessory and every piece of equipment (club, racket, ball, dumbbell, bag) is STRICTLY PROVISION-DRIVEN — styled only when actually part of the outfit selection / this angle's assets, never invented — and kept minimal: no over-accessorizing, no fashion bags, no stacked jewelry (per `minimal_accessories_authentic_styling`).
 
 **Params:**
 
-* **adornment_scope (HARD CONSTRAINT, strengthened 2026-08-28):** worn adornment accessories (watch, cap/visor, sunglasses, headband, wristband) are styled on `full_front` (and `full_back` where visible) exactly as the reference shows; never invented if not provided — **and never silently dropped when it IS provided.** Direct evidence from generated output: a sunglasses asset was present in the provided item set for a job, but the generation prompt never mentioned it and the rendered image showed no sunglasses at all — the opposite failure from inventing an item, equally wrong. If an adornment accessory is a genuine, provided asset for this job, it must appear in the output; omitting a real provided item is exactly as much a defect as inventing one that wasn't provided. **Root-cause note:** this specific defect's evidence points to the prompt-assembly layer failing to carry a provided accessory into the prompt at all, not to a gap in this rule's wording (which already said "provision-driven" before this update) — this strengthening is defense-in-depth, not a confirmed fix; see `RCA_LOG.md`.
-* **equipment_scope (strengthened 2026-08-28):** hand-held equipment (club, racket, ball, dumbbell, bag) appears on whichever shot type the SELECTED pose entry's own Params place it on — this is governed by the pose library's item-completeness and accessory-carry-outranks-priority rules, not by shot type alone. **A pose entry describing a held item (a water bottle, a bag, a piece of training equipment) is only eligible to be selected as-written when that specific item is an actual provided asset for this job.** If no such item was provided, the selected entry must fall back to its own empty-handed/relaxed-hand alternative — never invent a plausible-sounding prop just because a pose entry's default Params describe holding one. Evidence: a generated prompt described "one hand holding a water bottle equipment piece" for a job whose provided item set contained no bottle or bag asset at all.
+* **adornment_scope (HARD CONSTRAINT):** worn adornment accessories (watch, cap/visor, sunglasses, headband, wristband) are styled on `full_front` (and `full_back` where visible) exactly as the reference shows; never invented if not provided — and never silently dropped when it IS provided. If an adornment accessory is a genuine, provided asset for this job, it must appear in the output; omitting a real provided item is exactly as much a defect as inventing one that wasn't provided.
+* **equipment_scope:** hand-held equipment (club, racket, ball, dumbbell, bag) appears on whichever shot type the SELECTED pose entry's own Params place it on — this is governed by the pose library's item-completeness and accessory-carry-outranks-priority rules, not by shot type alone. A pose entry describing a held item (a water bottle, a bag, a piece of training equipment) is only eligible to be selected as-written when that specific item is an actual provided asset for this job. If no such item was provided, the selected entry must fall back to its own empty-handed/relaxed-hand alternative — never invent a plausible-sounding prop just because a pose entry's default Params describe holding one.
 * **bag_scope:** a bag is styled on every shot where it's provided and the selected pose entry places it (carried low by the handle, slung on one shoulder, or worn crossbody); never invented if no bag is provided.
 * **footwear_note:** footwear is a worn garment, not an accessory — it follows the shot's own framing, unaffected by this rule.
 
 ***
 
-## hero_based_tuck_state
+### hero_based_tuck_state
 
 **Label:** Hero-Based Waist Styling (shot-governed — AUTHORITATIVE)
 
@@ -114,7 +253,7 @@
 * Roles: hero_garment, top, bottom, base_layer
 * Categories: t-shirts, tank tops, polos, shirts, shorts, sweatpants, trousers, sweatshirts & hoodies
 
-**The waist styling of an upper worn over a bottom is decided by the SHOT TYPE and the HERO garment's role, not by the upper's fit alone. `full_front` and `full_back` are REFERENCE-LED — reproduce exactly the tucked/untucked state the styled reference shows (`item_characteristics`'s `worn_state`). On `front_upper_crop` and `front_lower_crop`: if the HERO is an upper (tee/polo/shirt), it is worn OVER the waistband, hanging loose, its hem level on both sides; if the HERO is a bottom (shorts/sweatpants/trousers), the upper is worn fully INSIDE the waistband so the bottom's waistband and rise read cleanly — the upper is still worn, per `co_worn_garment_never_bare` above, just tucked in rather than left off.**
+The waist styling of an upper worn over a bottom is decided by the SHOT TYPE and the HERO garment's role, not by the upper's fit alone. `full_front` and `full_back` are REFERENCE-LED — reproduce exactly the tucked/untucked state the styled reference shows (`item_characteristics`'s `worn_state`). On `front_upper_crop` and `front_lower_crop`: if the HERO is an upper (tee/polo/shirt), it is worn OVER the waistband, hanging loose, its hem level on both sides; if the HERO is a bottom (shorts/sweatpants/trousers), the upper is worn fully INSIDE the waistband so the bottom's waistband and rise read cleanly — the upper is still worn, per `co_worn_garment_never_bare` above, just tucked in rather than left off.
 
 **Params:**
 
@@ -123,7 +262,7 @@
 
 ***
 
-## shirt_tuck_no_half
+### shirt_tuck_no_half
 
 **Label:** Polos & Shirts — Full Tuck or Full Untuck ONLY, Never Half (HARD RULE)
 
@@ -140,7 +279,7 @@
 
 ***
 
-## closed_detail_presentation
+### closed_detail_presentation
 
 **Label:** Closure Integrity for Detail and Crop Shots
 
@@ -158,7 +297,7 @@
 
 ***
 
-## inner_layer_visibility
+### inner_layer_visibility
 
 **Label:** Base Tee Under a Zipped Hero Outer
 
@@ -172,11 +311,11 @@
 
 **Params:**
 
-* **inner_closure_and_state:** on `full_front`/`full_back`, the outer's openness and the base layer's visibility are reproduced exactly from the reference — the base layer is always shown, never dropped to bare skin. On `front_upper_crop`/`front_lower_crop`, the outer is worn closed per `closed_detail_presentation` and the base layer is worn inside the bottom — no inner hem hangs out below the hero's hemline. **This is the jacket-hero instance of the general rule now stated in `co_worn_garment_never_bare` above** — kept as its own entry since it has additional closure-state detail specific to a zipped outer.
+* **inner_closure_and_state:** on `full_front`/`full_back`, the outer's openness and the base layer's visibility are reproduced exactly from the reference — the base layer is always shown, never dropped to bare skin. On `front_upper_crop`/`front_lower_crop`, the outer is worn closed per `closed_detail_presentation` and the base layer is worn inside the bottom — no inner hem hangs out below the hero's hemline. This is the jacket-hero instance of the general rule stated in `co_worn_garment_never_bare` above — kept as its own entry since it has additional closure-state detail specific to a zipped outer.
 
 ***
 
-## sleeve_presence_and_treatment
+### sleeve_presence_and_treatment
 
 **Label:** Sleeve-Presence Fidelity + Pose-Led Sleeve State
 
@@ -187,7 +326,7 @@
 * Roles: hero_garment, top, base_layer
 * Categories: t-shirts, shirts, polos, sweatshirts & hoodies
 
-**A garment's sleeve LENGTH is a fixed product property and is never changed: sleeveless stays sleeveless, short stays short, long stays long — never add, extend, or invent a sleeve. The STATE of a genuine long sleeve (worn down vs. pushed up) is pose-led, not fixed: on the still, level entries (`static_full_body_pose`, `athleisure_frontal_standing_pose`) sleeves stay worn DOWN by default; on a Tier-1/Tier-2 dynamic pose whose own Params imply active exertion (`weighted_equipment_curl_pose`, `dynamic_sprint_stride_pose`, `overhead_arms_flex_pose`), a relaxed push-up/roll reflecting real motion is correct and should NOT be forced back down.**
+A garment's sleeve LENGTH is a fixed product property and is never changed: sleeveless stays sleeveless, short stays short, long stays long — never add, extend, or invent a sleeve. The STATE of a genuine long sleeve (worn down vs. pushed up) is pose-led, not fixed: on the still, level entries (`static_full_body_pose`, `athleisure_frontal_standing_pose`) sleeves stay worn DOWN by default; on a Tier-1/Tier-2 dynamic pose whose own Params imply active exertion (`weighted_equipment_curl_pose`, `dynamic_sprint_stride_pose`, `overhead_arms_flex_pose`), a relaxed push-up/roll reflecting real motion is correct and should NOT be forced back down.
 
 **Params:**
 
@@ -196,7 +335,7 @@
 
 ***
 
-## bottom_never_tucked_into_footwear
+### bottom_never_tucked_into_footwear
 
 **Label:** Bottoms Always Worn OVER Sneakers, Cleats, and Crew Socks — Never Tucked In (HARD RULE)
 
@@ -210,12 +349,12 @@
 **Params:**
 
 * **hem_over_footwear (HARD CONSTRAINT — no exceptions):** a long bottom's leg — sweatpants, trousers, joggers — always falls down and over the sneaker/cleat collar and any crew sock; it is never inserted, stuffed, or tucked into the sock or footwear shaft. This holds on every shot where the leg-to-footwear transition is visible (`full_front`, `full_back`, `front_lower_crop`).
-* **sock_provision_gate (HARD CONSTRAINT — no exceptions, added 2026-08-29):** socks/hosiery of any kind are rendered ONLY when a distinct socks/hosiery item is an actual, provided asset for this job. If no such asset was supplied, the ankle/lower-leg shows bare skin or the shoe's own inner liner — never an invented crew sock, ankle sock, ribbed sock, or any other hosiery, regardless of what a shot-type or framing description otherwise implies. This overrides any general footwear-visibility language elsewhere (including angle/framing notes) that isn't itself conditioned on sock provision.
-* **sock_height_ceiling (HARD CONSTRAINT — no exceptions, added 2026-08-29):** when a sock asset IS provided and visible, its height must stay strictly below the bottom garment's own hem line at all times — a sock riding up to reach, cover, or overlap the garment's fabric is a hard error, identical in severity to tucking the hem into the sock. The garment's hem is always the outer, visible boundary; the sock stays entirely below it.
+* **sock_provision_gate (HARD CONSTRAINT — no exceptions):** socks/hosiery of any kind are rendered ONLY when a distinct socks/hosiery item is an actual, provided asset for this job. If no such asset was supplied, the ankle/lower-leg shows bare skin or the shoe's own inner liner — never an invented crew sock, ankle sock, ribbed sock, or any other hosiery, regardless of what a shot-type or framing description otherwise implies. This overrides any general footwear-visibility language elsewhere (including angle/framing notes) that isn't itself conditioned on sock provision.
+* **sock_height_ceiling (HARD CONSTRAINT — no exceptions):** when a sock asset IS provided and visible, its height must stay strictly below the bottom garment's own hem line at all times — a sock riding up to reach, cover, or overlap the garment's fabric is a hard error, identical in severity to tucking the hem into the sock. The garment's hem is always the outer, visible boundary; the sock stays entirely below it.
 
 ***
 
-## streetwear_graphic_visibility
+### streetwear_graphic_visibility
 
 **Label:** Chest Graphic, Crest, and Logo Fidelity (No Excess Branding)
 
@@ -236,7 +375,7 @@
 
 ***
 
-## muted_palette_with_bright_accent
+### muted_palette_with_bright_accent
 
 **Label:** Muted Base Palette with Bright Accent Colors Only (AUTHORITATIVE)
 
@@ -254,7 +393,7 @@
 
 ***
 
-## minimal_accessories_authentic_styling
+### minimal_accessories_authentic_styling
 
 **Label:** Minimal Accessories, Authentic Presentation (No Overstyling)
 
@@ -272,7 +411,7 @@
 
 ***
 
-## contrast_color_repetition
+### contrast_color_repetition
 
 **Label:** Intentional Contrast: Repeated Accent Colors
 
@@ -281,9 +420,12 @@
 **Applies when:**
 
 * Roles: bag, footwear, accessory, hero_garment
-  **Avoid when:**
+
+**Avoid when:**
+
 * Palette: monochromatic
-  **Requires:** muted_palette_with_bright_accent
+
+**Requires:** muted_palette_with_bright_accent
 
 **Params:**
 
@@ -292,7 +434,7 @@
 
 ***
 
-## proportional_balance_wide_bottom
+### proportional_balance_wide_bottom
 
 **Label:** Balanced Proportions: Wide Bottom with Fitted Top
 
@@ -303,7 +445,8 @@
 * Roles: top, bottom
 * Categories: sweatpants, trousers, shorts
 * Fit: wide-leg, relaxed, oversized
-  **Conflicts with:** proportional_balance_slim_bottom
+
+**Conflicts with:** proportional_balance_slim_bottom
 
 **Params:**
 
@@ -312,7 +455,7 @@
 
 ***
 
-## proportional_balance_slim_bottom
+### proportional_balance_slim_bottom
 
 **Label:** Balanced Proportions: Slim Bottom with Relaxed Top
 
@@ -323,7 +466,8 @@
 * Roles: top, bottom
 * Categories: trousers, leggings
 * Fit: slim, skin-tight, fitted
-  **Conflicts with:** proportional_balance_wide_bottom
+
+**Conflicts with:** proportional_balance_wide_bottom
 
 **Params:**
 
@@ -332,7 +476,7 @@
 
 ***
 
-## accessory_color_mirroring
+### accessory_color_mirroring
 
 **Label:** Accessory Color Coordination
 
@@ -350,7 +494,7 @@
 
 ***
 
-## metallic_hardware_consistency
+### metallic_hardware_consistency
 
 **Label:** Unified Hardware Tone
 
@@ -368,7 +512,7 @@
 
 ***
 
-## untucked_polo_over_shorts
+### untucked_polo_over_shorts
 
 **Label:** Untucked Polo Shirt Styled Over Athletic Shorts
 
@@ -391,7 +535,7 @@
 
 ***
 
-## tucked_tshirt_with_shorts
+### tucked_tshirt_with_shorts
 
 **Label:** Clean Tucked T-Shirt With Athletic Shorts
 
@@ -413,7 +557,7 @@
 
 ***
 
-## zipped_fleece_jacket_layering
+### zipped_fleece_jacket_layering
 
 **Label:** Zipped Technical Fleece or Hoodie Outerwear Layering
 
@@ -435,7 +579,7 @@
 
 ***
 
-## tucked_tshirt_with_sweatpants
+### tucked_tshirt_with_sweatpants
 
 **Label:** Tucked T-Shirt With Technical Sweatpants
 
@@ -457,7 +601,7 @@
 
 ***
 
-## color_blocked_sweatshirt_pairing
+### color_blocked_sweatshirt_pairing
 
 **Label:** Relaxed Color-Blocked Sweatshirt With Athletic Shorts
 
@@ -480,7 +624,7 @@
 
 ***
 
-## athletic_sock_and_sneaker_pairing
+### athletic_sock_and_sneaker_pairing
 
 **Label:** Ribbed Crew Socks With Technical Athletic Footwear
 
@@ -502,7 +646,7 @@
 
 ***
 
-## athleisure_hoodie_layering
+### athleisure_hoodie_layering
 
 **Label:** Zip Hoodie Over Base Layering
 
@@ -525,7 +669,7 @@
 
 ***
 
-## athletic_tshirt_tuck_or_untuck
+### athletic_tshirt_tuck_or_untuck
 
 **Label:** Athletic T-Shirt Styling
 
@@ -537,7 +681,9 @@
 * Categories: t-shirts, shorts
 * Fit: regular, slim, relaxed
 * Length: hip-length, above-knee
-  **Avoid when:**
+
+**Avoid when:**
+
 * Roles: top
 * Categories: t-shirts
 * Fit: oversized
@@ -552,7 +698,7 @@
 
 ***
 
-## matching_tracksuit_set
+### matching_tracksuit_set
 
 **Label:** Monochromatic or Coordinated Technical Tracksuit
 
@@ -575,7 +721,7 @@
 
 ***
 
-## technical_shorts_and_compression_lining
+### technical_shorts_and_compression_lining
 
 **Label:** Perforated Athletic Shorts Over Compression Liners
 
@@ -597,7 +743,7 @@
 
 ***
 
-## hoodie_or_jacket_zipped_trousers
+### hoodie_or_jacket_zipped_trousers
 
 **Label:** Zipped Hoodie or Jacket With Trousers
 
@@ -617,3 +763,19 @@
 * **silhouette_contribution:** streamlined athleisure profile
 * **visibility_priority:** outer jacket or hoodie takes visual precedence
 * **proportion_strategy:** matching or neutral-toned coordinated athleisure
+
+***
+
+## NON-NEGOTIABLE GUARDRAILS
+
+Before returning any generated shot, validate it against every checklist item below — each is a hard-error condition, not a stylistic preference.
+
+- [ ] No sock is rendered when no socks/hosiery asset was provided for the job (`sock_provision_gate`, in `bottom_never_tucked_into_footwear`).
+- [ ] No provided sock rises above the bottom garment's own hem line (`sock_height_ceiling`, in `bottom_never_tucked_into_footwear`).
+- [ ] No co-worn garment (top, bottom, base_layer, or outerwear) is dropped or rendered bare, regardless of which garment is tagged hero (`co_worn_garment_never_bare`, `hero_emphasis_without_omission`).
+- [ ] No bottom hem is tucked or stuffed into a sock or footwear shaft (`hem_over_footwear`, in `bottom_never_tucked_into_footwear`).
+- [ ] No tuck state is left lopsided, one-sided, or half-in/half-out (`hero_based_tuck_state`, `shirt_tuck_no_half`).
+- [ ] No garment's worn length is lengthened or shortened relative to its reference (`garment_length_reference_fidelity`).
+- [ ] No lighting, background, colour cast, or prop is invented instead of matched to the identity reference (`lighting_background_from_identity`).
+- [ ] No accessory or equipment item is invented when not provided, and no provided adornment accessory is silently dropped (`accessories_and_equipment_scope`).
+- [ ] No branding, logo, or graphic is enlarged, duplicated, or added beyond what the reference shows (`streetwear_graphic_visibility`, `hero_visibility_standard`).

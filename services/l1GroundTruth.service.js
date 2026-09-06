@@ -188,6 +188,43 @@ const promoteVersionToLive = async (documentId, versionId) => {
     return enrichDocument(doc.toObject());
 };
 
+/** Overwrites a document's live+staging content with an out-of-band copy
+ * (e.g. the real current production styling.md/posing.md, pulled in
+ * because this fork's copy was only ever a point-in-time seed and never
+ * tracks edits made on the real partner framework). Recorded as a new
+ * version rather than mutated in place, same as every other content
+ * change here, so history stays intact. Any in-flight staging edits from
+ * an unpromoted batch are discarded by this, which is the point. */
+const refreshDocumentContent = async (documentId, content, createdBy = 'production-refresh') => {
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+        throw new Api400Error('Invalid document id');
+    }
+    const doc = await L1GroundTruthDocumentModel.findById(documentId);
+    if (!doc) {
+        throw new Api400Error(`Ground-truth document not found: ${documentId}`);
+    }
+    const latest = await L1GroundTruthVersionModel.findOne({ documentId })
+        .sort({ versionNumber: -1 })
+        .select({ versionNumber: 1 })
+        .lean();
+    const versionNumber = (latest?.versionNumber ?? 0) + 1;
+
+    const version = await L1GroundTruthVersionModel.create({
+        documentId: doc._id,
+        versionNumber,
+        content,
+        batchId: null,
+        appliedFixes: [],
+        createdBy,
+    });
+
+    doc.stagingVersionId = version._id;
+    doc.liveVersionId = version._id;
+    await doc.save();
+
+    return enrichDocument(doc.toObject());
+};
+
 const ANGLE_DOC_KEYS = ['FULL_FRONT', 'FRONT_UPPER_CROP', 'FULL_BACK', 'FRONT_LOWER_CROP'];
 
 /** Match a SKU's own angle name (e.g. "BZT_FULL_FRONT_SPORTS") against one
@@ -416,6 +453,7 @@ module.exports = {
     listVersionsForDocument,
     getVersionContent,
     promoteVersionToLive,
+    refreshDocumentContent,
     resolveDocumentForConcernedFile,
     resolveLiveReference,
     resolveLiveAngleReference,

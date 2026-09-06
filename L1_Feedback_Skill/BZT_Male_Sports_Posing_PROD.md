@@ -1,42 +1,155 @@
-# Pose Library — v6
+# Pose Library — BZT Male Sports
 
-**v6 build notes:** This is the ground-truth-driven rebuild, synthesized from `v4_framework` (last confirmed-good baseline) plus `GROUND_TRUTH_FINDINGS.md` (113-slide deck), `GROUND_TRUTH_2_FINDINGS.md` (76-slide deck, 21 slides reviewed so far), and `RCA_LOG.md`. Every entry below carries a new **`Angles:`** field using the confirmed 5-value vocabulary (`full_front`, `full_back`, `front_upper_crop`, `front_lower_crop`, `all`) — "mood_shot" is retired as a value everywhere in this file. Per Sunny's explicit guardrail: **every already-correct pose from v4 is preserved as-is** — only entries touching a confirmed ground-truth violation were changed. **New this pass:** per Sunny's 2026-08-27 direction, entries marked **CROSS-FILE ENRICHMENT** below are ported from the Female file's genuinely gender-neutral pose mechanics, addressing the previously observed Male/Female variation gap — each is clearly marked as ported (not sourced from this file's own 73-image reference set) so provenance stays honest for any future RCA trace.
-
-**Global pose principles (apply to every rule below) — the BZT MALE SPORTS house look is CONTROLLED ATHLETIC ENERGY.** The male model reads as an athlete captured mid-action or in confident equipment-ready posture — NOT a static mannequin. The DEFAULT and correct register is **dynamic and purposeful**: real sport-grounded motion (sprint, lunge, hinge, curl, equipment carry, kneeling grip) demonstrating fabric behavior and gear interaction. This is audited, not asserted by analogy to the female pass: of the 73-image reference set, `Full front` (31 images) and `Full Back` (8 images) are the static-leaning batch — confirmed dominant pose there is the still, level, evenly-weighted stand — while `Upper crop` (26 images across six pose sets) and `Lower crop` (8 images) are built almost entirely around held dynamic action. Static, level stands remain valid as the fallback register, not the default.
-
-**HARD REQUIREMENTS (mandatory for every variant, every shot — a violation is a hard error):**
-1. **CONTROLLED ACTION, NEVER AN ACCIDENT — AND NEVER A WALKING GAIT.** A dynamic pose (sprint, lunge, hinge, kneeling grip) reads as deliberate and balanced, never a stumble or off-balance wobble. Static entries keep both feet planted flat and grounded. **A walking / mid-stride GAIT — one foot lifted and swinging as if caught between literal footsteps — is PROHIBITED COMPLETELY, on every shot type, with no exception.** Confirmed independently by both the client's original feedback and the ground truth deck ("Walking pose is not acceptable in front and back shot," "the model is abnormally walking... applicable for any angle"). Realistic athletic actions that are NOT a walking gait — jogging/running stride, lunging, stretching — remain in scope, governed by Hard Requirement 14 below.
-2. **ASYMMETRY WHEN THE POSE CALLS FOR IT — NEVER FORCED BACK TO LEVEL.** Follow each entry's own alignment call: lean fully into a hinge, lunge, curl, or asymmetric shift when its Params specify one; render a level/even stance as clean and confident, never stiff or mannequin-like.
-3. **THE HAND NEVER TOUCHES THE GARMENT, IN ANY SHOT, IN ANY ANGLE — NOT GRIPPING, NOT PINCHING, NOT BUNCHING, AND NOT SIMPLY RESTING ON IT EITHER.** Confirmed by Sunny as a hard guardrail, 2026-08-27: "hands cannot touch the garment in any shot... even if it is resting on the garment, it is not allowed." A hand may rest on **bare skin**, may hang free without touching the body, may hold a **pocket**, may grip **equipment** (a club, racket, dumbbell, ball, bag — not garment), or may clasp the other hand — but the moment it contacts fabric the model is wearing, including a thigh, hip, knee, or shin covered by shorts/leggings/joggers, it is a hard error. Equipment interaction is still functional, never fidgety, and matched to the garment's actual sport. **Note on an earlier, narrower reading:** one ground truth slide (113-slide deck, #9) implied hand-on-knee was acceptable specifically on a crop shot, not front/back — that per-angle nuance is superseded by this later, more sweeping instruction, given with full awareness of the earlier slide. This is a deliberate supersession by a more authoritative, more recent, explicit client ruling, not an unnoticed contradiction.
-4. **EXPRESSION — ALIVE, ENGAGED, AND NATURAL, NEVER BLANK, LOST, OR EDITORIAL.** A present, quietly confident, relaxed athletic model, energy matched to the pose. Blank, vacant, or frozen is a hard error; vary it naturally across variants.
-5. **HEAD & GAZE MATCH THE POSE'S OWN CALL, NEVER DEAD-LOCKED — AND THIS IS THE PRIMARY SOURCE OF VARIETY BETWEEN THE TWO VARIANTS ON A SHOT.** Follow each entry's own `head_orientation`/`gaze_direction`, and where an entry lists more than one option, the two generated variants for that shot must land on visibly different ones. Applies on EVERY shot type, `full_back` included: a flat, un-turned back-of-head on every variant is a confirmed client rejection. On `full_front`, alternate between a level direct-to-camera look and a naturally tilted/turned head. **UPDATED 2026-08-27 per the ground truth deck:** a downward/eyes-lowered gaze (vocabulary options 4 and 6 below) is eligible but is now a **discouraged, lower-preference option**, not an equal-weight default — two ground truth slides marked an otherwise-good shot "Acceptable, but the model should not look down."
-6. **FRAMING FOLLOWS THE SHOT TYPE — AND HANDS ARE NEVER CLIPPED BY THE FRAME EDGE.** `full_front`, `full_back`, and `front_lower_crop` keep feet in frame; `front_upper_crop` is waist-up by definition. On every crop type, whenever a pose's own Params call for a raised, extended, or driven arm, the subject must be positioned with enough lateral margin that the hand stays completely inside the frame.
-7. **EVERY LOADED ITEM MUST BE PLACED AND CARRIED — THIS OUTRANKS PRIORITY.** A club, racket, ball, bag, or bottle that's loaded needs an explicit placement in the selected entry's Params. An entry that leaves hands empty must not be picked over an eligible entry that carries the item, even at a lower Priority. **RESTORED 2026-08-29:** this enforcement sentence was silently dropped from this file during the v4→v6 rebuild (the Female file's equivalent rule kept it) — its absence removes the actual selection-time guardrail against an equipment-loaded job landing on an empty-handed pose, which matches the real-output "golf stick is missing" finding.
-8. **`AVOID WHEN` / `CONFLICTS WITH` ARE BINDING; VARIANTS DIFFER BY POSE, NOT ITEM COUNT.** Neither is advisory — never override an `Avoid when` match for a Priority win, and never drop an item in one variant that another variant of the same shot shows. **RESTORED 2026-08-29** — same silent drop as Hard Requirement 7 above.
-9. **NO EXAGGERATED OR PHYSICALLY IMPOSSIBLE POSES.** No backbends, exaggerated arches, or unrealistic movement without a QC sign-off flag.
-10. **FOOTWEAR MATCHES THE ACTIVITY.** Barefoot is a confirmed rejection, independently reconfirmed by the ground truth deck — never an arbitrary or mismatched shoe, never barefoot.
-11. **NATURAL HAIR, NEVER RESTYLED; NO OVERSTYLING.** Keep the model's reference hairstyle exactly as shown. No glamorous posing, no theatrical flourish.
-12. **HANDS-IN-POCKET IS AN ELIGIBLE FALLBACK, NOT A DEFAULT — AND HANDS ARE NEVER ON THE HIP/WAIST, IN ANY ANGLE.** The ground truth deck rejects hand-on-hip/waist placement ~30 times, in every angle, with no exception. By elimination, pocket is an eligible fallback gesture drawn from a **shared, rotating fallback-gesture pool** (pocket, relaxed-at-sides, equipment-carry) — never the first-listed or most-frequent choice on its own, never identical across both variants of a shot.
-13. **`athletic_akimbo_power_pose` IS RETIRED.** Its entire premise was hands-on-hips; no non-hip alternate exists, so it's retired outright rather than patched.
-14. **RUNNING IS ELIGIBLE ON CROP SHOTS ONLY, NEVER ON `full_front`/`full_back` — AND ONLY THE DIAGONAL/SIDEWAYS MECHANIC, NEVER FORWARD-FACING.** The ground truth deck confirms forward-facing running is rejected "in any angle," but a side/diagonal running mechanic is explicitly accepted on crop shots. NEVER a "flying" pose.
-15. **`full_back` NEVER CARRIES A WIDE-STANCE, HIGH-MOVEMENT DYNAMIC POSE.** The ground truth deck rejects this pattern 10 times explicitly. No Male-file entry currently combines `full_back` with a wide-stance Params block, so this doesn't put any existing entry in conflict. `full_front` has **no equivalent evidenced restriction** — direct ground truth evidence (full-body, front-facing dynamic poses explicitly marked "the movement is good to go") confirms movement is acceptable there; `full_front`'s lean toward static entries is a soft default, not a hard ban.
-16. **THE HERO GARMENT MUST NEVER BE STRUCTURALLY CROPPED OUT OF FRAME — `front_upper_crop` AND `front_lower_crop` ARE NOT INTERCHANGEABLE FOR A BOTTOM-CATEGORY HERO GARMENT.** Added 2026-08-27, per Sunny's direct instruction and the two angle-definition files' own text. `BZT_FRONT_UPPER_CROP_SPORTS.md`'s own coverage note: "Lower garments are cropped to show the waistband, rise, and upper thigh area" — correct and expected when a TOP is the hero garment and the bottom (shorts, joggers, sweatpants) is secondary/styling context, but this framing **cannot** show a bottom garment's hem, inseam, or full leg line. `BZT_FRONT_LOWER__CROP_SPORTS.md` is the angle that guarantees this: "The entire length of the garment is captured, including hemlines, side seams, and specialized cuffs or inner linings." **Rule: whenever the hero garment for a given job is a bottom-category item, that job must never be routed to a pose whose only eligible angle is `front_upper_crop`** — either select an entry that also lists `front_lower_crop` (or `full_front`/`full_back`) among its `Angles`, or if the desired pose's mechanic is `front_upper_crop`-only, do not use it for a bottom-hero job. The reverse applies symmetrically for a top-category hero garment on a `front_lower_crop`-only entry. This is a selection-time check, not a per-entry rewrite — the wide-stance/squat entries most likely to carry a bottom-category hero garment have been given a `front_lower_crop` companion angle in this v6 pass; entries whose stance genuinely doesn't translate to a lower-crop framing (an overhead flex, a seated curl, a golf address hinge) were left `front_upper_crop`-only on the assumption their hero garment is normally a top, not a bottom.
-17. **EVERY POSE MUST READ AS ONE SINGLE, COHERENT, NATURAL HUMAN ACTION — NEVER AN AWKWARD OR UNRELATED COMBINATION OF GESTURES.** Added 2026-08-28, generalizing a pattern that was previously only patched entry-by-entry. Ground truth confirms this as a real, standing rejection reason distinct from any specific mechanism like hand placement or clothing type: *"The movement does not look natural for any angle"* (`Ground Truth BZT Sports.pptx`) and *"the pose is weird, the model is abnormally walking"* (same deck). This file already carries several entry-specific instances of this same failure mode from earlier RCA work — a raised or clenched fist during a lunge counterbalance reading as an unrelated boxing-guard gesture rather than a natural stabilizing hand; a hand tucked behind the lower back during a torso-twist reading as a borrowed, unrelated gesture rather than a natural counter-arm. **Those were real generated outputs, flagged and fixed individually — this requirement generalizes the underlying principle so it isn't limited to the specific instances already caught.** Test: does the full combination of stance, arm/hand position, torso angle, and head/gaze read as ONE thing a real athlete would actually do in that moment — not as body parts individually valid but assembled from unrelated poses. A pose can satisfy every other Hard Requirement in this file (achievable, not exaggerated, no garment contact, no hip contact) and still fail this one if the overall gesture reads as disjointed or borrowed. This is necessarily a qualitative, not a quantifiable, standard — there is no numeric threshold for "natural" — but it is a hard requirement, not a suggestion: an entry whose Params combination doesn't hold together as one coherent action needs its Params rewritten, not shipped as-is on a technicality.
-
-**Equipment & prop vocabulary (from the BZT reference set).** In rough order of frequency: **(1)** both hands clasped low, as if gripping a club (golf address hinge); **(2)** one hand held open, hovering near the thigh WITHOUT touching it, during a lunge or stretch — CORRECTED 2026-08-27, no longer "resting"; **(3)** one hand raised, resting a racket/club on the shoulder (equipment, not garment); **(4)** both hands clasped behind the head (overhead flex); **(5)** forearms crossed at the chest, held clear of the garment (guard stance); **(6)** both hands kneeling, gripping equipment near the ground; **(7)** one arm securing a ball at the hip, chest, or behind the back — the ball, not the hand, contacts the body, which is fine; **(8)** one hand carrying a bag; **(9)** one hand curling a dumbbell. Items "(2) hand on hip/thigh" and "hands on hips, akimbo" from the pre-v6 vocabulary are retired — hip and thigh contact are both banned outright, hovering only, per Hard Requirement 3.
-
-**Head-movement vocabulary (from the BZT reference set, confirmed gender-agnostic).** On front-facing shots, draw from: **(1)** direct-level frontal; **(2)** level side-glance; **(3)** turned and tilted down together; **(4)** chin dropped, eyes lowered — DISCOURAGED, lower preference; **(5)** profile with chin slightly lifted; **(6)** level and forward, only the gaze cast downward — DISCOURAGED, lower preference. On rear-facing shots: **(1)** flat back-of-head — fallback only; **(2)** near-profile turn, ear visible — primary recommended; **(3)** turned and tilted down, tracking equipment or the ground.
-
-**Shot-type behavior.** `front_upper_crop` and `front_lower_crop` carry the dynamic register — nearly every action pose was sourced from these crops, and the ground truth deck's own "Do's" slide confirms crop shots need movement. `full_front`/`full_back` are dominated by the still, level stand and carry the neutral/silhouette entries as their primary register, with select dynamic entries usable as secondary full-body variants. `full_back` never carries a wide-stance, high-movement dynamic pose (Hard Requirement 15) — this file has no such conflict currently. **Reinforced 2026-08-28 after reviewing real output:** "secondary" means selected occasionally, not as the default landing spot — wide-stance entries (`wide_skater_lunge_hands_clasped_pose`, `wide_lateral_side_lunge_pose`) being eligible on `full_front` is not license to select one every time a dynamic variant is wanted; the static/narrow-stance entries remain the primary register and should be the majority outcome. If selection frequency data ever shows wide-stance entries dominating `full_front` output, that is the same class of problem as the hip-saturation issue in RCA Log Entry 2 — a frequency defect, not a content one, and needs a selection-layer fix, not a file edit.
-
-**Inter-SKU and inter-variant pose variety.** Every angle now carries several eligible pose entries at neighboring Priority values specifically so different SKUs sharing the same angle, and the two variants generated for one shot, don't converge on one repeated pose.
+Posing rules for BZT Male Sports imagery — governs stance, hand placement, head/gaze, and framing for every generated shot.
 
 ---
 
-## dynamic_sprint_stride_pose
+## Global Rules
+
+These are client-agnostic generation-quality principles. They are not specific to BZT or to this client's garments, and any similar pose-library job can reuse them as-is.
+
+**Rule:** A dynamic pose must read as deliberate and controlled, never a stumble, wobble, or accident; a static pose keeps both feet flat and grounded.
+**Why:** An uncontrolled-looking pose reads as an unintentional candid rather than a deliberate athletic or fashion pose, regardless of shot type.
+
+**Rule:** Follow each entry's own alignment call — lean fully into an asymmetric stance (a hinge, lunge, or shift) when the entry's Params specify one, and render a level/even stance as clean and confident, never stiff or mannequin-like.
+**Why:** Forcing an asymmetric pose back toward a level, centered stance flattens the pose's intended energy; a level stance is a valid, different register, not a watered-down version of a dynamic one.
+
+**Rule:** A hand must never touch the garment the model is wearing, in any shot, in any angle — not gripping, not pinching, not bunching, and not simply resting on it either. This includes a garment-covered hip, thigh, knee, or shin, and it covers a deliberate "styling" grip (a hem-pinch or fabric-hold) exactly the same as an incidental rest. A hand may rest on bare skin, hang free without touching the body, hold a pocket **only when the specific garment actually has a real pocket in that location**, grip equipment (not garment), or clasp the other hand.
+**Why (pocket condition):** Offering "pocket" as a fallback without checking the garment actually has one forces a choice between an invented pocket that doesn't exist on the product or an awkward hand reaching toward nothing. Gating it on the garment's real construction removes both failure modes at the source.
+**Why:** Hand-on-garment contact is one of the most heavily and consistently rejected patterns in the evidence behind this framework, with no exception found across any angle.
+
+**Rule:** Never write a hand or arm description that names the hip, thigh, or waist as the hand's spatial anchor and then negates contact (e.g. "at hip height, not touching the hip"). Describe only where the hand actually ends up — extended away from the torso, raised to chest height, hanging at arm's length, gripping equipment — without using the hip or thigh as the reference point, even to deny contact.
+**Why:** Anchoring language paired with a negation is measurably weaker at generation time than a description that never mentions the hip or thigh at all — the anchor word still conceptually places the hand there even while the sentence denies contact. This pattern produced real, repeated hand-on-hip/thigh contact defects even in text that already read as compliant.
+
+**Rule:** Never describe a raised, extended, or resting free hand with "fingers splayed," "fingers spread" (with or without a softening qualifier like "loosely" — the qualifier does not neutralize the trigger phrase), or "open," and never specify or imply that the palm faces the camera or forward. Describe a free hand as relaxed, with fingers loosely together or curled (not spread, not open), palm facing inward toward the body or downward — never toward the camera.
+**Why:** This combination reliably generates a stiff, flat "stop sign" hand rather than a relaxed athletic counterbalance. It appeared specifically as the unintended side effect of an earlier fix to hip-anchored hand language, so both the trigger phrasing and its likely origin (a rewritten hand-placement description) need to be guarded against together.
+
+**Rule:** A hand must never rest on the hip or waist, in any pose, in any angle, with no exception.
+**Why:** This is the single most heavily and consistently evidenced rejection pattern behind this framework, found with no exception across every angle — it is treated as an absolute, not a style preference.
+
+**Rule:** Expression must read as present, alive, and naturally engaged, with energy matched to the pose — never blank, vacant, or frozen — and must vary naturally across the two generated variants of a shot.
+**Why:** A flat or lost expression breaks the "real athlete in the moment" read the whole pose depends on, regardless of how correct the body mechanics are.
+
+**Rule:** Head orientation and gaze selection, variety across the two generated variants, and the back-of-head fallback rule are governed in full in the Head Movements section — see that section for the complete rule.
+**Why:** Head/gaze is the primary source of visible variety between two otherwise-similar generated variants of the same shot, and needs to be resolvable from that one section alone when only Head Movements is passed as context.
+
+**Rule:** Every loaded item (equipment, a bag, a bottle) must be carried, not dropped, in the selected pose — this requirement outranks Priority. The full rule, including its Why, is stated in the Equipment & Props section.
+**Why:** Priority ordering exists to pick between otherwise-equivalent options, not to justify dropping a loaded item the job actually requires.
+
+**Rule:** `Priority` on every entry in this file sets a probabilistic selection weight across a batch, not a deterministic pick order — apply it using rank-based tiers, not a fixed table, because the number of eligible entries for a given angle varies (this file's own pools range from 6 to 24 depending on angle). For a given job's actual eligible pool (after `Applies when`/`Avoid when` filtering for that angle and garment), rank the eligible entries by Priority, lowest first, and distribute selection likelihood across a batch of similar jobs roughly as: the top third of the ranked pool (rounded up, minimum 1 entry) collectively takes roughly 50-60% of selections; the middle third collectively takes roughly 25-35%; the bottom third collectively takes the remainder. Within each third, no single entry should exceed roughly 25% of all selections on its own, and no eligible entry should fall below a real, visible floor (roughly 2-3%) — an entry that is eligible but never actually gets picked across a batch is a defect, the same class of problem as one entry dominating. Recompute the tiers from whatever the actual eligible pool is for that job; do not hardcode which named entries fall in which tier, since entries get added, retired, or re-prioritized over time.
+**Why:** A fixed percentage table (e.g. "Priority 1 = 40%, Priority 2 = 30%") only works for a pool of exactly four eligible entries — most angles in this file have far more, and Priority numbers are not sequential per angle, so no fixed table can apply uniformly. Rank-based tiers scale automatically to whatever pool size actually exists for a job, and don't need to be manually rebalanced every time an entry is added or removed. This rule is reinforced separately in the generation system's own selection instructions; stating it here as well means the guidance holds even when this file is read on its own, without that other context.
+
+**Rule:** `Avoid when` and `Conflicts with` fields are binding, not advisory. Never override an `Avoid when` match to win on Priority, and never drop an item or detail in one generated variant that another variant of the same shot shows.
+**Why:** These fields exist to encode hard eligibility and consistency constraints; treating them as optional guidance defeats their purpose and reintroduces the defects they were written to prevent.
+
+**Rule:** No exaggerated, theatrical, or physically impossible pose is eligible — including any backward spinal arch or backbend — without an explicit QC sign-off flag.
+**Why:** These read as exaggerated fashion or editorial poses rather than the grounded, achievable athletic register this framework targets, and are not supported by the reference evidence behind this file.
+
+**Rule:** Keep the model's reference hairstyle exactly as shown — never restyle it into a more elaborate or editorial look. Avoid glamorous posing or theatrical flourish generally.
+**Why:** The house register is a grounded, natural athletic presentation, not a fashion-editorial shoot; overstyled hair or theatrical posing works against that read.
+
+**Rule:** Every pose must read as one single, coherent, natural human action — stance, hand/arm position, torso angle, and head/gaze together, not individually-valid body parts assembled from unrelated poses.
+**Why:** This is a real, standing rejection reason distinct from any single mechanism like hand placement or clothing type. A pose can satisfy every other rule in this framework and still fail this one if the overall gesture reads as disjointed or borrowed — for example, a clenched or raised fist during a counterbalance reading as an unrelated boxing-guard gesture, or a hand tucked behind the lower back reading as a borrowed gesture rather than a natural counter-arm. This is a qualitative standard with no numeric threshold, but it is still a hard requirement: a pose that fails it needs its Params rewritten, not shipped on a technicality.
+
+---
+
+## Equipment & Props
+
+**Equipment & prop vocabulary** (from the BZT reference set), in rough order of frequency:
+1. Both hands clasped low, as if gripping a club (golf address hinge).
+2. One hand relaxed, fingers loosely together, hovering near the thigh without touching it, during a lunge or stretch.
+3. One hand raised, resting a racket/club on the shoulder (equipment, not garment).
+4. Both hands clasped behind the head (overhead flex).
+5. Forearms crossed at the chest, held clear of the garment (guard stance).
+6. Both hands kneeling, gripping equipment near the ground.
+7. One arm securing a ball at the hip, chest, or behind the back — the ball, not the hand, contacts the body, which is fine.
+8. One hand carrying a bag.
+9. One hand curling a dumbbell.
+
+Hand-on-hip/thigh and hands-on-hips-akimbo are retired from this vocabulary — hip and thigh contact are both banned outright; hovering near the body without touching it is the only acceptable substitute. See the hand-on-hip ban in Global Rules.
+
+**Rule:** Every loaded item (equipment, a bag, a bottle) must be given an explicit placement and carried in the selected pose — this requirement outranks Priority. An entry that leaves hands empty must never be selected over an eligible entry that carries the item, even if the empty-handed entry has a better (lower) Priority number.
+**Why:** Priority ordering exists to pick between otherwise-equivalent options, not to justify dropping a loaded item the job actually requires; letting Priority override this produces a real, visible missing-equipment defect.
+
+**Note:** The garment-contact ban — a hand may grip or hold equipment against the body, but the garment itself may never be touched by a hand — is defined in full in Global Rules; see that section for the complete rule.
+
+---
+
+## Head Movements
+
+**Rule:** Head orientation and gaze must follow each entry's own stated options, never defaulting to one repeated position. Where an entry lists more than one option, the two generated variants of the same shot must land on visibly different ones, and a flat, un-turned back-of-head must never appear on every variant of a rear-facing shot.
+**Why:** Head/gaze is the primary source of visible variety between two otherwise-similar generated variants of the same shot. Repeating an identical head position on both variants, or defaulting every rear shot to a flat back-of-head, reads as a lack of real variation and is a confirmed rejection pattern.
+
+**Head-movement vocabulary** (from the BZT reference set, gender-agnostic — shared verbatim with the Female file). On front-facing shots, draw the actual head/gaze call from:
+1. Direct-level frontal, eyes straight at camera.
+2. Level, head/eyes turned to one side without dropping (a pure side-glance).
+3. Turned to one side and tilted down together, a combined glance.
+4. Chin dropped straight down toward the chest, eyes lowered, no side turn — discouraged, lower preference.
+5. Turned toward profile with the chin very slightly lifted.
+6. Head stays level and forward, only the gaze/eyes cast downward — discouraged, lower preference.
+
+On rear-facing shots:
+1. A flat, straight, un-turned back-of-head — fallback only, must never dominate across variants.
+2. A near-profile turn with the ear visible — the primary recommended back-view movement.
+3. Turned to one side and tilted down, tracking an implied piece of equipment or the ground.
+
+---
+
+## Non-Negotiable Rules
+
+Rules specific to BZT Male Sports that are not Global, Equipment & Props, or Head Movements content. Angle vocabulary used throughout this file: `full_front`, `full_back`, `front_upper_crop`, `front_lower_crop`. The BZT Male Sports house look is controlled athletic energy — the model reads as an athlete captured mid-action or in confident equipment-ready posture, not a static mannequin. `front_upper_crop` and `front_lower_crop` are built almost entirely around held dynamic action; `full_front` and `full_back` are the static-leaning angles. Static, level stands remain a valid fallback register, not the default.
+
+### Prohibited / Must-Not-Happen conditions
+
+**Rule:** A walking or mid-stride gait — one foot lifted and swinging as if caught mid-step — is prohibited completely, on every shot type, with no exception.
+**Why:** A walking gait reads as an unintentional lifestyle candid, not a controlled athletic or fashion pose, and is rejected on every angle with no exception found. Genuine athletic motion — a jog/run stride, a lunge, a stretch — is not a walking gait and remains in scope.
+
+**Rule:** Footwear must always match the implied activity (e.g. running shoes for a running pose, court shoes for a racket sport, training shoes for gym work) whenever feet are in frame. Bare feet are never acceptable in a full-body or lower-body shot.
+**Why:** Mismatched or absent footwear breaks the athletic context the pose is built around, and bare feet is one of the most consistently rejected patterns in the evidence behind this framework.
+
+**Rule:** The running/sprint-stride mechanic must never be forward-facing and must never render as an airborne "flying" pose; it must never appear on `full_front` or `full_back`.
+**Why:** A forward-facing running stride is rejected in every angle in the underlying evidence, while a diagonal/sideways stride is explicitly accepted on crop shots only.
+
+**Rule:** `full_back` must never carry a wide-stance, high-movement dynamic pose.
+**Why:** The evidence behind this framework rejects wide-stance, high-movement `full_back` poses repeatedly with no exception, while multiple full-body, front-facing dynamic poses were explicitly approved on movement grounds alone.
+
+**Rule:** A hand in a pocket (or any single fallback gesture) must never be the first-listed, most frequent, or default choice, and must never repeat identically across both variants of a shot.
+**Why:** Treating any single fallback gesture (pocket included) as the default produces the same over-saturation problem that hand-on-hip caused before it was banned — a fallback needs to stay a fallback, not become the new default.
+
+**Rule:** `athletic_akimbo_power_pose` is retired and must never be selected. Its entire premise was hands-on-hips (akimbo), a hard error with no exception; no non-hip alternate exists for the pose concept, so it is retired outright rather than patched.
+**Why:** Left in the Entry Library for record only — selecting it would reintroduce the single most heavily rejected pattern in this framework.
+
+### Required/Allowed conditions
+
+**Rule:** `full_front`, `full_back`, and `front_lower_crop` keep feet in frame; `front_upper_crop` is waist-up by definition. On any crop angle, whenever a pose's Params call for a raised, extended, or driven arm, position the subject with enough lateral margin that the hand stays completely inside the frame.
+**Why:** Each angle has a fixed coverage contract; feet or a driven hand exiting the frame breaks that contract regardless of how correct the pose itself is.
+
+**Rule:** Whenever a job's hero garment is a bottom-category item, it must never be routed to a pose whose only eligible `Angles` value is `front_upper_crop` — select an entry that also lists `front_lower_crop` (or `full_front`/`full_back`) among its Angles, or skip a `front_upper_crop`-only pose for that job. The reverse applies symmetrically: a top-category hero garment should not be routed to a `front_lower_crop`-only entry.
+**Why:** `front_upper_crop` crops at the waistband/upper thigh and structurally cannot show a bottom garment's hem or leg line; `front_lower_crop` symmetrically cannot show a top garment's full construction. Routing the wrong hero-garment category to either angle crops the hero garment out of frame by construction. Entries whose stance genuinely doesn't translate to a lower-crop framing (an overhead flex, a seated curl, a golf address hinge) are left `front_upper_crop`-only on the assumption their hero garment is normally a top, not a bottom.
+
+**Rule:** The running/sprint-stride mechanic (`dynamic_sprint_stride_pose`) is eligible on `front_upper_crop`/`front_lower_crop` only, and only in its diagonal/sideways form. Its arm, hand, and head/gaze description is locked to the approved reference mechanic: reciprocal arm drive with the trailing-leg-side arm forward and up (elbow near a right angle, hand at chest height, fingers relaxed and loosely curled together, palm inward/downward, never a clenched fist), the other arm mirrored back and down; head turned to a three-quarter/profile angle in the direction of movement with a level chin and the face fully visible; gaze directed into the distance in the direction of movement.
+**Why:** A diagonal/sideways stride is explicitly accepted on crop shots only in the underlying evidence. The arm/hand/head mechanic is locked to the one reference image explicitly confirmed acceptable, to prevent drift back into a forward-facing or splayed-finger/palm-forward defect.
+
+**Rule:** The running-stride entry is one eligible option among many, not a default — target roughly one selection in ten eligible jobs. Its Priority is set at the bottom of its eligible pool accordingly.
+**Why:** Real output showed this entry selected in roughly 19 of 20 eligible jobs when it held a top Priority value, functioning as a de facto default rather than one option among many. Priority demotion is a mitigation, not a guaranteed fix — if over-selection persists after this change, the cause likely sits in the selection/weighting layer outside this file, not in the pose content itself.
+
+**Rule:** `full_front` carries no wide-stance restriction — dynamic poses are fully eligible there; its lean toward static entries is a soft default, not a hard ban.
+**Why:** Multiple full-body, front-facing dynamic poses were explicitly approved on movement grounds alone, unlike `full_back`.
+
+**Rule:** `front_upper_crop` and `front_lower_crop` carry the dynamic register as their primary content. `full_front`/`full_back` are dominated by the still, level stand as their primary register, with select dynamic entries usable as occasional secondary full-body variants — not the default landing spot whenever a dynamic variant is wanted.
+**Why:** This matches the reference set's actual distribution and keeps dynamic `full_front` entries from becoming an over-selected substitute for the static register that should remain the majority outcome there.
+
+**Rule:** The fallback-gesture pool for this file rotates between a pocketed hand (only when the garment has a real pocket), a relaxed-at-the-side hand, and an equipment carry. When the garment has no real pocket, the pocketed-hand option drops out of the pool entirely for that job — never substituted with an invented pocket or an approximated reach toward where one would be. A relaxed hand at the side is always available regardless of garment or equipment, and is the correct default whenever nothing else in the pool applies.
+**Why:** Rotating among several fallback gestures, rather than one, prevents any single fallback from becoming the new dominant gesture in place of the banned hip-rest.
+
+---
+
+## Entry Library
+
+### dynamic_sprint_stride_pose
 **Label:** Dynamic Full-Sprint Mid-Stride Drive
 
-**Priority:** 1
+**Priority:** 25 — set to the bottom of the general-purpose band so it competes as one of many eligible entries rather than winning by default. Target roughly 1 selection in 10 eligible jobs, not the default.
 
 **Angles:** front_upper_crop, front_lower_crop
 
@@ -44,20 +157,21 @@
 - Roles: hero_garment, top, bottom
 - Categories: t-shirts, tank tops, shorts, leggings, vests
 - Fit: skin-tight, slim, fitted, athletic-fit
+
 **Avoid when:**
 - Categories: trousers, suits, blazers & coats, jackets
-- Bottom category: sweatpants, joggers, cargo pants with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment matches; added 2026-08-28 during output validation — a full-sprint drive doesn't suit a loose/relaxed bottom any more than a wide lunge does, and this entry had never received the same exclusion sweep as the lunge entries in RCA Log Entry 4)
+- Bottom category: sweatpants, joggers, cargo pants with Fit: relaxed (role-scoped to the bottom garment actually worn — never satisfied merely because a top/hero_garment matches — a full-sprint drive doesn't suit a loose/relaxed bottom)
 
 **Conflicts with:** static_full_body_pose, athleisure_frontal_standing_pose, rear_view_silhouette_pose
 
-**CLIENT-APPROVED REFERENCE — the sole approved running-stride mechanic. Per Hard Requirement 14:** eligible on `front_upper_crop`/`front_lower_crop` only, never `full_front`/`full_back`. Only the diagonal/sideways mechanic is acceptable, never forward-facing. `hydration_vest_dynamic_stride_pose` was removed — its entire premise was a rear-view `full_back` stride, prohibited twice over.
+**The sole approved running-stride mechanic in this file, locked to the running-mechanic rule in Non-Negotiable Rules above.** Eligible on `front_upper_crop`/`front_lower_crop` only, never `full_front`/`full_back`; only the diagonal/sideways mechanic is acceptable, never forward-facing.
 
 **Params:**
-- **stance:** full mid-stride sprint drive, grounded and controlled — NEVER an airborne leap. Lead leg driven forward and up with a sharp high-knee lift, trail leg extended back and bent, the trailing foot's toe/ball still in contact with or just leaving the ground
-- **arm_position:** reciprocal arm drive — one arm bent and driven up toward chest height, hand relaxed with fingers loosely spread, never a clenched fist; the other arm bent and driven back down, hand equally relaxed, never resting on or touching the hip/garment (Hard Requirement 3)
+- **stance:** full mid-stride sprint drive, grounded and controlled — never an airborne leap. Lead leg driven forward and up with a sharp high-knee lift, trail leg extended back and bent, the trailing foot's toe/ball still in contact with or just leaving the ground
+- **arm_position:** reciprocal arm drive — the arm on the same side as the trailing leg drives forward and up, elbow bent to roughly a right angle, hand at chest height, fingers relaxed and loosely curled together (a soft, natural running hand — never spread, splayed, or an open flat palm, never a clenched fist), palm facing inward/downward, never toward the camera; the other arm drives back and down at a mirrored bend, equally relaxed, never resting on or touching the hip/garment
 - **torso_angle:** three-quarter turn at roughly 45 degrees, moving diagonally toward the camera or sideways across the frame — never angled or moving away from the camera
-- **head_orientation:** turned to a three-quarter angle away from direct camera contact, chin level, focused, always fully visible in frame — vary the exact degree/side across the two generated variants
-- **gaze_direction:** directed off to the side into the distance — not down at the ground, not straight at the lens — focused, high intensity
+- **head_orientation:** turned to a three-quarter/profile angle in the direction of movement, chin level (never tilted down), face fully visible, looking ahead — not at the camera
+- **gaze_direction:** directed off to the side into the distance, in the direction of movement — not down at the ground, not straight at the lens — focused, high intensity
 - **weight_distribution:** dynamic, loaded onto the driving leg, always grounded
 - **recommended_framing:** front_upper_crop or front_lower_crop — top of head to roughly mid-thigh, face always fully in frame. Never `full_front` or `full_back`
 - **footwear:** when feet are in frame, the model always wears proper running shoes — never barefoot
@@ -66,39 +180,7 @@
 
 ---
 
-## dynamic_lunge_stretch_pose
-**Label:** Dynamic Forward Lunge & Hamstring Stretch
-
-**Priority:** 2
-
-**Angles:** front_upper_crop, front_lower_crop
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: sweatshirts & hoodies, jackets, shorts, sweatpants, t-shirts, leggings
-- Fit: slim, regular, relaxed
-- Length: above-knee, hip-length, full-length
-**Avoid when:**
-- Categories: dresses, skirts, suits
-- Bottom category: sweatpants, joggers, relaxed trousers with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment like a hoodie matches; a deep wide lunge doesn't suit a loose/relaxed bottom regardless of what the top is — see RCA Log Entry 4)
-**Requires:** static_full_body_pose
-
-**Conflicts with:** rear_view_silhouette_pose
-
-**Params:**
-- **stance:** deep forward lunge, wide stance, front leg bent and weight-loaded, back leg extended straight
-- **hand_placement:** SECOND UPDATE 2026-08-27 — the original "hand resting on the hip or thigh" no longer complies with the stricter Hard Requirement 3. Corrected: one hand held open at hip height, WITHOUT touching the hip or thigh, fingers splayed; other hand hangs free or grips a prop (equipment)
-- **torso_angle:** three-quarter turn, leaning forward significantly over the front leg
-- **head_orientation:** turned to the side and tilted downward — vary the exact degree/side across the two generated variants
-- **gaze_direction:** averted to the side or intently downward
-- **weight_distribution:** heavily loaded onto the forward leg
-- **recommended_framing:** front_upper_crop (torso-to-thigh) for the hand/torso lean detail; front_lower_crop for leg-line and short/legging length and drape
-- **occlusion_avoidance:** arms and torso positioned to keep the garment's front seams and hem line visible during the stretch
-- **movement_suggestion:** mid-stretch, functional and athletic, not posed-static
-
----
-
-## weighted_equipment_curl_pose
+### weighted_equipment_curl_pose
 **Label:** Weighted Training Curl, Forward Lean
 
 **Priority:** 3
@@ -109,6 +191,7 @@
 - Roles: hero_garment, top
 - Categories: t-shirts, tank tops, sweatshirts & hoodies
 - Fit: slim, regular, relaxed, oversized
+
 **Avoid when:**
 - Categories: trousers, jackets, dresses, skirts
 
@@ -125,7 +208,7 @@
 
 ---
 
-## golf_address_hinge_pose
+### golf_address_hinge_pose
 **Label:** Golf Address Hinge, Hands Clasped Low
 
 **Priority:** 4
@@ -151,7 +234,7 @@
 
 ---
 
-## crossed_forearm_guard_pose
+### crossed_forearm_guard_pose
 **Label:** Crossed-Forearm Guard Stance
 
 **Priority:** 5
@@ -175,7 +258,7 @@
 
 ---
 
-## overhead_arms_flex_pose
+### overhead_arms_flex_pose
 **Label:** Overhead Arms Flex, Elbows Out
 
 **Priority:** 6
@@ -199,7 +282,7 @@
 
 ---
 
-## shoulder_rested_equipment_carry_pose
+### shoulder_rested_equipment_carry_pose
 **Label:** Shoulder-Rested Equipment Carry (Racket/Club)
 
 **Priority:** 7
@@ -224,7 +307,7 @@
 
 ---
 
-## kneeling_equipment_grip_pose
+### kneeling_equipment_grip_pose
 **Label:** Kneeling Equipment Grip Close-Up
 
 **Priority:** 8
@@ -239,7 +322,7 @@
 - **stance:** one knee lowered toward the ground, weight settled into a kneeling position
 - **hand_placement:** both hands actively gripping a piece of equipment (club shaft, racket handle) close to the ground/lower body
 - **torso_angle:** leaning forward and down toward the hands
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
 - **framing_intent:** intentionally tight/close crop on the hands-and-equipment interaction rather than the face
 - **recommended_framing:** front_lower_crop — knee-to-shoe, hands prominent in frame
 - **garment_visibility_priority:** unique view of short/trouser drape at the knee, sock compression, and shoe construction from a low, grounded angle
@@ -247,7 +330,7 @@
 
 ---
 
-## athletic_prop_carry_pose
+### athletic_prop_carry_pose
 **Label:** Athletic Prop Carry — Hip, Chest, or Rear Hold
 
 **Priority:** 9
@@ -259,9 +342,9 @@
 - Categories: tops, shorts, bags
 
 **Params:**
-- **hand_placement:** variant A — one arm bent at the elbow securing a ball against the hip (the ball, not the hand, contacts the body — fine per Hard Requirement 3); variant B — ball held at chest height with the opposite hand relaxed, not touching garment; variant C (rear view) — one hand holding a ball behind the back, not touching garment
+- **hand_placement:** variant A — one arm bent at the elbow securing a ball against the hip (the ball, not the hand, contacts the body — fine per the Global Rules); variant B — ball held at chest height with the opposite hand relaxed, not touching garment; variant C (rear view) — one hand holding a ball behind the back, not touching garment
 - **torso_angle:** three-quarter turn toward the side holding the prop, or squared-away for the rear variant
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
 - **weight_distribution:** static, centered balance
 - **arm_position:** the carrying arm creates a triangular negative space between torso and elbow
 - **recommended_framing:** front_upper_crop for hip/chest holds; full_back for the behind-the-back variant
@@ -269,7 +352,7 @@
 
 ---
 
-## athletic_equipment_ready_stance
+### athletic_equipment_ready_stance
 **Label:** Athletic Equipment Ready Stance
 
 **Priority:** 10
@@ -280,6 +363,7 @@
 - Roles: top, bottom, accessory
 - Categories: shirts, shorts, trousers
 - Fit: regular, relaxed
+
 **Avoid when:**
 - Categories: jackets, outerwear
 
@@ -293,25 +377,25 @@
 
 ---
 
-## athletic_akimbo_power_pose — RETIRED 2026-08-27, DO NOT SELECT
+### athletic_akimbo_power_pose — RETIRED, DO NOT SELECT
 **Label:** Athletic Akimbo Power Pose
 
 **Angles:** none — retired
 
-**RETIRED — not eligible for selection.** This entry's entire premise is hands-on-hips (akimbo), which the ground truth deck rejects ~30 times, in every angle, with no exception — see Hard Requirement 3. Unlike other implicated fallback-tier entries, this one has no non-hip alternate, so it is retired outright. Left in the file for record/history only.
+**RETIRED — not eligible for selection.** Its entire premise was hands-on-hips (akimbo), a hard error with no exception; no non-hip alternate exists for this pose concept, so it is retired outright rather than patched. Left in the file for record only.
 
 **Params (historical, non-functional):**
 - **stance:** straight standing position, legs slightly apart
 - **hand_placement:** hands placed firmly on hips (akimbo) — the specific placement now banned
 - **shoulder_alignment:** squared and pulled back for an upright, powerful posture
 - **torso_angle:** three-quarter turn or frontal
-- **head_orientation:** draws from the Head-movement vocabulary
+- **head_orientation:** draws from the Head Movements vocabulary
 - **weight_distribution:** balanced evenly or with a subtle shift to one hip
 - **garment_visibility_priority:** emphasizes the waistline transition, sleeve/armhole clearance, and chest crest placement
 
 ---
 
-## tactile_accessory_engagement
+### tactile_accessory_engagement
 **Label:** Tactile Accessory Engagement Pose
 
 **Priority:** 12
@@ -326,14 +410,14 @@
 - **hand_placement:** one hand actively touching/holding the accessory (not the garment) — gripping a bag's carry strap at the side, adjusting a cap brim, or holding a duffel bag by its handles
 - **arm_position:** leading arm raised or extended to create a dynamic diagonal line, negative space between arm and torso
 - **torso_angle:** three-quarter turn to highlight the accessory's placement
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
 - **shoulder_alignment:** asymmetric — the engaged-side shoulder typically raised or rolled forward
 - **recommended_framing:** front_lower_crop for a hand-carried bag, front_upper_crop for cap/watch adjustment
 - **occlusion_avoidance:** accessory held to the side of the body line so it doesn't obscure hero-garment logos
 
 ---
 
-## football_kneeling_ball_dribble_pose
+### football_kneeling_ball_dribble_pose
 **Label:** Kneeling Football Ball-Dribble Crouch
 
 **Priority:** 13
@@ -346,7 +430,7 @@
 
 **Params:**
 - **stance:** low crouch, one knee bent low toward the ground, weight forward over a football resting under one foot
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — one hand hovering open beside the raised knee WITHOUT touching it, other hand relaxed or braced on the ground (not garment) for balance
+- **hand_placement:** one hand hovering beside the raised knee, fingers relaxed and loosely together, without touching it; other hand relaxed or braced on the ground (not garment) for balance
 - **torso_angle:** three-quarter turn, leaning forward and down toward the ball
 - **head_orientation:** angled down toward the ball, focused — vary the exact degree/side across the two generated variants
 - **gaze_direction:** downward, absorbed in the ball
@@ -356,7 +440,7 @@
 
 ---
 
-## racket_behind_head_hold_pose
+### racket_behind_head_hold_pose
 **Label:** Racket Held Behind the Head/Neck, Close Crop
 
 **Priority:** 13
@@ -378,7 +462,7 @@
 
 ---
 
-## backpack_strap_adjust_profile_pose
+### backpack_strap_adjust_profile_pose
 **Label:** Profile Stance Adjusting Backpack Strap
 
 **Priority:** 14
@@ -400,35 +484,8 @@
 
 ---
 
-## wide_skater_lunge_hands_clasped_pose
-**Label:** Wide Skater Lunge, Hands Clasped Low
-
-**Priority:** 13
-
-**Angles:** full_front
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: t-shirts, tank tops, sweatshirts & hoodies, shorts, sweatpants
-- Fit: fitted, slim, relaxed
-**Avoid when:**
-- Categories: dresses, suits, blazers & coats
-- Bottom category: sweatpants, joggers with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment matches; a wide lateral lunge/skater stance doesn't suit a loose/relaxed bottom — see RCA Log Entry 4)
-
-**Params:**
-- **stance:** wide lateral lunge/skater stance, one leg bent and loaded, the other extended to the side, torso leaning forward over the loaded leg
-- **hand_placement:** both hands clasped together low in front of the body, elbows bent — hands touch each other, not garment
-- **torso_angle:** three-quarter turn, leaning forward into the lunge
-- **head_orientation:** turned toward the working side, focused — vary the exact degree/side across the two generated variants
-- **gaze_direction:** averted to the side or downward, engaged
-- **weight_distribution:** heavily loaded onto the bent leg
-- **recommended_framing:** full_front — the wide lateral stance needs the whole body in frame. Confirmed eligible per Hard Requirement 15
-- **garment_visibility_priority:** shows leg-line stretch and waistband behavior under the lateral load
-
----
-
-## forward_bend_hands_open_stretch_pose — RENAMED 2026-08-27, hands no longer braced on the knees
-**Label:** Forward Bend, Hands Open (formerly "Braced on Knees" — name retained for history)
+### forward_bend_hands_open_stretch_pose
+**Label:** Forward Bend, Relaxed Hands
 
 **Priority:** 13
 
@@ -441,7 +498,7 @@
 
 **Params:**
 - **stance:** standing, knees softly bent, torso hinged forward at the waist
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — both hands hovering open just above the knees, elbows out, WITHOUT touching the legs
+- **hand_placement:** both hands hovering just above the knees, fingers relaxed and loosely together, elbows out, without touching the legs
 - **torso_angle:** deep forward hinge, profile to three-quarter
 - **head_orientation:** down, following the line of the fold — vary the exact degree/side across the two generated variants
 - **gaze_direction:** downward, absorbed in the stretch
@@ -451,7 +508,7 @@
 
 ---
 
-## backpack_carry_rear_three_quarter_pose
+### backpack_carry_rear_three_quarter_pose
 **Label:** Backpack Carry, Rear Three-Quarter View
 
 **Priority:** 14
@@ -474,7 +531,7 @@
 
 ---
 
-## bent_over_shoe_sock_adjust_pose
+### bent_over_shoe_sock_adjust_pose
 **Label:** Bent-Over Shoe/Sock Adjustment
 
 **Priority:** 14
@@ -497,7 +554,7 @@
 
 ---
 
-## football_ball_hip_carry_pose
+### football_ball_hip_carry_pose
 **Label:** Football Kit — Ball Secured at the Hip
 
 **Priority:** 13
@@ -508,6 +565,7 @@
 - Roles: hero_garment, top, bottom
 - Categories: t-shirts, shirts
 - Pattern: team crest, graphic print, stripes, colorblock
+
 **Avoid when:**
 - Categories: polos, trousers, blazers & coats
 
@@ -522,7 +580,7 @@
 
 ---
 
-## tennis_forward_ready_stance_pose
+### tennis_forward_ready_stance_pose
 **Label:** Tennis Forward-Bent Ready Stance
 
 **Priority:** 13
@@ -545,7 +603,7 @@
 
 ---
 
-## tennis_vertical_racket_static_pose
+### tennis_vertical_racket_static_pose
 **Label:** Tennis — Racket Held Vertically, Static Stand
 
 **Priority:** 14
@@ -567,7 +625,7 @@
 
 ---
 
-## golf_club_shoulder_static_profile_pose
+### golf_club_shoulder_static_profile_pose
 **Label:** Golf — Club Resting on the Shoulder, Static Profile
 
 **Priority:** 13
@@ -577,6 +635,7 @@
 **Applies when:**
 - Roles: hero_garment, top, accessory
 - Categories: polos, trousers, shorts
+
 **Avoid when:**
 - Categories: sweatpants, sweatshirts & hoodies, tank tops
 
@@ -591,8 +650,8 @@
 
 ---
 
-## golf_ready_focused_stance_pose — RENAMED 2026-08-27, hand no longer on the hip
-**Label:** Golf — Focused Downrange, Hand Open at the Side (formerly "Hand on Hip" — name retained for history)
+### golf_ready_focused_stance_pose
+**Label:** Golf — Focused Downrange, Relaxed Hand at the Side
 
 **Priority:** 14
 
@@ -604,7 +663,7 @@
 
 **Params:**
 - **stance:** standing straight, weight even
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — one hand open at the side, NOT resting on the hip; other hand holding a golf glove (equipment) or resting near a club at the side
+- **hand_placement:** one hand relaxed at the side, fingers loosely together, not resting on the hip; other hand holding a golf glove (equipment) or resting near a club at the side
 - **torso_angle:** three-quarter turn
 - **head_orientation:** turned to the side, gaze directed off toward the implied fairway — vary the exact degree/side across the two generated variants
 - **gaze_direction:** averted to the side, focused
@@ -613,7 +672,7 @@
 
 ---
 
-## zip_hoodie_hands_clasped_profile_pose
+### zip_hoodie_hands_clasped_profile_pose
 **Label:** Zip Hoodie — Hands Clasped Low, Profile, Head Down
 
 **Priority:** 15
@@ -636,7 +695,7 @@
 
 ---
 
-## front_zip_jacket_forward_lean_pose
+### front_zip_jacket_forward_lean_pose
 **Label:** Front-Zip Jacket — Hands Clasped Low, Forward Lean
 
 **Priority:** 15
@@ -659,7 +718,7 @@
 
 ---
 
-## plank_position_floor_pose
+### plank_position_floor_pose
 **Label:** Plank Position, One Arm Braced, Body Diagonal
 
 **Priority:** 15
@@ -672,7 +731,7 @@
 
 **Params:**
 - **stance:** plank position, body forming a straight diagonal line from head to heel, supported on one braced forearm/hand and both feet
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — one arm braced flat on the floor/mat (not garment) bearing weight; other hand extended forward, open, not resting on the hip
+- **hand_placement:** one arm braced flat on the floor/mat (not garment) bearing weight; other hand extended forward, fingers relaxed and loosely together, not resting on the hip
 - **torso_angle:** three-quarter, diagonal toward the camera
 - **head_orientation:** turned to the side, chin roughly level with the shoulder — vary the exact degree/side across the two generated variants
 - **gaze_direction:** averted to the side, focused
@@ -681,36 +740,7 @@
 
 ---
 
-## wide_lateral_side_lunge_pose
-**Label:** Wide Lateral Side Lunge, Hand Open
-
-**Priority:** 16
-
-**Angles:** full_front
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: t-shirts, tank tops, shorts, sweatpants
-- Fit: fitted, slim, relaxed
-**Avoid when:**
-- Categories: trousers, jackets, suits, blazers & coats
-- Bottom category: sweatpants with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment matches; a wide lateral lunge doesn't suit a loose/relaxed bottom — see RCA Log Entry 4)
-
-**Conflicts with:** static_full_body_pose, wide_skater_lunge_hands_clasped_pose
-
-**Params:**
-- **stance:** wide side-to-side lateral lunge, one leg bent and loaded directly to the side, the other extended straight, both feet flat and turned outward
-- **hand_placement:** SECOND UPDATE 2026-08-27 — the original "hand braced on the bent knee" no longer complies with the stricter Hard Requirement 3. Corrected: one hand hovering open beside the bent knee WITHOUT touching it, other hand relaxed at the side — never resting on the hip/waist or the knee, in any angle
-- **torso_angle:** three-quarter turn, weight shifted directly over the loaded leg
-- **head_orientation:** turned toward the loaded side, focused — vary the exact degree/side across the two generated variants
-- **gaze_direction:** averted to the side, engaged
-- **weight_distribution:** heavily loaded onto the bent leg, sideways rather than forward
-- **recommended_framing:** full_front — the side-to-side stance needs the whole body in frame. Confirmed eligible per Hard Requirement 15
-- **garment_visibility_priority:** shows leg-line stretch and inseam behavior under the lateral load, distinct from the forward-leaning `wide_skater_lunge_hands_clasped_pose`
-
----
-
-## golf_glove_adjustment_pose
+### golf_glove_adjustment_pose
 **Label:** Golf — Adjusting Glove, Standing
 
 **Priority:** 19
@@ -732,34 +762,7 @@
 
 ---
 
-## barbell_loaded_lunge_pose
-**Label:** Forward Lunge Beside a Grounded Barbell
-
-**Priority:** 20
-
-**Angles:** front_lower_crop
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: t-shirts, tank tops, sweatshirts & hoodies, shorts, sweatpants
-- Fit: fitted, slim, relaxed
-**Avoid when:**
-- Categories: trousers, jackets, suits
-- Bottom category: sweatpants with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment matches; a forward lunge doesn't suit a loose/relaxed bottom, even on `front_lower_crop` — see RCA Log Entry 4)
-
-**Params:**
-- **stance:** forward lunge stance, front knee bent and loaded, back leg extended, standing directly beside a barbell resting on the floor
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — one hand held open beside the front thigh WITHOUT touching it, other arm relaxed at the side — the barbell stays grounded, never lifted mid-pose
-- **torso_angle:** three-quarter turn, weight forward over the lead leg
-- **head_orientation:** turned down toward the barbell or toward the working leg — vary the exact degree/side across the two generated variants
-- **gaze_direction:** downward, focused
-- **weight_distribution:** loaded onto the front leg
-- **recommended_framing:** front_lower_crop, hip-to-shoe — the lunge line and the grounded barbell both need to read at leg height
-- **garment_visibility_priority:** shows short/legging inseam stretch and shoe construction in a genuine strength-training context
-
----
-
-## crouched_dual_dumbbell_hold_pose
+### crouched_dual_dumbbell_hold_pose
 **Label:** Crouched Stance, Dumbbells Held at Knee Height
 
 **Priority:** 21
@@ -784,7 +787,7 @@
 
 ---
 
-## standing_dumbbell_curl_bent_elbow_pose
+### standing_dumbbell_curl_bent_elbow_pose
 **Label:** Standing Dumbbell Curl, Bent Elbow at Shoulder
 
 **Priority:** 22
@@ -808,7 +811,33 @@
 
 ---
 
-## jump_rope_side_profile_pose
+### resistance_band_overhead_pull_back_pose
+**Label:** Resistance Band Overhead Pull, Symmetric (Back View)
+
+**Priority:** 16
+
+**Angles:** full_back
+
+**Applies when:**
+- Roles: hero_garment, top, bottom
+- Categories: t-shirts, tank tops, sweatshirts & hoodies, shorts, sweatpants
+
+**Conflicts with:** rear_view_silhouette_pose
+
+**Ported from the Female file's equivalent entry — the mechanic and equipment handling are fully gender-neutral.** Locked to a confirmed-acceptable reference — both hands together, straight overhead, no lateral lean. Two rejected variants of this same equipment interaction exist and must not be reproduced: (1) an asymmetric single-arm diagonal pull with the torso leaning/twisting into the reach — never do this, both arms move and load together, symmetrically; (2) the band/rope rendered as two separate lines running down to two separate floor anchor points, forming a wide V/W shape — the band's equipment description must keep both handles gripped together at a single point overhead, not spread to two independent anchors.
+
+**Params:**
+- **stance:** standing, feet grounded, stable and symmetric — weight even on both feet, no lean to either side
+- **hand_placement:** both hands gripping the resistance-band handles together, side by side, pulling straight overhead — never one arm at a time, never spread to two separate anchor points
+- **torso_angle:** facing away from camera (rear view), upright and centered — no lateral bend, no twist toward either side
+- **head_orientation:** level, or turned gently to one side — vary the exact degree/side across the two generated variants rather than repeating an identical angle on both
+- **weight_distribution:** even, grounded, symmetric
+- **recommended_framing:** full_back
+- **garment_visibility_priority:** back-panel seams and shoulder construction read clearly under the symmetric overhead extension
+
+---
+
+### jump_rope_side_profile_pose
 **Label:** Jump Rope, Side Profile Mid-Motion
 
 **Priority:** 23
@@ -819,6 +848,7 @@
 - Roles: hero_garment, top
 - Categories: sweatshirts & hoodies, tank tops, t-shirts
 - Fit: fitted, slim, relaxed
+
 **Avoid when:**
 - Categories: trousers, jackets, suits
 
@@ -829,12 +859,12 @@
 - **head_orientation:** level or turned slightly toward camera — vary the exact degree/side across the two generated variants
 - **gaze_direction:** forward, focused
 - **weight_distribution:** even, both feet grounded
-- **recommended_framing:** full_back — the profile stance reads equally well from a rear three-quarter angle; a contained, standing pose, not the wide-stance pattern Hard Requirement 15 excludes
+- **recommended_framing:** full_back — the profile stance reads equally well from a rear three-quarter angle; a contained, standing pose, not the wide-stance pattern the `full_back` wide-stance ban excludes
 - **garment_visibility_priority:** shows the garment's side-seam and hem behavior under the rope's swinging motion
 
 ---
 
-## seated_dumbbell_curl_pose
+### seated_dumbbell_curl_pose
 **Label:** Seated Dumbbell Curl, Close Crop
 
 **Priority:** 24
@@ -848,7 +878,7 @@
 
 **Params:**
 - **stance:** seated, torso upright, elbows braced near the torso
-- **hand_placement:** one hand curling a dumbbell (equipment) close to the chest; other hand held open, hovering near the thigh WITHOUT touching it (updated 2026-08-27, Hard Requirement 3)
+- **hand_placement:** one hand curling a dumbbell (equipment) close to the chest; other hand relaxed, fingers loosely together, hovering near the thigh without touching it
 - **arm_position:** working arm flexed, forearm close to the body
 - **torso_angle:** slight three-quarter turn
 - **head_orientation:** turned down toward the curl, focused — vary the exact degree/side across the two generated variants
@@ -858,7 +888,7 @@
 
 ---
 
-## athleisure_dynamic_motion_pose
+### athleisure_dynamic_motion_pose
 **Label:** Dynamic Athleisure Motion and Stretching Stance
 
 **Priority:** 15
@@ -870,26 +900,27 @@
 - Categories: t-shirts, sweatpants, shorts, sweatshirts & hoodies, jackets
 - Fit: regular, slim, relaxed
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Roles: outerwear
 - Categories: sweatshirts & hoodies, jackets
-- Bottom category: sweatpants with Fit: relaxed (role-scoped — checked against the actual bottom garment, never satisfied just because a top/hero_garment matches; a lunging/stretching stance with one leg bent or lifted doesn't suit a loose/relaxed bottom — see RCA Log Entry 4)
+- Bottom category: sweatpants with Fit: relaxed (role-scoped to the bottom garment actually worn — never satisfied merely because a top/hero_garment matches; a lunging/stretching stance with one leg bent or lifted doesn't suit a loose/relaxed bottom)
 
 **Conflicts with:** athleisure_frontal_standing_pose, athleisure_posterior_view_pose
 
 **Params:**
-- **stance:** lunging or stretching stance with one leg bent or lifted; when the running variant is selected, use the client-approved running-stride mechanic instead (see `dynamic_sprint_stride_pose`) — always grounded, never an airborne "flying" pose
-- **hand_placement:** hands clasped together near the knees without touching them, extended forward in a stretch, or holding accessories (equipment); for the running variant, both hands relaxed and open in a reciprocal drive, never a clenched fist
+- **stance:** lunging or stretching stance with one leg bent or lifted; when the running variant is selected, use the approved running-stride mechanic instead (see `dynamic_sprint_stride_pose`) — always grounded, never an airborne "flying" pose
+- **hand_placement:** hands clasped together near the knees without touching them, extended forward in a stretch, or holding accessories (equipment); for the running variant, both hands relaxed with fingers loosely curled in a reciprocal drive, never a clenched fist
 - **head_orientation:** turned slightly upward and toward the side, following the action trajectory — vary the exact degree/side across the two generated variants
 - **torso_angle:** three-quarter turn or profile view; for the running variant, angled diagonally toward the camera or sideways at roughly 45 degrees, never away from the camera
 - **gaze_direction:** directed away from camera or focused forward-left
 - **weight_distribution:** dynamic, shifting forward or supported on a single planted leg
-- **recommended_framing:** front_upper_crop or front_lower_crop for the stretch variant; same, per Hard Requirement 14, for the running variant — never `full_front` or `full_back`
+- **recommended_framing:** front_upper_crop or front_lower_crop for the stretch variant; same, per the running-mechanic rule, for the running variant — never `full_front` or `full_back`
 - **movement_suggestion:** stretching or kicking motion, held and controlled; the running variant is a grounded full-sprint drive, never a jump or leap
 
 ---
 
-## athletic_hero_garment_pose
+### athletic_hero_garment_pose
 **Label:** Athletic Hero Garment Dynamic Presentation
 
 **Priority:** 17
@@ -901,6 +932,7 @@
 - Categories: t-shirts, shirts, sweatshirts & hoodies
 - Fit: regular, slim, relaxed
 - Length: hip-length
+
 **Avoid when:**
 - Roles: layering_piece
 - Categories: trousers, sweatpants
@@ -909,16 +941,16 @@
 
 **Params:**
 - **stance:** feet apart, weight distributed dynamically forward or shifted to one leg
-- **hand_placement:** UPDATED 2026-08-27 (Hard Requirement 3) — one hand holding an athletic accessory (equipment), NOT resting on the hip; other hanging relaxed at the side — never in a pocket as the primary look, which reads as casual lifestyle rather than sportswear
+- **hand_placement:** one hand holding an athletic accessory (equipment), not resting on the hip; other hanging relaxed at the side — never in a pocket as the primary look, which reads as casual lifestyle rather than sportswear
 - **torso_angle:** three-quarter turn to show garment fit and athletic posture
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
 - **gaze_direction:** direct at camera or focused downward on the accessory
 - **weight_distribution:** dynamic, slightly forward or shifted to the front leg
 - **occlusion_avoidance:** arms positioned away from the body to reveal logo and chest graphics
 
 ---
 
-## athleisure_relaxed_pocket_asymmetry
+### athleisure_relaxed_pocket_asymmetry
 **Label:** Relaxed Asymmetric Jacket Pose
 
 **Priority:** 18
@@ -932,7 +964,7 @@
 - Closure: zip
 
 **Params:**
-- **hand_placement:** CLARIFIED 2026-08-27 (Hard Requirement 3) — one hand fully inserted into the jacket pocket (eligible fallback, not garment contact per se); the other hanging naturally at the side, at hip height, NOT resting on the hip
+- **hand_placement:** one hand fully inserted into the jacket pocket (eligible fallback, not garment contact per se — only when the jacket has a real pocket; otherwise both hands hang relaxed at the sides); the other hanging naturally at the side, fingers loose, clear of the body
 - **torso_angle:** three-quarter turn relative to the camera
 - **head_orientation:** tilted slightly down, turned toward the leading shoulder — vary the exact degree/side across the two generated variants
 - **gaze_direction:** directed downward toward the ground
@@ -942,7 +974,7 @@
 
 ---
 
-## static_full_body_pose
+### static_full_body_pose
 **Label:** Static Full-Body Neutral Presentation
 
 **Priority:** 25
@@ -954,25 +986,26 @@
 - Categories: t-shirts, shirts, jackets, sweatpants, trousers, shorts, sweatshirts & hoodies, shoes
 - Fit: regular, slim, relaxed
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Roles: layering_piece, dress
 - Categories: dresses, skirts
 - Fit: skin-tight
 
 **Params:**
-- **stance:** standing straight, feet shoulder-width apart
+- **stance:** standing tall, feet shoulder-width apart — a natural, unposed stand, not a braced or squared-off mannequin hold
 - **hand_placement:** both arms hanging relaxed at the sides, fingers slightly curled — this is the pure neutral-stand register, kept distinct from `athleisure_frontal_standing_pose`'s pocket variant
 - **torso_angle:** facing camera directly
 - **head_orientation:** vary across variants — level and facing forward on one, chin tilted subtly down or head turned slightly to one side on the other
 - **gaze_direction:** direct, looking straight into the camera, or following the head tilt/turn
-- **weight_distribution:** balanced evenly across both feet
-- **shoulder_alignment:** level
+- **weight_distribution:** weight settled naturally, subtly favoring one leg — never a perfectly even, forced-symmetric stand
+- **shoulder_alignment:** relaxed and naturally level — not squared, braced, or pulled back
 - **garment_visibility_priority:** full front silhouette and vertical drape visible
 - **recommended_framing:** full_front — the fallback/baseline frontal shot, not the default register in this file
 
 ---
 
-## rear_view_silhouette_pose
+### rear_view_silhouette_pose
 **Label:** Rear View Garment and Back Detail Presentation
 
 **Priority:** 26
@@ -984,6 +1017,7 @@
 - Categories: t-shirts, shirts, jackets, sweatshirts & hoodies, sweatpants, trousers, shorts, shoes
 - Fit: regular, relaxed, slim
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Roles: accessory
 
@@ -993,7 +1027,7 @@
 - **stance:** standing straight, feet shoulder-width apart or slightly apart
 - **torso_angle:** facing away from camera
 - **head_orientation:** turned to a near-profile or over-the-shoulder angle — favor this over a flat, un-turned back-of-head
-- **hand_placement:** arms hanging relaxed at sides, or one hand in a pocket — never resting on the hip/waist, in any angle (Hard Requirement 3)
+- **hand_placement:** arms hanging relaxed at sides, or one hand in a pocket (only when the garment has a real pocket) — never resting on the hip/waist, in any angle
 - **gaze_direction:** not visible (back to camera)
 - **weight_distribution:** even weight distribution across both legs
 - **garment_visibility_priority:** back yoke, branding, and rear garment drape must remain fully visible
@@ -1001,7 +1035,7 @@
 
 ---
 
-## athleisure_frontal_standing_pose
+### athleisure_frontal_standing_pose
 **Label:** Frontal Standing Athleisure Presentation
 
 **Priority:** 27
@@ -1013,6 +1047,7 @@
 - Categories: t-shirts, sweatshirts & hoodies, jackets, trousers, sweatpants, shorts, shoes
 - Fit: relaxed, regular
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Roles: dress
 - Categories: dresses, skirts
@@ -1021,16 +1056,16 @@
 
 **Params:**
 - **stance:** standing straight, feet shoulder-width apart, flat on the ground, weight subtly shifted to one side
-- **hand_placement:** one hand in a pocket, the other hangs relaxed at the side — deliberately distinct from `static_full_body_pose`'s pure arms-at-sides look. Never resting on the hip/waist, in any angle (Hard Requirement 3)
+- **hand_placement:** one hand in a pocket (only when the garment has a real pocket; otherwise both hands hang relaxed at the sides), the other hangs relaxed at the side — deliberately distinct from `static_full_body_pose`'s pure arms-at-sides look. Never resting on the hip/waist, in any angle
 - **head_orientation:** frontal and level on one variant, subtly tilted or turned on the other
 - **torso_angle:** facing camera
 - **gaze_direction:** direct, looking straight into the camera
-- **weight_distribution:** even weight distribution across both feet
+- **weight_distribution:** matches the stance's own subtle weight shift to one side — never corrected back to a perfectly even, forced-symmetric stand
 - **occlusion_avoidance:** arms kept clear of the torso to ensure full visibility of graphic prints and logos
 
 ---
 
-## athleisure_posterior_view_pose
+### athleisure_posterior_view_pose
 **Label:** Posterior View Athleisure Presentation
 
 **Priority:** 28
@@ -1042,6 +1077,7 @@
 - Categories: t-shirts, sweatshirts & hoodies, jackets, trousers, sweatpants, shorts
 - Fit: relaxed, regular, slim
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Roles: dress
 - Categories: dresses, skirts
@@ -1050,7 +1086,7 @@
 
 **Params:**
 - **stance:** standing straight, feet slightly apart, oriented away from camera
-- **hand_placement:** arms resting naturally at sides, or one hand in a pocket — never resting on the hip/waist, in any angle (Hard Requirement 3)
+- **hand_placement:** arms resting naturally at sides, or one hand in a pocket (only when the garment has a real pocket) — never resting on the hip/waist, in any angle
 - **head_orientation:** turned to a near-profile or over-the-shoulder angle, varied across variants
 - **torso_angle:** facing away from camera (posterior view)
 - **gaze_direction:** not visible, directed away from camera
@@ -1058,7 +1094,7 @@
 
 ---
 
-## profile_casual_pose
+### profile_casual_pose
 **Label:** Profile and Three-Quarter Casual Presentation
 
 **Priority:** 29
@@ -1075,13 +1111,13 @@
 - **stance:** standing straight and grounded, both feet planted — never a walking or mid-stride gait
 - **torso_angle:** profile left or three-quarter right turn
 - **head_orientation:** turned downward and forward or facing camera
-- **hand_placement:** hand in a pocket, or gripping a bag strap (equipment) when one is loaded — never resting on the hip/waist, in any angle (Hard Requirement 3)
+- **hand_placement:** hand in a pocket (only when the garment has a real pocket), or gripping a bag strap (equipment) when one is loaded — never resting on the hip/waist, in any angle
 - **gaze_direction:** averted downward or direct at camera
 - **weight_distribution:** balanced evenly or slight weight shift
 
 ---
 
-## three_quarter_turn_accessory_pose
+### three_quarter_turn_accessory_pose
 **Label:** Three-Quarter Turn Accessory Interaction Pose
 
 **Priority:** 30
@@ -1093,12 +1129,13 @@
 - Categories: t-shirts, sweatshirts & hoodies, jackets, shorts, trousers, bags
 - Fit: regular, relaxed
 - Length: full-length, above-knee, hip-length
+
 **Avoid when:**
 - Categories: dresses, skirts
 
 **Params:**
 - **stance:** standing flat, feet in a three-quarter orientation
-- **hand_placement:** one hand touching or holding the strap of a worn bag (equipment), or in a pocket — never resting on the hip/waist, in any angle (Hard Requirement 3)
+- **hand_placement:** one hand touching or holding the strap of a worn bag (equipment), or in a pocket (only when the garment has a real pocket) — never resting on the hip/waist, in any angle
 - **torso_angle:** three-quarter turn to display garment profile and accessories
 - **weight_distribution:** balanced evenly or shifted slightly to support the turn
 - **head_orientation:** turned sharply or angled to look backward over the shoulder or toward the camera — vary the exact degree/side across the two generated variants
@@ -1107,7 +1144,7 @@
 
 ---
 
-## athleisure_seated_relaxed_pose
+### athleisure_seated_relaxed_pose
 **Label:** Seated Floor Athleisure Presentation
 
 **Priority:** 35
@@ -1119,6 +1156,7 @@
 - Categories: sweatshirts & hoodies, trousers
 - Fit: relaxed
 - Length: full-length, hip-length
+
 **Avoid when:**
 - Roles: footwear
 - Categories: shoes
@@ -1136,7 +1174,7 @@
 
 ---
 
-## athleisure_hands_behind_back_static
+### athleisure_hands_behind_back_static
 **Label:** Static Squared Pose with Hidden Hands
 
 **Priority:** 36
@@ -1149,18 +1187,18 @@
 - Fit: regular, relaxed
 
 **Params:**
-- **stance:** standing straight, legs spaced shoulder-width apart
+- **stance:** standing, legs spaced shoulder-width apart — a natural, unposed stand, not a braced military bearing
 - **hand_placement:** both hands positioned behind the back, clasped at the lower back — hands touch each other, not garment
 - **torso_angle:** facing directly toward the camera
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
-- **shoulder_alignment:** squared and pulled back to open the chest area
-- **weight_distribution:** centered and stable
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **shoulder_alignment:** relaxed and naturally level — not squared, braced, or pulled back
+- **weight_distribution:** weight settled naturally, subtly favoring one leg — never a perfectly even, forced-symmetric stand
 - **cropping_preference:** three-quarter shot (chest to below knees) to focus on the top-and-bottom interaction
 - **body_line:** clean vertical lines emphasizing the silhouette of the top-and-bottom set
 
 ---
 
-## set_presentation_contrapposto
+### set_presentation_contrapposto
 **Label:** Relaxed Tonal Set Presentation
 
 **Priority:** 45
@@ -1175,15 +1213,15 @@
 **Params:**
 - **stance:** feet roughly shoulder-width apart, one leg may be slightly bent
 - **weight_distribution:** subtle contrapposto, weight biased toward one hip
-- **hand_placement:** one hand tucked into a pocket with thumb visible, other hand hanging relaxed — LAST-RESORT ONLY: pocketed hands stay low-priority and should not be selected when any more athletic-register entry is eligible
+- **hand_placement:** one hand tucked into a pocket with thumb visible, other hand hanging relaxed — last-resort only: pocketed hands stay low-priority and should not be selected when any more athletic-register entry is eligible
 - **torso_angle:** slight three-quarter turn to the camera
-- **head_orientation:** draws from the Head-movement vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
+- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
 - **pose_energy:** relaxed and poised, suitable for lifestyle/athleisure marketing
 - **negative_space:** captured to show the drape of untucked hems against the bottom garment
 
 ---
 
-## urban_utilitarian_relaxed_pose
+### urban_utilitarian_relaxed_pose
 **Label:** Urban Utilitarian Relaxed Pose
 
 **Priority:** 46
@@ -1194,12 +1232,13 @@
 - Roles: hero_garment, outerwear, bottom
 - Categories: jackets, trousers, sweatpants, sweatshirts & hoodies, jeans, shorts, bags
 - Fit: relaxed, oversized, boxy, wide-leg
+
 **Avoid when:**
 - Categories: swimwear
 
 **Params:**
 - **stance:** feet wider than shoulder-width, slightly asymmetric foot direction or profile/three-quarter lean
-- **hand_placement:** hands tucked into front jacket or trouser pockets, or gripping a bag handle (equipment) at the side — LAST-RESORT ONLY: pocketed hands stay low-priority and should not be selected when any more athletic-register entry is eligible
+- **hand_placement:** hands tucked into front jacket or trouser pockets, or gripping a bag handle (equipment) at the side — last-resort only: pocketed hands stay low-priority and should not be selected when any more athletic-register entry is eligible
 - **torso_angle:** facing camera or slight three-quarter turn to showcase side seams
 - **weight_distribution:** weight shifted to one hip (contrapposto) for a relaxed, lifestyle silhouette
 - **head_orientation:** tilted slightly downward, gaze can be averted or direct — vary the exact degree/side across the two generated variants
@@ -1209,69 +1248,12 @@
 
 ---
 
-## sumo_squat_hip_prop_hold_pose — CROSS-FILE ENRICHMENT 2026-08-27
-**Label:** Wide Sumo Squat with Prop Held at the Hip
-
-**Priority:** 16
-
-**Angles:** front_upper_crop, front_lower_crop
-
-**Ported from the Female file's `sumo_squat_prop_hold_pose`.** The wide sumo-squat mechanic and hip-prop equipment interaction is fully gender-neutral — not sourced from this file's own 73-image reference set, added to close a real gap (Male had zero squat entries) per Sunny's 2026-08-27 direction to cross-enrich thin coverage where a pose is ground-truth-compliant and not gender-specific. Re-parameterized for Male garment categories.
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: t-shirts, tank tops, shorts
-- Fit: fitted, slim, athletic-fit
-**Avoid when:**
-- Categories: dresses, skirts, trousers
-- Bottom category: sweatpants, joggers with Fit: relaxed (role-scoped — same relaxed-bottom exclusion as every other wide-stance entry in this file, per RCA Log Entry 4)
-
-**Params:**
-- **stance:** wide sumo-squat stance, feet well beyond shoulder-width, knees bent and tracking over the toes
-- **hand_placement:** one hand/forearm cradling a small prop (water bottle, weight, or equivalent) against the hip — the prop, not the hand, contacts the body, fine per Hard Requirement 3; other hand hovering open beside the opposite bent knee, NOT touching it
-- **torso_angle:** slight forward lean, chest open
-- **head_orientation:** turned to the side, focused off-camera — vary the exact degree/side across the two generated variants
-- **gaze_direction:** averted to the side, alert
-- **weight_distribution:** evenly loaded across the wide stance, low center of gravity
-- **recommended_framing:** front_upper_crop, chest-to-thigh — the wide-leg geometry needs the crotch-to-knee line in frame — OR, when shorts are the hero garment, front_lower_crop instead, so the full leg line and hem are captured rather than cropped at the thigh (Hard Requirement 16)
-- **garment_visibility_priority:** shows the short's rise and t-shirt hem behavior under the deep bend; on `front_lower_crop`, extends to full leg-line and hem visibility
-
----
-
-## deep_squat_hands_clasped_pose — CROSS-FILE ENRICHMENT 2026-08-27
-**Label:** Deep Squat with Hands Clasped
-
-**Priority:** 17
-
-**Angles:** front_upper_crop
-
-**Ported from the Female file's `deep_squat_prayer_hands_pose`.** A plain deep squat with clasped hands is fully gender-neutral — added to close a real gap per Sunny's direction.
-
-**Applies when:**
-- Roles: hero_garment, top
-- Categories: t-shirts, tank tops
-- Fit: fitted, slim, relaxed
-
-**Params:**
-- **stance:** deep squat, profile-to-three-quarter orientation, hips low and back
-- **hand_placement:** both hands clasped together at chest height, elbows resting near or on the inner knees (elbow contact is not governed by Hard Requirement 3, which is hand-specific)
-- **torso_angle:** profile-to-three-quarter, leaning slightly forward over the clasped hands
-- **head_orientation:** turned toward camera, chin level — vary the exact degree/side across the two generated variants
-- **gaze_direction:** direct or slightly averted, focused
-- **weight_distribution:** balanced low over both feet
-- **recommended_framing:** front_upper_crop, chest-to-knee
-- **garment_visibility_priority:** shows short-hem behavior and shorts waistband under a deep bend
-
----
-
-## bird_dog_kneeling_extension_pose — CROSS-FILE ENRICHMENT 2026-08-27
+### bird_dog_kneeling_extension_pose
 **Label:** Quadruped Kneeling Leg Extension (Bird-Dog)
 
 **Priority:** 18
 
 **Angles:** front_lower_crop
-
-**Ported from the Female file, same name.** A gender-neutral floor-based training position, fills a real gap — Male had no kneeling/floor entry at all beyond the football-dribble crouch.
 
 **Applies when:**
 - Roles: hero_garment, bottom
@@ -1289,14 +1271,12 @@
 
 ---
 
-## boxing_guard_crouch_pose — CROSS-FILE ENRICHMENT 2026-08-27
+### boxing_guard_crouch_pose
 **Label:** Boxing Guard Crouch, Fists Raised
 
 **Priority:** 19
 
 **Angles:** front_upper_crop, front_lower_crop
-
-**Ported from the Female file, same name.** A boxing/combat-training stance is fully gender-neutral and arguably under-represented for Male specifically — fills a real gap per Sunny's direction.
 
 **Applies when:**
 - Roles: hero_garment, top, bottom
@@ -1304,24 +1284,22 @@
 
 **Params:**
 - **stance:** athletic boxing stance, knees bent, feet staggered, weight low and balanced
-- **hand_placement:** both fists raised near the chin/chest in a guard position, NOT touching the chest garment, elbows in
+- **hand_placement:** both fists raised near the chin/chest in a guard position, not touching the chest garment, elbows in
 - **torso_angle:** three-quarter turn, shoulders squared to the lead side
 - **head_orientation:** level, chin slightly tucked, focused forward — vary the exact degree/side across the two generated variants
 - **gaze_direction:** direct at camera or forward, intense and alert
 - **weight_distribution:** low, evenly balanced between the staggered feet
-- **recommended_framing:** front_upper_crop, chest-to-waist — OR, when shorts are the hero garment, front_lower_crop instead, so the staggered-stance leg line and hem are fully captured (Hard Requirement 16)
+- **recommended_framing:** front_upper_crop, chest-to-waist — or, when shorts are the hero garment, front_lower_crop instead, so the staggered-stance leg line and hem are fully captured
 - **garment_visibility_priority:** shows the t-shirt/tank hem line and shoulder mobility under the guard position; on `front_lower_crop`, extends to full leg-line and hem visibility
 
 ---
 
-## resistance_band_chest_pull_pose — CROSS-FILE ENRICHMENT 2026-08-27
+### resistance_band_chest_pull_pose
 **Label:** Resistance Band Chest-Height Pull
 
 **Priority:** 20
 
 **Angles:** front_upper_crop
-
-**Ported from the Female file, same name.** Male had zero resistance-band content despite it being a common, gender-neutral training accessory — fills a real gap per Sunny's direction.
 
 **Applies when:**
 - Roles: hero_garment, top, bottom
@@ -1339,14 +1317,12 @@
 
 ---
 
-## side_plank_extended_reach_pose — CROSS-FILE ENRICHMENT 2026-08-27
+### side_plank_extended_reach_pose
 **Label:** Side Plank, Top Arm Extended
 
 **Priority:** 21
 
 **Angles:** front_lower_crop
-
-**Ported from the Female file, same name.** Male's only plank variant was the front plank (`plank_position_floor_pose`) — a side plank fills real crop-angle variety per Sunny's direction.
 
 **Applies when:**
 - Roles: hero_garment, top, bottom
@@ -1363,14 +1339,12 @@
 
 ---
 
-## standing_one_leg_balance_reach_pose — CROSS-FILE ENRICHMENT 2026-08-27
+### standing_one_leg_balance_reach_pose
 **Label:** Standing One-Leg Balance, Arms Raised Overhead
 
 **Priority:** 22
 
 **Angles:** front_upper_crop, full_front
-
-**Ported from the Female file, same name.** A balance/mobility pose, gender-neutral, fills a real gap per Sunny's direction.
 
 **Applies when:**
 - Roles: hero_garment, top, bottom
@@ -1385,3 +1359,37 @@
 - **weight_distribution:** fully loaded onto the standing leg
 - **recommended_framing:** front_upper_crop or full_front — the raised-arm line needs headroom
 - **garment_visibility_priority:** stretches the torso panel and underarm construction fully into view
+
+---
+
+## Non-Negotiable Guardrails Checklist
+
+Every item below must be checked and confirmed "not violated" against the specific pose selection before it is used to build a generation prompt.
+
+- [ ] Dynamic poses read deliberate and controlled, never a stumble or accident; static poses stay grounded (Global Rules)
+- [ ] Entry's own alignment call is followed — asymmetric stays asymmetric, level stance stays clean and confident (Global Rules)
+- [ ] No hand touches the garment, in any shot, in any angle (Global Rules)
+- [ ] No hand/arm description anchors to the hip/thigh/waist and then negates contact (Global Rules)
+- [ ] No free hand is described as "splayed," "spread," or "open," and no palm faces the camera (Global Rules)
+- [ ] No hand rests on the hip or waist, in any pose, in any angle (Global Rules)
+- [ ] Expression reads alive and engaged, and varies naturally across the two generated variants (Global Rules)
+- [ ] `Avoid when` and `Conflicts with` are honored, never overridden by Priority (Global Rules)
+- [ ] Priority is applied as rank-based tiers across the actual eligible pool for this job's angle — no single entry dominates, no eligible entry is left at a token/near-zero rate (Global Rules)
+- [ ] No exaggerated, theatrical, or physically impossible pose (including any backbend) without QC sign-off (Global Rules)
+- [ ] Reference hairstyle is kept as-is; no glamorous or theatrical posing (Global Rules)
+- [ ] The full pose reads as one coherent, natural human action, not assembled from unrelated gestures (Global Rules)
+- [ ] Every loaded equipment item is given an explicit placement and carried — never dropped to win on Priority (Equipment & Props)
+- [ ] A hand may grip or hold equipment against the body, but never the garment (Equipment & Props)
+- [ ] Head/gaze follows the entry's own stated options and differs meaningfully between the two generated variants; no flat back-of-head on every rear variant (Head Movements)
+- [ ] No walking or mid-stride gait, on any shot type (Non-Negotiable Rules — Negative)
+- [ ] Footwear matches the activity; never barefoot when feet are in frame (Non-Negotiable Rules — Negative)
+- [ ] The running-stride pose is never forward-facing, never airborne, never used on `full_front`/`full_back` (Non-Negotiable Rules — Negative)
+- [ ] `full_back` never carries a wide-stance, high-movement dynamic pose (Non-Negotiable Rules — Negative)
+- [ ] A pocketed hand (or any single fallback gesture) is never the default or most-frequent choice (Non-Negotiable Rules — Negative)
+- [ ] `athletic_akimbo_power_pose` is never selected — retired (Non-Negotiable Rules — Negative)
+- [ ] Feet stay in frame per each angle's coverage contract; a raised or driven hand never clips the frame edge (Non-Negotiable Rules — Positive)
+- [ ] A bottom-category hero garment is never routed to a `front_upper_crop`-only pose, and a top-category hero garment is never routed to a `front_lower_crop`-only pose (Non-Negotiable Rules — Positive)
+- [ ] The running-stride pose's arm/hand/head mechanic matches the approved reference exactly (Non-Negotiable Rules — Positive)
+- [ ] The running-stride pose is not over-selected — target roughly 1 in 10 eligible jobs (Non-Negotiable Rules — Positive)
+- [ ] Dynamic register stays primary on `front_upper_crop`/`front_lower_crop`; `full_front`/`full_back` stay static-primary with dynamic entries used only occasionally (Non-Negotiable Rules — Positive)
+- [ ] The fallback-gesture pool rotates between a pocketed hand (garment has a real pocket), a relaxed-at-the-side hand, and an equipment carry — never an invented pocket (Non-Negotiable Rules — Positive)
