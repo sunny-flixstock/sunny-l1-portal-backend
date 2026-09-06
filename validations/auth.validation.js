@@ -1,9 +1,9 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 
-const postGoogleLogin = celebrate({
+const postLogin = celebrate({
     [Segments.BODY]: Joi.object({
-        credential: Joi.string().required(),
+        password: Joi.string().required(),
     }),
 });
 
-module.exports = { postGoogleLogin };
+module.exports = { postLogin };

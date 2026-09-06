@@ -7,7 +7,7 @@ const { SESSION_JWT_SECRET } = require('../config');
 // else on /api/v1, across every route group, requires a valid session --
 // this app is a single-user personal portal now, not a shared local tool,
 // so nothing gets the old "local/dev convenience, no auth" carve-out.
-const EXEMPT_PATHS = new Set(['/healthcheck', '/auth/google']);
+const EXEMPT_PATHS = new Set(['/healthcheck', '/auth/login']);
 
 const sessionAuth = (req, res, next) => {
     if (EXEMPT_PATHS.has(req.path)) {
