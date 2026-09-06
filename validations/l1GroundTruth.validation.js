@@ -49,6 +49,12 @@ const refreshGroundTruthContent = celebrate({
     }),
 });
 
+const resetStylingPosingToCleanV1 = celebrate({
+    [Segments.BODY]: Joi.object({
+        confirm: Joi.boolean().valid(true).required(),
+    }),
+});
+
 module.exports = {
     listGroundTruthDocuments,
     getGroundTruthDocument,
@@ -57,4 +63,5 @@ module.exports = {
     promoteGroundTruthVersion,
     resetToCleanBaseline,
     refreshGroundTruthContent,
+    resetStylingPosingToCleanV1,
 };

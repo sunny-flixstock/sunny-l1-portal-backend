@@ -8,6 +8,7 @@ const {
     postSeedGroundTruthDocuments,
     postResetToCleanBaseline,
     postRefreshGroundTruthContent,
+    postResetStylingPosingToCleanV1,
 } = require('../controllers/L1GroundTruth');
 const l1GroundTruthValidation = require('../validations/l1GroundTruth.validation');
 
@@ -17,6 +18,15 @@ router.post('/seed', postSeedGroundTruthDocuments);
 // Destructive local/dev reset -- irreversible, gated on { confirm: true }
 // rather than auth (same convenience carve-out as /seed above).
 router.post('/reset', l1GroundTruthValidation.resetToCleanBaseline, postResetToCleanBaseline);
+// Narrower, non-destructive reset scoped to just the 4 styling/posing docs
+// -- collapses stacked test/real staging versions back to a clean v1 from
+// the real production .md files, without touching feedback/batch history
+// (see resetStylingPosingToCleanV1's doc comment). Gated the same way.
+router.post(
+    '/reset-styling-posing-v1',
+    l1GroundTruthValidation.resetStylingPosingToCleanV1,
+    postResetStylingPosingToCleanV1
+);
 
 router.get('/', l1GroundTruthValidation.listGroundTruthDocuments, getGroundTruthDocuments);
 router.get('/versions/:versionId', l1GroundTruthValidation.getGroundTruthVersionContent, getGroundTruthVersionContent);

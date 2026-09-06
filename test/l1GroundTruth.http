@@ -51,3 +51,15 @@ Content-Type: application/json
 {
   "confirm": true
 }
+
+### Reset only the 4 styling/posing docs to a clean v1 built from the real
+### production .md files on disk. Does NOT touch feedback/batch history --
+### any already-decided target pointing at one of these 4 docs is reopened
+### to pending so it can be re-judged against the new v1.
+POST {{baseUrl}}/l1-feedback/ground-truth/reset-styling-posing-v1 HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "confirm": true
+}
