@@ -1,0 +1,166 @@
+{
+  "configData": {
+    "<parentSkuId>": {
+      "gender": "male | female",
+      "genderPreamble": {
+        "text": "<constant preamble text derived from gender — same for every angle/variant in this SKU>",
+        "fetchedBy": "gender"
+      },
+      "groundTruth": {
+        "stylingMd": {
+          "ref": "<filename/URL — fetched by client + gender>",
+          "fetchedBy": "client + gender"
+        },
+        "posingMd": {
+          "ref": "<filename/URL — fetched by client + gender>",
+          "fetchedBy": "client + gender"
+        }
+      },
+      "outfit_assembly_output": {
+        "sequence": 0,
+        "male": [
+          {
+            "composition_id": "<e.g. look_1>",
+            "blueprint_summary": {
+              "style_summary": "<string>",
+              "palette_guidance": "<string>",
+              "material_guidance": "<string>",
+              "silhouette_guidance": "<string>",
+              "occasion_or_mood": "<string>"
+            },
+            "missing_categories": [],
+            "overall_rationale": "<why this candidate outfit was assembled this way>",
+            "coherence_score": "<float 0-1>",
+            "combination_set": [
+              {
+                "category": "<e.g. shoes>",
+                "sku_id": "<barcode>"
+              }
+            ],
+            "rank": "<int, 1 = top candidate>"
+          }
+        ],
+        "female": []
+      },
+      "updatedOutfitSelction": {
+        "sequence": 1,
+        "selectedOutfits": [
+          {
+            "gender": "male | female",
+            "composition_id": "<matches one of the assembly candidates above>",
+            "blueprint_summary": {
+              "...": "same shape as assembly"
+            },
+            "overall_rationale": "<string>",
+            "coherence_score": "<float>",
+            "rank": "<which assembly rank was actually picked>"
+          }
+        ]
+      },
+      "gtom_L1_output": [
+        {
+          "sequence": 2,
+          "clientAngleId": "<join key — matches this angle across the pipeline>",
+          "angleName": "<e.g. BZT_FULL_FRONT_SPORTS>",
+          "clientAngle": {
+            "version": "<int>",
+            "status": "active | archived",
+            "definitionStorage": {
+              "url": "<angle.md fetch URL — fetched per angle, this is the angle MD>"
+            }
+          },
+          "identityPreamble": {
+            "type": "single | dual",
+            "text": "<preamble text — varies per angle: dual for back-view angles (two reference images), single otherwise>"
+          },
+          "selectedModel": {
+            "identityName": "<e.g. NID_M45>",
+            "characteristics": {
+              "gender": "male | female"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "<e.g. shoes>",
+              "sku_id": "<barcode>",
+              "item_display_name": "<name or null>",
+              "item_color": "<color or null>"
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "<verbatim prompt sent to the image model — the core RCA evidence>",
+              "output": "<generated image path>",
+              "image_description": null,
+              "rework": "reject",
+              "feedback": {
+                "text": "<the exact feedback the reviewer wrote — preserved verbatim, never edited>",
+                "inferredError": "<RCA's structured read of what actually went wrong, derived from text + the prompt/guidance>",
+                "inferredFix": "<RCA's structured read of what should change to satisfy the feedback — the goal state candidates are judged against>",
+                "RCA_Iteration_0": {
+                  "concernedFile": "<the ground-truth file identified as the fault — angleMd, stylingMd, posingMd, or the prompt-composition step itself>",
+                  "concernedLocation": "<the specific section/heading within concernedFile>",
+                  "candidates": {
+                    "candidate_0": {
+                      "location": "<exact before/after reference within concernedLocation>",
+                      "action": "update | add | remove",
+                      "detail": "<the precise edit, written out in full>",
+                      "rationale": "<why THIS edit addresses inferredError — grounded in a quoted line from the prompt and/or concernedFile, not a paraphrase>",
+                      "conflictCheck": {
+                        "status": "conflicting | non-conflicting",
+                        "details": "<if conflicting: which other file/section/rule this edit contradicts, and how>"
+                      },
+                      "confidence": {
+                        "level": "high | medium | low",
+                        "reachesGoalState": "yes | no | partially",
+                        "reasoning": "<why this confidence level>"
+                      }
+                    },
+                    "candidate_1": {
+                      "location": "<...>",
+                      "action": "<...>",
+                      "detail": "<...>",
+                      "rationale": "<...>",
+                      "conflictCheck": {
+                        "status": "conflicting | non-conflicting",
+                        "details": "<...>"
+                      },
+                      "confidence": {
+                        "level": "high | medium | low",
+                        "reachesGoalState": "yes | no | partially",
+                        "reasoning": "<...>"
+                      }
+                    }
+                  },
+                  "approvedFix": {
+                    "candidateId": "<e.g. candidate_1 — which candidate above was approved at HITL>",
+                    "variantIndex": 0,
+                    "prompt": "<the NEW prompt, regenerated after applying the approved candidate's fix to concernedFile>",
+                    "output": "<the NEW generated image from that new prompt>",
+                    "image_description": null,
+                    "rework": "none | reject",
+                    "feedback": "<null-filled shape (see below) if this resolved it — otherwise the same feedback shape as above, with its own RCA_Iteration_1 nested inside>"
+                  }
+                }
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "<verbatim prompt sent to the image model>",
+              "output": "<generated image path>",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

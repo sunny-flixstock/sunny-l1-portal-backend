@@ -8,8 +8,10 @@ const L1SkuTraceModel = require('../models/L1SkuTrace.model');
 const L1GenericFeedbackRequestModel = require('../models/L1GenericFeedbackRequest.model');
 const Api400Error = require('../errors/api400Error');
 
-// L1_Feedback_Skill/ lives at the repo root, a sibling of aistylingasset/.
-const SOURCE_ROOT = path.resolve(__dirname, '..', '..', 'L1_Feedback_Skill');
+// L1_Feedback_Skill/ lives inside this repo (copied in for the standalone
+// personal-portal deployment, which doesn't have the original monorepo's
+// sibling directory available).
+const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 
 // The skill/feature is scoped to a single client today -- traces don't
 // carry an explicit client field (see rca_generic_schema.json), so this is

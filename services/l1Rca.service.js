@@ -6,7 +6,7 @@ const { findPendingDiagnosis, iterVariants } = require('../utils/l1TraceLib');
 const { getLiveContentByDocumentId } = require('./l1GroundTruth.service');
 const { fetchImageBuffer } = require('../utils/fetchImageBuffer');
 
-const SOURCE_ROOT = path.resolve(__dirname, '..', '..', 'L1_Feedback_Skill');
+const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const RCA_PROMPT_PATH = path.join(SOURCE_ROOT, 'rca_llm_prompt.md');
 
 const RCA_PROVIDER = process.env.L1_RCA_PROVIDER || 'anthropic';

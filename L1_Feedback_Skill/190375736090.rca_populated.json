@@ -1,0 +1,485 @@
+{
+  "configData": {
+    "6a8d82bfa7b0e101089f35f7": {
+      "gender": "male",
+      "genderPreamble": {
+        "text": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.",
+        "fetchedBy": "gender"
+      },
+      "groundTruth": {
+        "stylingMd": {
+          "ref": "BZT_Male_Sports_Styling_PROD.md",
+          "fetchedBy": "client=BZT, gender=male"
+        },
+        "posingMd": {
+          "ref": "BZT_Male_Sports_Posing_PROD.md",
+          "fetchedBy": "client=BZT, gender=male"
+        }
+      },
+      "outfit_assembly_output": {
+        "sequence": 0,
+        "male": [
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "High-performance athletic look pairing a crisp white t-shirt with performance shorts and technical sneakers.",
+              "palette_guidance": "Clean white-and-black core palette with a single black accent (cap or trim) — no additional colors introduced.",
+              "material_guidance": "Lightweight cotton jersey top with technical stretch-woven bottoms; matte finishes only, no sheen.",
+              "silhouette_guidance": "Relaxed straight top over a slim-tapered bottom for an athletic, ready-to-move line.",
+              "occasion_or_mood": "Training / active-wear, energetic and functional."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Ranked highest for coherence — every category (shoes/shorts/socks) is directly compatible with the hero white tee's athletic styling with no conflicting layers.",
+            "coherence_score": 0.98,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 1
+          },
+          {
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "Technical gorpcore streetwear featuring an oversized t-shirt draped over utility cargo trousers.",
+              "palette_guidance": "Monochrome black-and-white base with one utility-black outer layer for contrast.",
+              "material_guidance": "Soft cotton jersey top against technical ripstop trousers; no clashing textures.",
+              "silhouette_guidance": "Oversized, draped top balanced against a tapered utility trouser leg.",
+              "occasion_or_mood": "Off-duty streetwear, utilitarian and relaxed."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Selected despite lower rank because it best expresses the requested cargo-utility direction; oversized top intentionally offsets the trouser volume.",
+            "coherence_score": 0.95,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "trousers",
+                "sku_id": null
+              },
+              {
+                "category": "bags",
+                "sku_id": null
+              },
+              {
+                "category": "headwear",
+                "sku_id": null
+              },
+              {
+                "category": "sunglasses",
+                "sku_id": null
+              }
+            ],
+            "rank": 2
+          },
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "High-performance athletic look pairing a crisp white t-shirt with performance shorts and technical sneakers.",
+              "palette_guidance": "Clean white-and-black core palette with a single black accent (cap or trim) — no additional colors introduced.",
+              "material_guidance": "Lightweight cotton jersey top with technical stretch-woven bottoms; matte finishes only, no sheen.",
+              "silhouette_guidance": "Relaxed straight top over a slim-tapered bottom for an athletic, ready-to-move line.",
+              "occasion_or_mood": "Training / active-wear, energetic and functional."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Ranked highest for coherence — every category (shoes/shorts/socks) is directly compatible with the hero white tee's athletic styling with no conflicting layers.",
+            "coherence_score": 0.95,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 3
+          },
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "High-performance athletic look pairing a crisp white t-shirt with performance shorts and technical sneakers.",
+              "palette_guidance": "Clean white-and-black core palette with a single black accent (cap or trim) — no additional colors introduced.",
+              "material_guidance": "Lightweight cotton jersey top with technical stretch-woven bottoms; matte finishes only, no sheen.",
+              "silhouette_guidance": "Relaxed straight top over a slim-tapered bottom for an athletic, ready-to-move line.",
+              "occasion_or_mood": "Training / active-wear, energetic and functional."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Ranked highest for coherence — every category (shoes/shorts/socks) is directly compatible with the hero white tee's athletic styling with no conflicting layers.",
+            "coherence_score": 0.93,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 4
+          },
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "High-performance athletic look pairing a crisp white t-shirt with performance shorts and technical sneakers.",
+              "palette_guidance": "Clean white-and-black core palette with a single black accent (cap or trim) — no additional colors introduced.",
+              "material_guidance": "Lightweight cotton jersey top with technical stretch-woven bottoms; matte finishes only, no sheen.",
+              "silhouette_guidance": "Relaxed straight top over a slim-tapered bottom for an athletic, ready-to-move line.",
+              "occasion_or_mood": "Training / active-wear, energetic and functional."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Ranked highest for coherence — every category (shoes/shorts/socks) is directly compatible with the hero white tee's athletic styling with no conflicting layers.",
+            "coherence_score": 0.91,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 5
+          },
+          {
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "Technical gorpcore streetwear featuring an oversized t-shirt draped over utility cargo trousers.",
+              "palette_guidance": "Monochrome black-and-white base with one utility-black outer layer for contrast.",
+              "material_guidance": "Soft cotton jersey top against technical ripstop trousers; no clashing textures.",
+              "silhouette_guidance": "Oversized, draped top balanced against a tapered utility trouser leg.",
+              "occasion_or_mood": "Off-duty streetwear, utilitarian and relaxed."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Selected despite lower rank because it best expresses the requested cargo-utility direction; oversized top intentionally offsets the trouser volume.",
+            "coherence_score": 0.90,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "trousers",
+                "sku_id": null
+              },
+              {
+                "category": "bags",
+                "sku_id": null
+              },
+              {
+                "category": "headwear",
+                "sku_id": null
+              },
+              {
+                "category": "sunglasses",
+                "sku_id": null
+              }
+            ],
+            "rank": 6
+          }
+        ],
+        "female": []
+      },
+      "updatedOutfitSelction": {
+        "sequence": 1,
+        "selectedOutfits": [
+          {
+            "gender": "male",
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "Technical gorpcore streetwear featuring an oversized t-shirt draped over utility cargo trousers.",
+              "palette_guidance": "Monochrome black-and-white base with one utility-black outer layer for contrast.",
+              "material_guidance": "Soft cotton jersey top against technical ripstop trousers; no clashing textures.",
+              "silhouette_guidance": "Oversized, draped top balanced against a tapered utility trouser leg.",
+              "occasion_or_mood": "Off-duty streetwear, utilitarian and relaxed."
+            },
+            "overall_rationale": "look_1 chosen at rank 6 after manual asset review — the cargo-utility direction matched the client's requested BZT sports-street execution better than the top-ranked athletic pairing.",
+            "coherence_score": 0.90,
+            "rank": 6
+          }
+        ]
+      },
+      "gtom_L1_output": [
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2dc478005a8928ef99dc",
+          "angleName": "BZT_FULL_FRONT_SPORTS",
+          "clientAngle": {
+            "version": 3,
+            "status": "active",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffull-front%2Fbzt-full-front-sports%2Fv3%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "single",
+            "text": "IDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short buzz cut, dark brown. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "headwear",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "trousers",
+              "sku_id": "4570158310673",
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "shoes",
+              "sku_id": "4067983711053",
+              "item_display_name": "ForeverRun NITRO 2",
+              "item_color": "PUMA BLACK-PUMA WHITE"
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short buzz cut, dark brown. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nCapture a full-body, vertical portrait of a tall, athletic adult male model against a clean, high-key white studio backdrop with soft, even studio lighting. The model stands in an athletic equipment ready stance with feet slightly apart and a subtle three-quarter torso turn. His head is turned slightly to the side with a focused, engaged expression, and his reference hairstyle is preserved exactly without restyling. The hero item, the white cotton logo t-shirt in a regular fit, is worn untucked over the waistband, with its hem resting cleanly at the hip and short sleeves falling to mid-bicep, keeping the black printed logo on the left chest fully visible. The co-worn black athletic joggers are worn properly over the waist, featuring a slim-straight fit that tapers down to elasticized ankle cuffs breaking at the ankle over the black and white athletic sneakers, with crew socks visible below the hem without riding up. A black nylon baseball cap is worn on the head. Hands hang relaxed or hold equipment without touching any garments or the hips. The complete outfit from head to toe is fully visible with generous margins, maintaining strict garment length and fit fidelity.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2dc478005a8928ef99dc/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.7e2f1b627fac.jpg",
+              "image_description": null,
+              "rework": "reject",
+              "feedback": {
+                "text": "The cap being worn wasn't approved for this look — this SKU didn't have a headwear item selected, but the render still shows a black cap on the model. Please regenerate without it.",
+                "inferredError": "The composed prompt introduced a black nylon baseball cap as a co-worn item even though assets_selected for this angle carries a null sku_id for the headwear category — i.e. no actual headwear product was ever resolved for this look. The generic accessory clause in styling.md was applied without checking whether an asset had actually been resolved for that category.",
+                "inferredFix": "The prompt should only reference an accessory item (headwear included) when assets_selected has a resolved, non-null sku_id for that category; when sku_id is null, the category must be dropped from the composed prompt entirely.",
+                "RCA_Iteration_0": {
+                  "concernedFile": "stylingMd (BZT_Male_Sports_Styling_PROD.md)",
+                  "concernedLocation": "Accessories / Headwear styling guidance clause",
+                  "candidates": {
+                    "candidate_0": {
+                      "location": "Headwear guidance clause",
+                      "action": "update",
+                      "detail": "Add a conditional rule: 'Only render a headwear item if assets_selected contains a resolved, non-null sku_id for the headwear category; if sku_id is null, omit headwear entirely from the composed prompt.'",
+                      "rationale": "The rejected prompt states outright 'A black nylon baseball cap is worn on the head' with no conditioning, while assets_selected for this exact angle carries `{\"category\": \"headwear\", \"sku_id\": null}` — the guidance clause that generated this line has no asset-availability check, so it always injects a cap for this look regardless of whether one was actually resolved.",
+                      "conflictCheck": {
+                        "status": "non-conflicting",
+                        "details": ""
+                      },
+                      "confidence": {
+                        "level": "high",
+                        "reachesGoalState": "yes",
+                        "reasoning": "Fixes the root mechanism (missing asset-availability gate) at the guidance-document level, so every future SKU with an unresolved headwear sku_id inherits the correct behavior, not just this one variant."
+                      }
+                    },
+                    "candidate_1": {
+                      "location": "pose_styling_writer LLM input context",
+                      "action": "add",
+                      "detail": "Pass the per-category sku_id resolution state into pose_styling_writer's input alongside angle.md/styling.md/posing.md, and instruct it to skip any category whose sku_id is null when writing composite_direction.",
+                      "rationale": "Same fix, applied one step upstream at the LLM composition step instead of the source document, so the model never even considers unresolved categories when drafting the prompt.",
+                      "conflictCheck": {
+                        "status": "non-conflicting",
+                        "details": ""
+                      },
+                      "confidence": {
+                        "level": "medium",
+                        "reachesGoalState": "partially",
+                        "reasoning": "Resolves this specific case but leaves the unconditional clause in styling.md untouched, so any downstream consumer that still reads styling.md directly (outside pose_styling_writer) would reproduce the same bug."
+                      }
+                    }
+                  },
+                  "approvedFix": {
+                    "candidateId": "candidate_0",
+                    "variantIndex": 0,
+                    "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short buzz cut, dark brown. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nCapture a full-body, vertical portrait of a tall, athletic adult male model against a clean, high-key white studio backdrop with soft, even studio lighting. The model stands in an athletic equipment ready stance with feet slightly apart and a subtle three-quarter torso turn. His head is turned slightly to the side with a focused, engaged expression, and his reference hairstyle is preserved exactly without restyling. The hero item, the white cotton logo t-shirt in a regular fit, is worn untucked over the waistband, with its hem resting cleanly at the hip and short sleeves falling to mid-bicep, keeping the black printed logo on the left chest fully visible. The co-worn black athletic joggers are worn properly over the waist, featuring a slim-straight fit that tapers down to elasticized ankle cuffs breaking at the ankle over the black and white athletic sneakers, with crew socks visible below the hem without riding up. Hands hang relaxed or hold equipment without touching any garments or the hips. The complete outfit from head to toe is fully visible with generous margins, maintaining strict garment length and fit fidelity.",
+                    "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2dc478005a8928ef99dc/outfit_look_1/outfit_variant_image_generation/variant_1/rca_fix_iteration_0/composite_1.f3a9c2e8b154.jpg",
+                    "image_description": null,
+                    "rework": "none",
+                    "feedback": {
+                      "text": null,
+                      "inferredError": null,
+                      "inferredFix": null,
+                      "RCA_Iteration_0": null
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short buzz cut, dark brown. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nCapture a full-body, vertical portrait of a tall, athletic adult male model in a static neutral standing position against a clean, high-key white studio backdrop with soft, even studio lighting. The model faces the camera directly with feet shoulder-width apart and weight balanced evenly. His head is level and his gaze is direct at the camera, with his reference hairstyle preserved exactly. The hero white cotton logo t-shirt is worn untucked over the waistband, resting at hip-length with short sleeves falling to mid-bicep, keeping the black chest logo clearly visible. The co-worn black athletic joggers are worn properly at the waist, featuring their slim-straight fit tapering down to elasticized ankle cuffs breaking at the ankle over the black and white athletic sneakers, with crew socks visible below the trouser hem. A black nylon baseball cap is worn on the head. Both arms hang relaxed at the sides without touching the garments or hips. The entire outfit is captured from head to toe with absolute fidelity to garment lengths, fits, and color palettes.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2dc478005a8928ef99dc/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.0cb8eb3d7709.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2c6f4d96d77d9557d61a",
+          "angleName": "BZT_FRONT_UPPER_CROP_SPORTS",
+          "clientAngle": {
+            "version": 2,
+            "status": "active",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffront-crop%2Fbzt-front-crop-sports%2Fv2%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "single",
+            "text": "IDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "trousers",
+              "sku_id": "4570158310673",
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "headwear",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot capturing a tall, realistically proportioned adult male model from the top of the head to the mid-thigh against a clean, neutral seamless white studio backdrop with soft, even studio lighting. The model is posed in a peak-action, grounded full-sprint mid-stride drive with a high-knee lift on the lead leg and a three-quarter torso turn. His head is turned to a three-quarter angle with a focused gaze directed off-camera. The hero garment is the white cotton crew-neck t-shirt with a tailored fit, short sleeves ending mid-bicep, and a hip-length hem that sits cleanly at the hip; it features a small black Barbour logo on the left chest and is worn fully untucked over the co-worn black athletic jogger pants. The black joggers feature a regular fit through the hip and thigh. The model wears a black ripstop baseball cap with a curved brim secured on his head. The model's reference hairstyle is preserved exactly without restyling or pinning. Hands are held open and relaxed in a reciprocal athletic arm drive, strictly avoiding any contact with the garment or body skin. Every garment maintains its exact length and fit from the product reference without alteration.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.00d72937256b.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot of a tall, realistically proportioned adult male model from the top of the head to the mid-thigh against a neutral seamless white studio backdrop under soft, even studio lighting. The model stands in a grounded, balanced athletic posture with a three-quarter torso turn. One hand is raised to support a sports club resting across his shoulder, while his other arm hangs naturally at his side, completely clear of the clothing. His head is turned toward the shoulder-resting equipment with a focused expression. The hero garment is the white cotton crew-neck t-shirt with a tailored fit, short sleeves ending mid-bicep, and a hip-length hem sitting cleanly at the hip, featuring the small black Barbour logo on the left chest. The t-shirt is worn fully untucked over the co-worn black athletic jogger pants, which feature a regular fit through the hip and thigh. A black ripstop baseball cap is worn securely on the head. The model's reference hairstyle is preserved exactly. All hands and equipment maintain strict non-contact with the fabric and body skin, ensuring the hero garment's chest logo and construction details remain completely visible.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.1bcad2919abf.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2a9378005a8928ef8803",
+          "angleName": "BZT_FULL_BACK_SPORTS",
+          "clientAngle": {
+            "version": 2,
+            "status": "archived",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffull-back%2Fbzt-full-back-sports%2Fv2%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "dual",
+            "text": "IDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "headwear",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "trousers",
+              "sku_id": "4570158310673",
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "shoes",
+              "sku_id": "4067983711053",
+              "item_display_name": "ForeverRun NITRO 2",
+              "item_color": "PUMA BLACK-PUMA WHITE"
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nA full-body rear vertical portrait of a tall, realistically proportioned adult male model standing centered with his back oriented toward the camera, head turned to a near-profile over the right shoulder. The model is wearing a solid white cotton crew neck t-shirt with short sleeves and a regular fit, its hem resting at the hip-length position. The t-shirt is worn untucked over a pair of black athletic track pants featuring a slim-tapered fit and full-length hems that break cleanly at the ankle over black and white athletic running sneakers. A black ripstop baseball cap is worn on the head, preserving the reference hairstyle exactly without restyling. The arms hang relaxed at the sides, clear of the torso to highlight side seams and back drape. Lighting is soft, even studio lighting against a clean neutral seamless backdrop. All items are strictly restricted to the provided inventory: white t-shirt, black cap, black track pants, and black/white sneakers. No extra accessories or garments are introduced.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2a9378005a8928ef8803/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.78c76fb2c8f6.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nA full-body rear vertical portrait of a tall, realistically proportioned adult male model standing with his back to the camera, head turned in a near-profile over the left shoulder to look back. The model wears a white cotton crew neck t-shirt in a regular fit, ending at hip-length, worn untucked over black athletic track pants that feature a slim-tapered fit and break at the ankle over black and white athletic running sneakers. A black ripstop baseball cap is worn on the head, with the reference hairstyle preserved exactly. Arms rest naturally at the sides. Lighting is soft, neutral studio lighting against a clean white seamless backdrop. The outfit consists strictly of the provided items: white t-shirt, black cap, black track pants, and sneakers. No extra items or accessories are included.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/190375736090/male/angle_6a5e2a9378005a8928ef8803/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.00a08db566d8.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

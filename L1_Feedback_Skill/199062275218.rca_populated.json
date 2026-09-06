@@ -1,0 +1,492 @@
+{
+  "configData": {
+    "6a8d826d341b6230a54119bc": {
+      "gender": "male",
+      "genderPreamble": {
+        "text": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.",
+        "fetchedBy": "gender"
+      },
+      "groundTruth": {
+        "stylingMd": {
+          "ref": "BZT_Male_Sports_Styling_PROD.md",
+          "fetchedBy": "client=BZT, gender=male"
+        },
+        "posingMd": {
+          "ref": "BZT_Male_Sports_Posing_PROD.md",
+          "fetchedBy": "client=BZT, gender=male"
+        }
+      },
+      "outfit_assembly_output": {
+        "sequence": 0,
+        "male": [
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "Layered urban sport-luxe look featuring a technical mesh tank layered over a basic tee, paired with relaxed street trousers.",
+              "palette_guidance": "Tonal neutrals with one metallic accent (bracelet) — no bright colors.",
+              "material_guidance": "Technical mesh over soft cotton jersey, against structured woven trousers.",
+              "silhouette_guidance": "Layered mesh tank over a fitted tee, relaxed straight trouser leg.",
+              "occasion_or_mood": "Urban off-duty, elevated athleisure."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Top-ranked for coherence, but introduces a layering pattern not requested for this SKU's core running-kit brief.",
+            "coherence_score": 0.98,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "t-shirts",
+                "sku_id": null
+              },
+              {
+                "category": "trousers",
+                "sku_id": null
+              },
+              {
+                "category": "bracelets",
+                "sku_id": null
+              }
+            ],
+            "rank": 1
+          },
+          {
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "High-intensity running kit combining a bright blue performance top with split running shorts and technical accessories.",
+              "palette_guidance": "Vibrant blue hero piece against neutral charcoal/white supporting pieces.",
+              "material_guidance": "Synthetic performance mesh top with smooth synthetic athletic-fabric shorts.",
+              "silhouette_guidance": "Sleeveless scoop-neck tank over mid-thigh split shorts for full range of motion.",
+              "occasion_or_mood": "High-intensity running / training."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Selected at rank 2 as the most direct match to the hero tank's running-performance intent, prioritizing simplicity over the layered look_2 alternative.",
+            "coherence_score": 0.95,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 2
+          },
+          {
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "High-intensity running kit combining a bright blue performance top with split running shorts and technical accessories.",
+              "palette_guidance": "Vibrant blue hero piece against neutral charcoal/white supporting pieces.",
+              "material_guidance": "Synthetic performance mesh top with smooth synthetic athletic-fabric shorts.",
+              "silhouette_guidance": "Sleeveless scoop-neck tank over mid-thigh split shorts for full range of motion.",
+              "occasion_or_mood": "High-intensity running / training."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Selected at rank 2 as the most direct match to the hero tank's running-performance intent, prioritizing simplicity over the layered look_2 alternative.",
+            "coherence_score": 0.92,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 3
+          },
+          {
+            "composition_id": "look_2",
+            "blueprint_summary": {
+              "style_summary": "Layered urban sport-luxe look featuring a technical mesh tank layered over a basic tee, paired with relaxed street trousers.",
+              "palette_guidance": "Tonal neutrals with one metallic accent (bracelet) — no bright colors.",
+              "material_guidance": "Technical mesh over soft cotton jersey, against structured woven trousers.",
+              "silhouette_guidance": "Layered mesh tank over a fitted tee, relaxed straight trouser leg.",
+              "occasion_or_mood": "Urban off-duty, elevated athleisure."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Top-ranked for coherence, but introduces a layering pattern not requested for this SKU's core running-kit brief.",
+            "coherence_score": 0.88,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "t-shirts",
+                "sku_id": null
+              },
+              {
+                "category": "trousers",
+                "sku_id": null
+              },
+              {
+                "category": "bracelets",
+                "sku_id": null
+              }
+            ],
+            "rank": 4
+          },
+          {
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "High-intensity running kit combining a bright blue performance top with split running shorts and technical accessories.",
+              "palette_guidance": "Vibrant blue hero piece against neutral charcoal/white supporting pieces.",
+              "material_guidance": "Synthetic performance mesh top with smooth synthetic athletic-fabric shorts.",
+              "silhouette_guidance": "Sleeveless scoop-neck tank over mid-thigh split shorts for full range of motion.",
+              "occasion_or_mood": "High-intensity running / training."
+            },
+            "missing_categories": [],
+            "overall_rationale": "Selected at rank 2 as the most direct match to the hero tank's running-performance intent, prioritizing simplicity over the layered look_2 alternative.",
+            "coherence_score": 0.85,
+            "combination_set": [
+              {
+                "category": "shoes",
+                "sku_id": null
+              },
+              {
+                "category": "shorts",
+                "sku_id": null
+              },
+              {
+                "category": "socks",
+                "sku_id": null
+              }
+            ],
+            "rank": 5
+          }
+        ],
+        "female": []
+      },
+      "updatedOutfitSelction": {
+        "sequence": 1,
+        "selectedOutfits": [
+          {
+            "gender": "male",
+            "composition_id": "look_1",
+            "blueprint_summary": {
+              "style_summary": "High-intensity running kit combining a bright blue performance top with split running shorts and technical accessories.",
+              "palette_guidance": "Vibrant blue hero piece against neutral charcoal/white supporting pieces.",
+              "material_guidance": "Synthetic performance mesh top with smooth synthetic athletic-fabric shorts.",
+              "silhouette_guidance": "Sleeveless scoop-neck tank over mid-thigh split shorts for full range of motion.",
+              "occasion_or_mood": "High-intensity running / training."
+            },
+            "overall_rationale": "look_1 selected over the top-ranked look_2 because the tank's performance styling reads more naturally in a single running-kit silhouette than in look_2's layered street treatment.",
+            "coherence_score": 0.95,
+            "rank": 2
+          }
+        ]
+      },
+      "gtom_L1_output": [
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2dc478005a8928ef99dc",
+          "angleName": "BZT_FULL_FRONT_SPORTS",
+          "clientAngle": {
+            "version": 3,
+            "status": "active",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffull-front%2Fbzt-full-front-sports%2Fv3%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "single",
+            "text": "IDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "shorts",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "shoes",
+              "sku_id": "4067889099842",
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "socks",
+              "sku_id": "5715891589064",
+              "item_display_name": "Sport socks 10 pack",
+              "item_color": "WHITE"
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nCapture a full-body, vertical portrait of the male model against a clean, high-key white background from the top of the head to the feet. The model stands in a stable, wide athletic ready stance facing slightly in a three-quarter turn with a focused gaze off-camera. The hero garment is the bright blue athletic tank top featuring a sleeveless scoop-neck silhouette and a regular fit, reproducing its exact hip-length hem resting at the hip. Co-worn items include the charcoal grey athletic running shorts ending at a mini length at mid-thigh, white ribbed crew socks sitting at mid-calf, and black and white athletic sneakers. The tank top is worn untucked over the shorts. The model's hands do not touch the garments. The lighting is soft, even studio lighting matching the reference. All items are fully visible, clean, and accurately proportioned with no missing garments.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2dc478005a8928ef99dc/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.e4ad3dc3b886.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nCapture a full-body, vertical head-to-toe portrait of the male model against a clean, high-key white studio background. The model stands in a balanced, neutral contrapposto pose facing directly forward with his head turned slightly to the side and a direct gaze. He wears the bright blue athletic tank top in a regular fit, reproducing its exact hip-length hem. The outfit includes the charcoal grey athletic running shorts ending at mid-thigh, white ribbed crew socks at mid-calf, and black and white athletic sneakers. The tank top is worn untucked over the shorts. Arms hang naturally at the sides without touching the garments. The lighting is soft and even. All items are fully rendered and clearly visible with precise length and fit fidelity.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2dc478005a8928ef99dc/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.2316050d2dd8.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2c6f4d96d77d9557d61a",
+          "angleName": "BZT_FRONT_UPPER_CROP_SPORTS",
+          "clientAngle": {
+            "version": 2,
+            "status": "active",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffront-crop%2Fbzt-front-crop-sports%2Fv2%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "single",
+            "text": "IDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "shorts",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot from the top of the head to the mid-thigh against a clean, neutral seamless white studio backdrop with soft, even studio lighting. The subject is a tall, realistically proportioned adult male athlete whose reference hairstyle is preserved exactly without restyling. The hero garment is the bright blue athletic tank top, featuring a vibrant bright blue color, synthetic performance fabric with a subtle horizontal texture, a scoop neckline, a sleeveless silhouette, a regular straight fit, and a hip-length hem resting at the hip with a small reflective brand logo on the upper left chest. The co-worn garment is the charcoal athletic running shorts, featuring a charcoal grey color, smooth synthetic athletic fabric, a relaxed fit, a mid-rise elastic waistband, a short length finishing at the mid-thigh, and a small contrasting logo near the hem. The tank top is worn untucked over the shorts, its hem resting level at the hip. The model is posed in a dynamic, grounded mid-stride sprint drive angled diagonally across the frame, with one leg driven forward in a high-knee lift and reciprocal arms driven with relaxed, open hands that never touch the garments. The frame covers from top of head to mid-thigh, with the lower crop falling between the hip and knee. All items, lengths, fits, and colors are strictly reproduced from the provided item characteristics without adding any footwear, socks, bags, or accessories.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.4a0c13e662ae.jpg",
+              "image_description": null,
+              "rework": "reject",
+              "feedback": {
+                "text": "The crop is cutting off around knee level instead of mid-thigh like the angle spec requires — too much leg is visible, doesn't match the crop line we approved for this angle.",
+                "inferredError": "The composed prompt states 'the lower crop falling between the hip and knee', which drifts below the mid-thigh boundary mandated for BZT_FRONT_UPPER_CROP_SPORTS. The pose_styling_writer step loosened the crop-line wording while describing the sprint-drive pose, rather than keeping the frame boundary fixed regardless of leg extension.",
+                "inferredFix": "The prompt's crop-line clause must state the frame terminates strictly at mid-thigh — not extending toward the knee — independent of how far the pose's leg drive reaches.",
+                "RCA_Iteration_0": {
+                  "concernedFile": "prompt-composition step (pose_styling_writer LLM output)",
+                  "concernedLocation": "crop-framing clause in composite_direction for the sprint-drive pose",
+                  "candidates": {
+                    "candidate_0": {
+                      "location": "the clause 'the lower crop falling between the hip and knee'",
+                      "action": "update",
+                      "detail": "Replace with 'the lower crop terminates precisely at mid-thigh, never extending past it regardless of leg drive', to lock the frame boundary independent of pose intensity.",
+                      "rationale": "The rejected prompt literally reads 'the lower crop falling between the hip and knee' — a range that includes below-mid-thigh territory — while the angle spec calls for a strict mid-thigh cutoff; tightening this one clause directly targets the wording that produced the drift.",
+                      "conflictCheck": {
+                        "status": "non-conflicting",
+                        "details": ""
+                      },
+                      "confidence": {
+                        "level": "medium",
+                        "reachesGoalState": "partially",
+                        "reasoning": "Fixes the wording on this one output, but since the drift originated in the pose_styling_writer LLM step rather than a fixed document, a future re-composition of this same angle+pose combination could reintroduce the same loose phrasing unless the source guidance is also corrected."
+                      }
+                    },
+                    "candidate_1": {
+                      "location": "posingMd (BZT_Male_Sports_Posing_PROD.md) sprint-drive pose entry",
+                      "action": "add",
+                      "detail": "Add an explicit framing constraint to the sprint-drive pose description: 'When used in upper-crop framing, the raised/driven leg must not be described as extending the visible crop past mid-thigh.'",
+                      "rationale": "Addresses the ambiguity at its source — the posing.md entry that pose_styling_writer draws from when composing this pose — rather than patching one generated prompt.",
+                      "conflictCheck": {
+                        "status": "conflicting",
+                        "details": "This could conflict with the full-back/full-front angles that reuse the same sprint-drive pose entry without an upper-crop restriction, where a knee-level crop line may be intentional; the added constraint must be scoped to upper-crop usage only or it risks breaking those other angles."
+                      },
+                      "confidence": {
+                        "level": "high",
+                        "reachesGoalState": "yes",
+                        "reasoning": "Fixes it at the reusable guidance source so every future upper-crop plus sprint-drive combination inherits the correct mid-thigh boundary, not just this one regenerated prompt."
+                      }
+                    }
+                  },
+                  "approvedFix": {
+                    "candidateId": "candidate_1",
+                    "variantIndex": 0,
+                    "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot from the top of the head to the mid-thigh against a clean, neutral seamless white studio backdrop with soft, even studio lighting. The subject is a tall, realistically proportioned adult male athlete whose reference hairstyle is preserved exactly without restyling. The hero garment is the bright blue athletic tank top, featuring a vibrant bright blue color, synthetic performance fabric with a subtle horizontal texture, a scoop neckline, a sleeveless silhouette, a regular straight fit, and a hip-length hem resting at the hip with a small reflective brand logo on the upper left chest. The co-worn garment is the charcoal athletic running shorts, featuring a charcoal grey color, smooth synthetic athletic fabric, a relaxed fit, a mid-rise elastic waistband, a short length finishing at the mid-thigh, and a small contrasting logo near the hem. The tank top is worn untucked over the shorts, its hem resting level at the hip. The model is posed in a dynamic, grounded mid-stride sprint drive angled diagonally across the frame, with one leg driven forward in a high-knee lift and reciprocal arms driven with relaxed, open hands that never touch the garments. The frame covers from top of head to mid-thigh, with the lower crop terminating precisely at mid-thigh regardless of the leg's forward drive. All items, lengths, fits, and colors are strictly reproduced from the provided item characteristics without adding any footwear, socks, bags, or accessories.",
+                    "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_1/rca_fix_iteration_0/composite_1.9d41ab7c2e30.jpg",
+                    "image_description": null,
+                    "rework": "reject",
+                    "feedback": {
+                      "text": "Better — the crop line is fixed now, but the model's driven leg gets cut right at the frame edge mid-motion, so the raised knee reads as amputated rather than a clean crop.",
+                      "inferredError": "With the crop boundary now locked at mid-thigh, the high-knee-lift sprint pose causes the raised leg to be truncated exactly at the frame edge, producing a visual amputation artifact instead of a natural crop; the pose's lift height is incompatible with a strict mid-thigh boundary at this intensity.",
+                      "inferredFix": "Reduce the knee-lift height specified for this pose when it is composed for upper-crop framing, so the raised leg stays fully inside the mid-thigh boundary rather than touching it.",
+                      "RCA_Iteration_1": {
+                        "concernedFile": "posingMd (BZT_Male_Sports_Posing_PROD.md)",
+                        "concernedLocation": "sprint-drive / high-knee-lift pose intensity parameter",
+                        "candidates": {
+                          "candidate_0": {
+                            "location": "pose intensity descriptor for sprint-drive",
+                            "action": "update",
+                            "detail": "Cap the knee-lift descriptor to 'moderate knee drive, leg lifting no higher than mid-thigh' specifically when this pose is composed for upper-crop framing, so the raised leg stays inside frame rather than touching the boundary.",
+                            "rationale": "The original prompt describes 'one leg driven forward in a high-knee lift' combined with the mid-thigh crop line fixed in RCA_Iteration_0 — together these two clauses collide, since a high lift reaches exactly the line the crop now enforces. Lowering the lift height keeps the leg fully inside the frame without touching the boundary again.",
+                            "conflictCheck": {
+                              "status": "non-conflicting",
+                              "details": ""
+                            },
+                            "confidence": {
+                              "level": "high",
+                              "reachesGoalState": "yes",
+                              "reasoning": "Directly resolves the geometric collision between pose height and frame boundary without touching or undoing the crop-line fix approved in RCA_Iteration_0."
+                            }
+                          },
+                          "candidate_1": {
+                            "location": "crop-line clause added in RCA_Iteration_0's approvedFix",
+                            "action": "update",
+                            "detail": "Soften the strict mid-thigh boundary to allow up to 10% overflow above mid-thigh specifically for high-intensity dynamic poses, rather than a hard cutoff.",
+                            "rationale": "An alternative fix on the framing side instead of the pose side, giving dynamic poses more room before the crop line engages.",
+                            "conflictCheck": {
+                              "status": "conflicting",
+                              "details": "This would partially undo the fix approved in RCA_Iteration_0 and reintroduce the exact hip-to-knee ambiguity that iteration 0 was meant to eliminate, risking regression for other sprint-drive-in-crop cases."
+                            },
+                            "confidence": {
+                              "level": "low",
+                              "reachesGoalState": "no",
+                              "reasoning": "Reopens the defect iteration 0 closed, so a reviewer would be unlikely to approve it given the direct conflict with the already-approved fix."
+                            }
+                          }
+                        },
+                        "approvedFix": {
+                          "candidateId": "candidate_0",
+                          "variantIndex": 0,
+                          "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot from the top of the head to the mid-thigh against a clean, neutral seamless white studio backdrop with soft, even studio lighting. The subject is a tall, realistically proportioned adult male athlete whose reference hairstyle is preserved exactly without restyling. The hero garment is the bright blue athletic tank top, featuring a vibrant bright blue color, synthetic performance fabric with a subtle horizontal texture, a scoop neckline, a sleeveless silhouette, a regular straight fit, and a hip-length hem resting at the hip with a small reflective brand logo on the upper left chest. The co-worn garment is the charcoal athletic running shorts, featuring a charcoal grey color, smooth synthetic athletic fabric, a relaxed fit, a mid-rise elastic waistband, a short length finishing at the mid-thigh, and a small contrasting logo near the hem. The tank top is worn untucked over the shorts, its hem resting level at the hip. The model is posed in a dynamic, grounded mid-stride sprint drive angled diagonally across the frame, with one leg driven forward in a moderate knee drive, lifting no higher than mid-thigh and staying fully inside the frame boundary, and reciprocal arms driven with relaxed, open hands that never touch the garments. The frame covers from top of head to mid-thigh, with the lower crop terminating precisely at mid-thigh regardless of the leg's forward drive. All items, lengths, fits, and colors are strictly reproduced from the provided item characteristics without adding any footwear, socks, bags, or accessories.",
+                          "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_1/rca_fix_iteration_1/composite_1.5b8f0e3a6c17.jpg",
+                          "image_description": null,
+                          "rework": "none",
+                          "feedback": {
+                            "text": null,
+                            "inferredError": null,
+                            "inferredFix": null,
+                            "RCA_Iteration_0": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — keep the generated person identical to the model shown in the reference image(s): preserve the exact same face and the exact same hair — the same hairstyle, length, parting, volume, colour, and texture. Do NOT change the hairstyle in any way: if the reference hair is tied (ponytail / bun / braid) keep it tied exactly the same; if it is loose keep it loose. Never restyle or cut the hair, and do not swap or invent a new face.\n\nHAIR (from the identity reference): very short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a vertical portrait front upper crop shot from the top of the head to the mid-thigh against a clean, neutral seamless white studio backdrop with soft, even studio lighting. The subject is a tall, realistically proportioned adult male athlete whose reference hairstyle is preserved exactly without restyling. The hero garment is the bright blue athletic tank top, featuring a vibrant bright blue color, synthetic performance fabric with a subtle horizontal texture, a scoop neckline, a sleeveless silhouette, a regular straight fit, and a hip-length hem resting at the hip with a small reflective brand logo on the upper left chest. The co-worn garment is the charcoal athletic running shorts, featuring a charcoal grey color, smooth synthetic athletic fabric, a relaxed fit, a mid-rise elastic waistband, a short length finishing at the mid-thigh, and a small contrasting logo near the hem. The tank top is worn untucked over the shorts, hanging level at the hip. The model is posed in a deep forward lunge with a wide stance, his front leg bent and weighted, his torso in a three-quarter turn leaning slightly forward, one hand held open near the hip without touching any fabric, and his head turned and tilted downward with a focused gaze. The frame covers from top of head to mid-thigh, with the lower crop falling between the hip and knee. All items, lengths, fits, and colors are strictly reproduced from the provided item characteristics without introducing any footwear, socks, bags, or accessories.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2c6f4d96d77d9557d61a/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.b1e321c876d1.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "clientAngleId": "6a5e2a9378005a8928ef8803",
+          "angleName": "BZT_FULL_BACK_SPORTS",
+          "clientAngle": {
+            "version": 2,
+            "status": "archived",
+            "definitionStorage": {
+              "url": "https://fxgati.flixstock.com/client-angles%2Fbzt%2Ffull-back%2Fbzt-full-back-sports%2Fv2%2Fdefinition.md"
+            }
+          },
+          "identityPreamble": {
+            "type": "dual",
+            "text": "IDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way."
+          },
+          "selectedModel": {
+            "identityName": "NID_M45",
+            "characteristics": {
+              "gender": "male"
+            }
+          },
+          "assets_selected": [
+            {
+              "category": "shorts",
+              "sku_id": null,
+              "item_display_name": null,
+              "item_color": null
+            },
+            {
+              "category": "socks",
+              "sku_id": "5715891589064",
+              "item_display_name": "Sport socks 10 pack",
+              "item_color": "WHITE"
+            },
+            {
+              "category": "shoes",
+              "sku_id": "4067889099842",
+              "item_display_name": null,
+              "item_color": null
+            }
+          ],
+          "variants": [
+            {
+              "variantIndex": 0,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a full-body rear studio shot (BZT Full Back framing) of a tall, realistically proportioned adult male athlete facing directly away from the lens. The camera is positioned at eye-level, centered, capturing head to feet. The model's reference hairstyle is preserved exactly in a natural state with the head turned to a near-profile angle, gaze directed off to the side. The model wears the bright blue athletic tank top (hero garment) with its ribbed synthetic athletic knit texture and racerback strap configuration fully visible across the back, rendered at its exact hip-length reference. Below, he wears the dark grey athletic running shorts (co-worn garment, fully present — never bare torso) at their exact mid-thigh length. The tank top drapes untucked over the shorts waistband. At the lower extremities, crisp white ribbed crew socks extend to mid-calf (staying below the shorts hem) and transition cleanly into black and white athletic running sneakers. The long bottom is worn over the footwear collar. Arms hang relaxed slightly clear of the torso to expose side seams and seat fit. Studio lighting is soft, even, and consistent with the identity reference, set against a clean neutral seamless backdrop. No hands touch any garment.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2a9378005a8928ef8803/outfit_look_1/outfit_variant_image_generation/variant_1/composite_1.399d0163d7ee.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            },
+            {
+              "variantIndex": 1,
+              "prompt": "MODEL GENDER — the model is an adult MALE fashion model. Render a male person with male body proportions, physique, and hands throughout the ENTIRE image. This is REQUIRED even on headless, cropped, back-facing, side-profile, or detail shots where the face is not visible — the body and figure must unmistakably read as male. Do NOT generate a female figure.\n\nIDENTITY REFERENCE — the first two input images are the SAME single model photographed from two viewpoints (a rear/back view and a front/face view). Treat them as one identical person: preserve the exact same face, hairstyle, hair length, skin tone, and body proportions in the generated image, including in three-quarter and back-facing poses. Do not merge them into two different people, swap identities, or invent a new face.\n\nHAIR (from the identity reference): short dark brown buzz cut. Render exactly this hairstyle — do not loosen, untie, tie up, restyle, or change it in any way.\n\nExecute a full-body rear-three-quarter studio shot (BZT Full Back framing) of a tall, realistically proportioned adult male athlete facing away from the camera with his torso angled in a three-quarter rear turn. The camera is positioned at eye-level, capturing head to feet. The model's reference hairstyle is preserved exactly, with his head turned in an over-the-shoulder glance toward the lens. He wears the bright blue athletic tank top (hero garment) with its ribbed synthetic athletic knit texture and racerback straps fully visible, rendered at its exact hip-length reference. Below, the dark grey athletic running shorts (co-worn garment, fully present — never bare torso) are worn at their exact mid-thigh length. The tank top drapes untucked over the shorts waistband. At the base, crisp white ribbed crew socks extend to mid-calf (without riding over the shorts hem) and transition cleanly into black and white athletic running sneakers, with the shorts hem falling above the footwear. Arms hang naturally, clear of the torso. Soft studio lighting and neutral seamless backdrop match the identity reference perfectly. No hands touch any garment.",
+              "output": "https://fxgati.flixstock.com/192.168.12.157/gati/Flixstudio/BZT/BZT_Garment_BZT_sports_framework_v2_testnew_25082026_172033/GTOM_L1_GEN/199062275218/male/angle_6a5e2a9378005a8928ef8803/outfit_look_1/outfit_variant_image_generation/variant_2/composite_1.04c1047c6a80.jpg",
+              "image_description": null,
+              "rework": "none",
+              "feedback": {
+                "text": null,
+                "inferredError": null,
+                "inferredFix": null,
+                "RCA_Iteration_0": null
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -7,7 +7,7 @@ const { generate } = require('./llm/llm.service');
 const { applyEditToDocumentContent } = require('./l1HitlReview.service');
 const { DEFAULT_CLIENT, getAllLiveContents, getOrCreateBatchStagingVersion } = require('./l1GroundTruth.service');
 
-const SOURCE_ROOT = path.resolve(__dirname, '..', '..', 'L1_Feedback_Skill');
+const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const PROMPT_PATH = path.join(SOURCE_ROOT, 'generic_feedback_llm_prompt.md');
 
 // Images are stored as raw bytes in Mongo (see the model) -- no external
