@@ -122,24 +122,34 @@ const extractGender = (config) => {
     return config.gender ?? null;
 };
 
+/** The real uploaded shape nests variants under
+ * `rawAngle.selectedOutfits[].variants(.data)`; the simpler shape used by
+ * this project's own .http examples (and any hand-built test payload) puts
+ * `variants` directly on the angle, with no `selectedOutfits` wrapper at
+ * all. Returns the list of "outfit-like" containers to check for variants
+ * on, covering both without either caller needing to know which shape it
+ * got -- for the flat shape, the angle itself doubles as its own one
+ * implicit outfit, since assets_selected/selectedModel already live
+ * directly on it in that shape too. */
+const outfitsForAngle = (rawAngle) => (rawAngle.selectedOutfits?.length ? rawAngle.selectedOutfits : [rawAngle]);
+
+const variantsForOutfit = (outfit) =>
+    Array.isArray(outfit.variants?.data) ? outfit.variants.data : Array.isArray(outfit.variants) ? outfit.variants : [];
+
 /** Every variant in a raw SKU config where feedback.text is already
- * populated -- the flagged set this upload contributes. Walks the real
- * nested shape but returns { angle, variant, feedbackText } already
- * normalized to the clean internal shape (angleName/clientAngleId flat,
- * variantIndex explicit, assets_selected trimmed) that the rest of the
- * pipeline expects. */
+ * populated -- the flagged set this upload contributes. Walks both the
+ * real nested shape and the simpler flat shape (see outfitsForAngle) but
+ * returns { angle, variant, feedbackText } already normalized to the clean
+ * internal shape (angleName/clientAngleId flat, variantIndex explicit,
+ * assets_selected trimmed) that the rest of the pipeline expects. */
 const collectFlaggedIssues = (config) => {
     const issues = [];
     for (const rawAngle of config.gtom_L1_output || []) {
         const angleName = rawAngle.clientAngle?.name ?? rawAngle.angleName ?? null;
         const clientAngleId = rawAngle.clientAngleId ?? rawAngle.clientAngle?._id ?? null;
 
-        for (const outfit of rawAngle.selectedOutfits || []) {
-            const variantList = Array.isArray(outfit.variants?.data)
-                ? outfit.variants.data
-                : Array.isArray(outfit.variants)
-                  ? outfit.variants
-                  : [];
+        for (const outfit of outfitsForAngle(rawAngle)) {
+            const variantList = variantsForOutfit(outfit);
 
             variantList.forEach((rawVariant, variantIndex) => {
                 const text = rawVariant.feedback?.text;
@@ -184,12 +194,8 @@ const applyExplicitFeedback = (config, feedbackEntries) => {
             const angleId = rawAngle.clientAngleId ?? rawAngle.clientAngle?._id;
             if (String(angleId) !== String(clientAngleId)) continue;
 
-            for (const outfit of rawAngle.selectedOutfits || []) {
-                const variantList = Array.isArray(outfit.variants?.data)
-                    ? outfit.variants.data
-                    : Array.isArray(outfit.variants)
-                      ? outfit.variants
-                      : [];
+            for (const outfit of outfitsForAngle(rawAngle)) {
+                const variantList = variantsForOutfit(outfit);
                 const rawVariant = variantList[variantIndex];
                 if (!rawVariant) continue;
 
