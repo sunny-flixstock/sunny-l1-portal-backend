@@ -4,23 +4,21 @@ const L1GenericFeedbackRequestModel = require('../models/L1GenericFeedbackReques
 const L1GroundTruthDocumentModel = require('../models/L1GroundTruthDocument.model');
 const Api400Error = require('../errors/api400Error');
 const { generate } = require('./llm/llm.service');
-const { getS3Url, getFileFromS3 } = require('./amazonS3Service');
-const { S3_BUCKET } = require('../config');
 const { applyEditToDocumentContent } = require('./l1HitlReview.service');
 const { DEFAULT_CLIENT, getAllLiveContents, getOrCreateBatchStagingVersion } = require('./l1GroundTruth.service');
 
 const SOURCE_ROOT = path.resolve(__dirname, '..', '..', 'L1_Feedback_Skill');
 const PROMPT_PATH = path.join(SOURCE_ROOT, 'generic_feedback_llm_prompt.md');
 
-/** Images are stored by S3 key only; the signed GET URL is always
- * regenerated fresh at read time (7-day signed URLs would otherwise go
- * stale in persisted session history) rather than trusting whatever was
- * persisted at upload time. */
-const withFreshImageUrls = (request) => ({
+// Images are stored as raw bytes in Mongo (see the model) -- no external
+// object storage involved. For API responses, render each stored image as
+// a data: URI so the frontend can use it directly as an <img>/<Image> src
+// with no separate authenticated fetch step.
+const withDataUrls = (request) => ({
     ...request,
     images: (request.images || []).map((img) => ({
-        ...img,
-        url: getS3Url(S3_BUCKET, img.key).url,
+        mimeType: img.mimeType,
+        url: `data:${img.mimeType};base64,${Buffer.from(img.data).toString('base64')}`,
     })),
 });
 
@@ -40,7 +38,7 @@ const getGenericFeedbackRequestById = async (id) => {
     if (!request) {
         throw new Api400Error(`Generic feedback request not found: ${id}`);
     }
-    return withFreshImageUrls(request);
+    return withDataUrls(request);
 };
 
 /** Runs in the background, same fire-and-poll pattern as
@@ -52,19 +50,13 @@ const runDiagnosis = async (requestId) => {
     try {
         const groundTruthContent = await getAllLiveContents(DEFAULT_CLIENT);
 
-        const images = [];
-        for (const [index, img] of request.images.entries()) {
-            try {
-                const data = await getFileFromS3({ key: img.key, bucketName: S3_BUCKET });
-                images.push({
-                    buffer: data.Body,
-                    mimeType: img.mimeType || data.ContentType,
-                    label: `IMAGE ${index + 1}`,
-                });
-            } catch (err) {
-                request.errors.push({ message: `image ${index + 1} fetch failed: ${err.message}` });
-            }
-        }
+        // Already sitting in the document we just loaded -- no external
+        // fetch step, so no fetch-failure case to handle here either.
+        const images = request.images.map((img, index) => ({
+            buffer: img.data,
+            mimeType: img.mimeType,
+            label: `IMAGE ${index + 1}`,
+        }));
 
         const userContent = JSON.stringify({ feedbackText: request.text, groundTruthContent }, null, 2);
 
@@ -110,16 +102,23 @@ const runDiagnosis = async (requestId) => {
     await request.save();
 };
 
+/** `images` arrives as [{ data: '<base64>', mimeType }] -- the frontend
+ * reads each attached/pasted file as base64 client-side and sends it
+ * straight in the request body, no separate upload step. */
 const submitGenericFeedback = async ({ text, images, createdBy }) => {
     if (!text || !text.trim()) {
         throw new Api400Error('text is required');
     }
+    const storedImages = (images || []).map((img) => ({
+        data: Buffer.from(img.data, 'base64'),
+        mimeType: img.mimeType,
+    }));
     const request = await L1GenericFeedbackRequestModel.create({
         text: text.trim(),
-        images: images || [],
+        images: storedImages,
         status: 'processing',
         createdBy,
-        events: [{ type: 'generic_feedback_submitted', meta: { imageCount: images?.length ?? 0 } }],
+        events: [{ type: 'generic_feedback_submitted', meta: { imageCount: storedImages.length } }],
     });
 
     runDiagnosis(request._id).catch(async (err) => {
@@ -133,8 +132,11 @@ const submitGenericFeedback = async ({ text, images, createdBy }) => {
 };
 
 const listGenericFeedbackRequests = async () => {
-    const requests = await L1GenericFeedbackRequestModel.find().sort({ createdAt: -1 }).limit(50).lean();
-    return requests.map(withFreshImageUrls);
+    const requests = await L1GenericFeedbackRequestModel.find()
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
+    return requests.map(withDataUrls);
 };
 
 /** Same decision/apply mechanics as l1HitlReview.service's submitDecision --

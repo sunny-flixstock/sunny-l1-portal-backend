@@ -1,19 +1,13 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 
-const getUploadUrl = celebrate({
-    [Segments.QUERY]: Joi.object({
-        fileName: Joi.string().required(),
-    }),
-});
-
 const postGenericFeedback = celebrate({
     [Segments.BODY]: Joi.object({
         text: Joi.string().trim().min(1).required(),
         images: Joi.array()
             .items(
                 Joi.object({
-                    key: Joi.string().required(),
-                    mimeType: Joi.string().optional(),
+                    data: Joi.string().base64().required(),
+                    mimeType: Joi.string().required(),
                 })
             )
             .default([]),
@@ -41,7 +35,6 @@ const postGenericFeedbackDecision = celebrate({
 });
 
 module.exports = {
-    getUploadUrl,
     postGenericFeedback,
     getGenericFeedbackById,
     postGenericFeedbackDecision,

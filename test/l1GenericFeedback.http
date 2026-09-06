@@ -1,12 +1,9 @@
 @baseUrl = http://localhost:7015/api/v1
 @authToken = paste-a-token-from-auth.http-here
 
-### Get a pre-signed S3 upload URL for one attached image
-GET {{baseUrl}}/l1-feedback/generic/getUploadUrl?fileName=render.jpg HTTP/1.1
-Authorization: Bearer {{authToken}}
-
-### Submit generic feedback (text only; images is optional and can carry
-### { key, mimeType } pairs from the getUploadUrl + PUT flow above)
+### Submit generic feedback (text only; images is optional and carries
+### { data: "<base64>", mimeType } pairs -- the frontend reads each
+### attached/pasted file as base64 and sends it inline, no upload step)
 POST {{baseUrl}}/l1-feedback/generic HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json

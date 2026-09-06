@@ -3,14 +3,15 @@ const { addModel } = require('../startup/db');
 
 const L1_GENERIC_FEEDBACK_STATUSES = Object.freeze(['processing', 'diagnosed', 'failed']);
 
-// Only the S3 key is persisted -- the signed GET `url` is always
-// regenerated fresh at read time (see l1GenericFeedback.service's
-// withFreshImageUrls) rather than stored, since a signed URL captured at
-// upload time would go stale in long-lived session history.
+// Image bytes are stored directly in Mongo (as BSON binary) rather than in
+// external object storage -- this portal has no S3/AWS dependency at all,
+// deliberately, so the only persistence layer to run is the one already in
+// use for everything else. Fine at this feature's scale (a handful of QC
+// screenshots per feedback submission, not a media library).
 const imageSchema = new mongoose.Schema(
     {
-        key: { type: String, required: true, trim: true },
-        mimeType: { type: String, trim: true },
+        data: { type: Buffer, required: true },
+        mimeType: { type: String, required: true, trim: true },
     },
     { _id: false }
 );
