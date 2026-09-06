@@ -2,11 +2,15 @@ require('../utils/ColorLogger')();
 const mongoose = require('mongoose');
 const { CONN_MONGO, MONGO_USER, MONGO_PASSWORD } = require('../config');
 const db = CONN_MONGO;
+// MongoDB Atlas requires TLS on every connection -- unlike Flixstock's
+// original private/self-hosted Mongo (where this was `false`), a hardcoded
+// `false` here makes the driver attempt a plaintext connection, which
+// Atlas immediately closes at the handshake stage.
 const options = {
     user: MONGO_USER,
     pass: MONGO_PASSWORD,
     authSource: 'admin',
-    ssl: false,
+    ssl: true,
     connectTimeoutMS: 30000,
     socketTimeoutMS: 5000,
     family: 4,
