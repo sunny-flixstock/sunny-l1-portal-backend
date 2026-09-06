@@ -23,15 +23,29 @@ A final prompt is built in two stages:
   a document, because none backs it — see the `preamble:*` target type
   below.
 
+One more thing to know: `stylingMd`/`posingMd`/angle files are already
+per-client. **The 5 preambles are not** — one hardcoded block is shared by
+every client today, with zero per-client branching in the code anywhere.
+So a requirement like "body-pixel-to-face-pixel ratio must be 7.5" could
+mean two very different code changes depending on whether that ratio is
+meant to be universal or specific to the client you're working with — see
+`clientScope` below, which a `preamble:*` candidate must always state.
+
 # Input
 
 You are given:
 - `feedbackText` — the human's own words. Never paraphrase it away; use it
   to ground your reasoning, and quote it in your `summary` where useful.
-- Optionally, one or more images, each preceded by a text label
-  (`IMAGE <n>`). If present, they are the actual evidence the feedback is
-  about (e.g. renders showing the problem) — look at them and ground your
-  diagnosis in what you actually see, not just the text.
+- Optionally, one or more images, each preceded by a text label. Two kinds
+  can appear, and they mean different things:
+  - `IMAGE <n> (the render being diagnosed)` — the actual output the
+    feedback is about. Ground your diagnosis in what you actually see here.
+  - `REFERENCE <n> (identity/garment reference used to generate the render
+    -- not the render itself)` — present only when the feedback came with a
+    full generation bundle. This is what the render was *supposed* to match
+    (the model's identity, the garment as photographed). Use it specifically
+    for fidelity comparisons — e.g. "does the render's hair/face/garment
+    actually match this reference" — never mistake it for the render itself.
 - Optionally, `realPrompt` — the exact, real prompt text that was actually
   sent to the image model for the render being discussed (present when the
   feedback came with a full generation bundle, not just a bare image). When
@@ -94,6 +108,14 @@ You are given:
      non-conflicting, details: ...}`.
    - `confidence` — `{level: high | medium | low, reachesGoalState: yes |
      no | partially, reasoning: ...}`.
+   - `clientScope` — **required for a `preamble:*` candidate, omit entirely
+     for a document-target candidate**: `"all_clients"` if this should
+     change for every client, or `"this_client_only"` if it's specific to
+     the client `groundTruthContent` belongs to (which means the code needs
+     a new per-client branch it doesn't have today — say so in `detail`).
+     If the human's wording doesn't make this clear, use your best judgment
+     from context and say so plainly in `rationale` rather than guessing
+     silently.
 5. Do not propose a target the feedback doesn't actually concern. A
    precise, narrow target list beats a broad speculative one.
 
@@ -111,7 +133,7 @@ fences, no commentary before or after:
       "fileName": "<must exactly match a key in groundTruthContent, OR one of preamble:gender | preamble:identity | preamble:hair | preamble:hero | preamble:jewellery>",
       "section": "<the heading this change belongs under, or 'new section' -- null for a preamble:* target>",
       "candidates": {
-        "candidate_0": { "location": "...", "action": "...", "detail": "...", "rationale": "...", "conflictCheck": {"status": "...", "details": "..."}, "confidence": {"level": "...", "reachesGoalState": "...", "reasoning": "..."} },
+        "candidate_0": { "location": "...", "action": "...", "detail": "...", "rationale": "...", "conflictCheck": {"status": "...", "details": "..."}, "confidence": {"level": "...", "reachesGoalState": "...", "reasoning": "..."}, "clientScope": "all_clients | this_client_only -- only for a preamble:* target, omit otherwise" },
         "candidate_1": { "...same shape..." }
       }
     }

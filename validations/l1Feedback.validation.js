@@ -7,6 +7,19 @@ const createBatch = celebrate({
                 Joi.object({
                     skuId: Joi.string().required(),
                     config: Joi.object().required(),
+                    // Optional: feedback given separately from the config
+                    // (not already embedded in a variant's feedback.text) --
+                    // the caller names exactly which angle/variant each
+                    // comment is about; no inference/correlation is done.
+                    feedbackEntries: Joi.array()
+                        .items(
+                            Joi.object({
+                                clientAngleId: Joi.string().required(),
+                                variantIndex: Joi.number().integer().required(),
+                                feedbackText: Joi.string().required(),
+                            })
+                        )
+                        .optional(),
                 })
             )
             .min(1)

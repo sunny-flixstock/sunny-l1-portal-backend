@@ -46,6 +46,16 @@ editing `stylingMd`/`posingMd`/the angle file) from a *preamble* defect
 (a code-level issue, reported for a human to act on outside this system —
 see the `concernedFile` values below).
 
+One more thing to know: `stylingMd`/`posingMd`/angle files are already
+per-client (this client's `styling.md` is a different document from another
+client's). **The 5 preambles are not** — today they are one hardcoded block
+shared by every client, with zero per-client branching anywhere in the
+code. A preamble candidate must therefore always say, in `clientScope`,
+whether the change should apply to every client (`all_clients`) or only to
+this one (`this_client_only` — which requires adding a new per-client
+conditional to code that currently has none, a materially bigger change
+than a global edit). Never leave this ambiguous.
+
 # Task
 
 Work through every variant in this SKU, across every angle. For each variant
@@ -105,6 +115,11 @@ For each variant needing a diagnosis:
      - `conflictCheck` — does this edit contradict any OTHER ground-truth
        file? `{status: conflicting | non-conflicting, details: ...}`
      - `confidence` — `{level: high | medium | low, reachesGoalState: yes | no | partially, reasoning: ...}`
+     - `clientScope` — **required for a `preamble:*` candidate, omit
+       entirely for a content-defect candidate**: `"all_clients"` if this
+       should change for every client, or `"this_client_only"` if it's
+       specific to this SKU's client (which means the code needs a new
+       per-client branch it doesn't have today — say so in `detail`).
    - Leave that variant's `approvedFix` as `null`. A human decides that, not you.
 
 Treat every variant independently — a fix or conflict found for one variant

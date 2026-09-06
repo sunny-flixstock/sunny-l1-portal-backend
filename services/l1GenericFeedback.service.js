@@ -63,19 +63,34 @@ const getGenericFeedbackRequestById = async (id) => {
 /** Runs in the background, same fire-and-poll pattern as
  * l1FeedbackBatch.service's processBatchInBackground -- this call can take
  * minutes (same class of LLM call as per-SKU RCA), so the request record is
- * returned immediately and the caller polls getGenericFeedbackRequestById. */
-const runDiagnosis = async (requestId) => {
+ * returned immediately and the caller polls getGenericFeedbackRequestById.
+ * `referenceImages` (from a ZIP bundle's references/*.jpg -- identity/garment
+ * photos the output was generated from) are passed as a plain in-process
+ * argument, never persisted: they're only useful for this one diagnosis
+ * call, and several multi-MB references would risk Mongo's 16MB document
+ * limit if stored alongside the output image(s). If the process restarts
+ * mid-diagnosis they're lost along with the rest of the in-flight call --
+ * an existing, already-accepted risk for this fire-and-background pattern,
+ * not a new one. */
+const runDiagnosis = async (requestId, referenceImages = []) => {
     const request = await L1GenericFeedbackRequestModel.findById(requestId);
     try {
         const groundTruthContent = await getAllLiveContents(DEFAULT_CLIENT);
 
         // Already sitting in the document we just loaded -- no external
         // fetch step, so no fetch-failure case to handle here either.
-        const images = request.images.map((img, index) => ({
-            buffer: toBuffer(img.data),
-            mimeType: img.mimeType,
-            label: `IMAGE ${index + 1}`,
-        }));
+        const images = [
+            ...request.images.map((img, index) => ({
+                buffer: toBuffer(img.data),
+                mimeType: img.mimeType,
+                label: `IMAGE ${index + 1} (the render being diagnosed)`,
+            })),
+            ...referenceImages.map((img, index) => ({
+                buffer: img.buffer,
+                mimeType: img.mimeType,
+                label: `REFERENCE ${index + 1} (identity/garment reference used to generate the render -- not the render itself)`,
+            })),
+        ];
 
         const userContent = JSON.stringify(
             {
@@ -155,17 +170,26 @@ const runDiagnosis = async (requestId) => {
 /** Shared by submitGenericFeedback and submitZipFeedback: create the
  * record, kick off diagnosis in the background (same fire-and-poll pattern
  * as l1FeedbackBatch.service), and return the freshly-created record. */
-const createAndDiagnose = async ({ text, storedImages, realPrompt, createdBy, submittedEventType }) => {
+const createAndDiagnose = async ({ text, storedImages, realPrompt, referenceImages, createdBy, submittedEventType }) => {
     const request = await L1GenericFeedbackRequestModel.create({
         text: text.trim(),
         images: storedImages,
         realPrompt: realPrompt ?? null,
         status: 'processing',
         createdBy,
-        events: [{ type: submittedEventType, meta: { imageCount: storedImages.length, hasRealPrompt: Boolean(realPrompt) } }],
+        events: [
+            {
+                type: submittedEventType,
+                meta: {
+                    imageCount: storedImages.length,
+                    hasRealPrompt: Boolean(realPrompt),
+                    referenceImageCount: referenceImages?.length ?? 0,
+                },
+            },
+        ],
     });
 
-    runDiagnosis(request._id).catch(async (err) => {
+    runDiagnosis(request._id, referenceImages).catch(async (err) => {
         await L1GenericFeedbackRequestModel.updateOne(
             { _id: request._id },
             { $set: { status: 'failed' }, $push: { errors: { message: `diagnosis crashed: ${err.message}` } } }
@@ -189,13 +213,19 @@ const submitGenericFeedback = async ({ text, images, createdBy }) => {
     return createAndDiagnose({ text, storedImages, createdBy, submittedEventType: 'generic_feedback_submitted' });
 };
 
+// Bound how many reference images get sent to the vision call, both for
+// cost and because a bundle can legitimately carry several multi-MB refs --
+// the first few are almost always the identity/hero-garment shots that
+// matter most for fidelity comparison.
+const MAX_REFERENCE_IMAGES = 4;
+
 /** A generation bundle (e.g. a vertex_*.zip): metadata.json (with the
  * exact, real prompt actually sent to the image model, plus the list of
- * output/reference files) + outputs/*.jpg + references/*.jpg. Only the
- * output render(s) are persisted (the thing actually being diagnosed);
- * reference images are generation context, not diagnostic evidence, and
- * are discarded after extraction to keep this simple and Mongo-doc-size
- * sane. */
+ * output/reference files) + outputs/*.jpg + references/*.jpg. Output
+ * render(s) are persisted (the thing actually being diagnosed) exactly
+ * like a pasted image; reference images (identity/garment photos the
+ * render was generated from) are used for this one diagnosis call only,
+ * never persisted -- see runDiagnosis's referenceImages param. */
 const submitZipFeedback = async ({ zipBuffer, text, createdBy }) => {
     if (!text || !text.trim()) {
         throw new Api400Error('text is required');
@@ -239,10 +269,22 @@ const submitZipFeedback = async ({ zipBuffer, text, createdBy }) => {
         });
     }
 
+    const referenceFiles = Array.isArray(metadata.references) ? metadata.references : [];
+    const referenceImages = [];
+    for (const ref of referenceFiles.slice(0, MAX_REFERENCE_IMAGES)) {
+        const entry = zip.getEntry(ref.file);
+        if (!entry) continue; // best-effort -- a missing reference doesn't block diagnosis
+        referenceImages.push({
+            buffer: entry.getData(),
+            mimeType: mime.lookup(ref.file) || 'image/jpeg',
+        });
+    }
+
     return createAndDiagnose({
         text,
         storedImages,
         realPrompt: metadata.prompt ?? null,
+        referenceImages,
         createdBy,
         submittedEventType: 'generic_feedback_zip_submitted',
     });

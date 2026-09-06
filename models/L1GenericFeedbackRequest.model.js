@@ -36,6 +36,14 @@ const candidateSchema = new mongoose.Schema(
             reachesGoalState: { type: String, enum: ['yes', 'no', 'partially'], required: true },
             reasoning: { type: String, default: null },
         },
+        // Only meaningful for a preamble:* candidate -- preambles are one
+        // hardcoded block shared by every client today (unlike
+        // styling/posing/angle files, which are already per-client). A
+        // preamble edit must say whether it's meant for every client or
+        // needs a new per-client conditional, so it's never silently
+        // applied everywhere when only one client asked for it. null for a
+        // document-target candidate, where this doesn't apply.
+        clientScope: { type: String, enum: ['all_clients', 'this_client_only', null], default: null },
     },
     { _id: false }
 );

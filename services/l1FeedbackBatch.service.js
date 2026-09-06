@@ -167,6 +167,46 @@ const collectFlaggedIssues = (config) => {
     return issues;
 };
 
+/** Injects feedback the caller gave separately from the config (not
+ * already embedded in a variant's own feedback.text), by exact
+ * (clientAngleId, variantIndex) the caller names -- no inference. Mutates
+ * the raw config's actual variant object in place (same real/simple-shape
+ * traversal as collectFlaggedIssues, so both nested-real-shape and
+ * flat-test-shape configs work identically), so the ordinary
+ * collectFlaggedIssues pass below picks it up exactly like feedback that
+ * was already in the uploaded file. Throws if a named
+ * (clientAngleId, variantIndex) doesn't exist in this config -- silently
+ * dropping a caller-specified target would be worse than failing loudly. */
+const applyExplicitFeedback = (config, feedbackEntries) => {
+    for (const { clientAngleId, variantIndex, feedbackText } of feedbackEntries) {
+        let found = false;
+        for (const rawAngle of config.gtom_L1_output || []) {
+            const angleId = rawAngle.clientAngleId ?? rawAngle.clientAngle?._id;
+            if (String(angleId) !== String(clientAngleId)) continue;
+
+            for (const outfit of rawAngle.selectedOutfits || []) {
+                const variantList = Array.isArray(outfit.variants?.data)
+                    ? outfit.variants.data
+                    : Array.isArray(outfit.variants)
+                      ? outfit.variants
+                      : [];
+                const rawVariant = variantList[variantIndex];
+                if (!rawVariant) continue;
+
+                rawVariant.feedback = rawVariant.feedback || {};
+                rawVariant.feedback.text = feedbackText;
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new Error(
+                `feedbackEntries names clientAngleId=${clientAngleId} variantIndex=${variantIndex}, which doesn't exist in this config`
+            );
+        }
+    }
+    return config;
+};
+
 const pickAngleMeta = (angle) => {
     const { variants, ...meta } = angle;
     return meta;
@@ -296,9 +336,12 @@ const ingestOneSku = async (skuId, config, batchId) => {
 const processBatchInBackground = async (batchId, configs) => {
     const batch = await L1FeedbackBatchModel.findById(batchId);
 
-    for (const { skuId: fileSkuId, config: rawConfig } of configs) {
+    for (const { skuId: fileSkuId, config: rawConfig, feedbackEntries } of configs) {
         try {
             const { realSkuId, config } = unwrapUploadedConfig(fileSkuId, rawConfig);
+            if (feedbackEntries?.length) {
+                applyExplicitFeedback(config, feedbackEntries);
+            }
             const result = await ingestOneSku(realSkuId, config, batchId);
             if (result.status === 'touched') {
                 batch.skuIds.push(realSkuId);

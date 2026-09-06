@@ -53,6 +53,59 @@ Content-Type: application/json
   ]
 }
 
+### Upload a SKU config with NO embedded feedback -- feedback is given
+### separately via feedbackEntries, naming the exact (clientAngleId,
+### variantIndex) it applies to. No inference/correlation is attempted.
+POST {{baseUrl}}/l1-feedback/batches HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "configs": [
+    {
+      "skuId": "test_sku_2",
+      "config": {
+        "gender": "male",
+        "genderPreamble": { "text": "MODEL GENDER — the model is an adult MALE fashion model.", "fetchedBy": "gender" },
+        "groundTruth": {
+          "stylingMd": { "ref": "BZT_Male_Sports_Styling_PROD.md", "fetchedBy": "client=BZT, gender=male" },
+          "posingMd": { "ref": "BZT_Male_Sports_Posing_PROD.md", "fetchedBy": "client=BZT, gender=male" }
+        },
+        "outfit_assembly_output": { "sequence": 0, "male": [], "female": [] },
+        "updatedOutfitSelction": { "sequence": 1, "selectedOutfits": [] },
+        "gtom_L1_output": [
+          {
+            "sequence": 2,
+            "clientAngleId": "angle_full_front_2",
+            "angleName": "BZT_FULL_FRONT_SPORTS",
+            "clientAngle": { "version": 1, "status": "active", "definitionStorage": { "url": "" } },
+            "identityPreamble": { "type": "single", "text": "IDENTITY REFERENCE — ..." },
+            "selectedModel": { "identityName": "NID_M1", "characteristics": { "gender": "male" } },
+            "assets_selected": [],
+            "variants": [
+              {
+                "variantIndex": 0,
+                "prompt": "A black nylon baseball cap is worn on the head.",
+                "output": "https://example.com/test_sku_2/variant_1/composite_1.jpg",
+                "image_description": null,
+                "rework": "none",
+                "feedback": { "text": null, "inferredError": null, "inferredFix": null, "RCA_Iteration_0": null }
+              }
+            ]
+          }
+        ]
+      },
+      "feedbackEntries": [
+        {
+          "clientAngleId": "angle_full_front_2",
+          "variantIndex": 0,
+          "feedbackText": "This cap wasn't approved for this look — please regenerate without it."
+        }
+      ]
+    }
+  ]
+}
+
 ### List batches
 GET {{baseUrl}}/l1-feedback/batches HTTP/1.1
 Authorization: Bearer {{authToken}}
