@@ -2,6 +2,31 @@
 
 Styling rules for BZT Male Sports imagery — governs garment visibility, layering, tuck state, accessories, and footwear/sock presentation for every generated shot.
 
+**TUCK MATRIX (machine-read — do not restyle):** the fenced `tuck-matrix` block below is this framework's own statement of how the waist state (tuck) and the leg-over-footwear relation are decided per shot. Indentation is ignored; lists may be written `[a, b]` or as `- item` lines. The rule texts it names (`rules:`) remain the human-readable authority — see those `### rule_id` sections in the Entry Library below; the block only makes them machine-checkable.
+
+```tuck-matrix
+version: 1
+shot_classes:
+  reference_led: [full_front, full_back]
+  hero_governed: [front_upper_crop, front_lower_crop]
+hero_roles: {upper: fully_out, bottom: fully_in}
+category_groups: {upper: [t-shirts, tank tops, shirts, polos, sweatshirts & hoodies], bottom: [shorts, sweatpants, trousers], footwear: [shoes], skip: [jackets]}
+skip_hero_categories: [jackets]
+waist_vocabulary: standard
+hardware_suppression: upper_hero
+state_sentences:
+  fully_out: "The {hero} is worn over the {bottom}'s waistband, hanging loose with its hem level on both sides."
+  fully_in: "The {upper} is worn fully inside the waistband of the {bottom} so the {bottom}'s waistband and rise read cleanly, with no upper fabric over them."
+footwear:
+  rule: hem_over_footwear
+  footwear_types: [sneaker, sock]
+  long_bottom_categories: [sweatpants, trousers]
+  shots: all
+  sentence: "The leg of the {bottom} falls down and over the sneaker/cleat collar and any crew sock; it is never inserted, stuffed, or tucked into the sock or footwear shaft."
+rules: []
+```
+<!-- TEMPORARY STOPGAP: rules: left empty above on purpose. Incident: extract_rule_texts matches only `## rule_id` (two hashes), but this file's Entry Library uses `### rule_id` (three hashes) throughout, so all 6 ids were coming back "not found," leaving the validator on generic defaults alone. Renaming just these 6 headings to `##` was tested and rejected on the Female file (same structure applies here): the entries are not adjacent, so each renamed heading would capture everything up to the next one — dozens to hundreds of lines of unrelated rules swallowed into the wrong rule's extracted text, worse than an empty list. The real fix is a one-line regex change in extract_rule_texts (src/tuck_check/tuck_matrix.py, staging_v4 branch): match `##+` instead of exactly `##`. Once that ships, restore this list to: [hero_based_tuck_state, shirt_tuck_no_half, bottom_never_tucked_into_footwear, untucked_polo_over_shorts, tucked_tshirt_with_sweatpants, color_blocked_sweatshirt_pairing] -->
+
 ---
 
 ## GLOBAL RULES
@@ -31,6 +56,18 @@ These are client-agnostic generation-quality principles — they hold regardless
 **Rule:** Style an accessory or piece of equipment only when it is an actual provided asset for the job and the selected pose entry places it there; never invent a plausible-looking item, and never silently drop one that was actually provided. Keep accessorizing minimal — provided items are a ceiling, not a starting point for further styling.
 
 **Why:** Inventing an unprovided item and dropping a provided item are both real, equally serious defects — one adds fiction, the other loses information the client actually supplied. Minimalism keeps the presentation reading as authentic rather than overstyled.
+
+### Body-to-Face Proportion Target
+
+**Rule:** On `full_front` and `full_back` shots only (this target does not currently apply to `front_upper_crop`/`front_lower_crop`, where the sole landmark is out of frame), styling choices — garment proportions, layering, and how each piece is described — must reinforce an elongated body silhouette and a proportionally smaller head, supporting a body-to-face pixel ratio (crown-to-sole height ÷ crown-to-chin head height) as close to 7.5 as possible without exceeding it — 7.25 to 7.5 is the acceptable band; anything below 7.25 or above 7.5 is a rejection. The bottom landmark is chosen by a priority cascade over the two feet, then a specific point on the selected foot. Foot selection: (1) prefer whichever foot's sole is in full flat contact with the ground — not lifted, not raised on the ball or toe, not heel-raised; (2) if both feet are flat and grounded, use the more weight-bearing, straighter load-bearing leg (typically the one under the torso's center of gravity); (3) if weight distribution reads as even or ambiguous — including a true side-by-side symmetric stance with no forward/back depth difference at all — default consistently to the leg positioned further back in the stance, or, when there is no depth difference to fall back on, always the model's own left leg, so the same convention is used every time rather than switching foot per shot. Point on that foot: for flat shoes, sneakers, or bare feet, use the lowest outsole layer actually touching the ground (the true ground-contact plane) — never the upper/midsole layer above it; for heeled shoes, use the point where the heel component attaches to the sole/shank of the footwear (the heel-to-sole junction) — never the heel's ground-contact tip, and never the top edge of the upper. This point must stay visible and unobstructed in frame — never cropped by the frame edge, hidden behind the other foot, or turned away from camera — which the posing framework's own full_front/full_back feet-in-frame rule already requires. As a concrete anchor: the figure should read as roughly 7.3 to 7.5 head-heights tall overall, crown to sole — the head occupying a little over an eighth of total height, a tall, leggy editorial proportion rather than an average studio stand. This is a rendering-quality target the generation should achieve; it is never an instruction to depict, letter, or overlay any measurement figures, ratios, proportion maps, or numeric body-landmark labels onto the image itself.
+
+**Why:** Addresses the client's explicit requirement for a specific body-to-face ratio, now with a hard ceiling as well as a floor — overshooting past 7.5 is a rejection in the same way undershooting below 7.25 is. The numeric anchor (~7.3-7.5 head-heights tall) is included because purely qualitative language ("elongated, smaller head") alone has been measured to plateau near the low end of the acceptable band (~7.28); a concrete anchor is needed to consistently move closer to 7.5. This applies only to `full_front`/`full_back` for now since `front_upper_crop`/`front_lower_crop` don't show the sole landmark this ratio depends on. The generated photo must always read as an ordinary, clean product shot — the ratio is something the generation achieves, never something it is asked to display.
+
+### No Visible Text or Measurement Labels On the Image
+
+**Rule:** The generated image should never contain visible text, numbers, or labels of any kind, and no rule in this file should be read as calling for one. If pursuing the body-to-face ratio target above ever causes the generation to produce such text as an unintended side effect, that is tolerable only when it lands entirely in the background/negative space, never overlapping or touching the model, face, hair, garment, or product — text or numbers appearing on the model or garment itself is a hard failure regardless of cause, since the background (unlike the product) is stripped out in the downstream editing pass.
+
+**Why:** Real generation output has shown that detailed numeric proportion guidance can occasionally cause the image model to render body-landmark labels as literal on-image text. A background-only occurrence is a recoverable, low-cost side effect; the same defect on the model or garment would corrupt the actual product photo and is never acceptable.
 
 ---
 
@@ -237,6 +274,7 @@ Accessories are NOT restricted to full-front/mood only, because BZT's own pose l
 
 * **adornment_scope (HARD CONSTRAINT):** worn adornment accessories (watch, cap/visor, sunglasses, headband, wristband) are styled on `full_front` (and `full_back` where visible) exactly as the reference shows; never invented if not provided — and never silently dropped when it IS provided. If an adornment accessory is a genuine, provided asset for this job, it must appear in the output; omitting a real provided item is exactly as much a defect as inventing one that wasn't provided.
 * **equipment_scope:** hand-held equipment (club, racket, ball, dumbbell, bag) appears on whichever shot type the SELECTED pose entry's own Params place it on — this is governed by the pose library's item-completeness and accessory-carry-outranks-priority rules, not by shot type alone. A pose entry describing a held item (a water bottle, a bag, a piece of training equipment) is only eligible to be selected as-written when that specific item is an actual provided asset for this job. If no such item was provided, the selected entry must fall back to its own empty-handed/relaxed-hand alternative — never invent a plausible-sounding prop just because a pose entry's default Params describe holding one.
+* **full_front_full_back_no_props (HARD CONSTRAINT):** `full_front` and `full_back` are hands-empty only — no hand-held prop, accessory, or piece of training equipment may be styled on these two angles regardless of what any pose entry's Params describe, per the Posing file's own hard ban. The pose library's `full_front`/`full_back` entries have been audited to never place one; this line is a defensive backstop only, in case a future pose entry is added without updating this file. Props remain fully eligible on `front_upper_crop`/`front_lower_crop`.
 * **bag_scope:** a bag is styled on every shot where it's provided and the selected pose entry places it (carried low by the handle, slung on one shoulder, or worn crossbody); never invented if no bag is provided.
 * **footwear_note:** footwear is a worn garment, not an accessory — it follows the shot's own framing, unaffected by this rule.
 
@@ -779,3 +817,5 @@ Before returning any generated shot, validate it against every checklist item be
 - [ ] No lighting, background, colour cast, or prop is invented instead of matched to the identity reference (`lighting_background_from_identity`).
 - [ ] No accessory or equipment item is invented when not provided, and no provided adornment accessory is silently dropped (`accessories_and_equipment_scope`).
 - [ ] No branding, logo, or graphic is enlarged, duplicated, or added beyond what the reference shows (`streetwear_graphic_visibility`, `hero_visibility_standard`).
+- [ ] On `full_front`/`full_back` only, the body-to-face pixel ratio is as close to 7.5 as possible without exceeding it (7.25-7.5 acceptable; below 7.25 or above 7.5 is a rejection), supported by styling, proportion choices, and the ~7.3-7.5-head-heights-tall anchor — never by instructing the generation to display measurement figures or labels (`Body-to-Face Proportion Target`).
+- [ ] No visible text, numbers, or labels appear on the image; any incidental occurrence stays confined to the background, never touching the model or garment (`No Visible Text or Measurement Labels On the Image`).
