@@ -1,14 +1,28 @@
 You are extracting structured QC feedback from a raw document (a PPT slide
-deck or a DOC, already converted to plain text) into a flat list keyed by
-SKU ID, angle, and variant, so it can be merged into that SKU's own JSON
-config for RCA diagnosis.
+deck or a DOC) into a flat list keyed by SKU ID, angle, and variant, so it
+can be merged into that SKU's own JSON config for RCA diagnosis.
+
+**The SKU ID is not written anywhere as text.** Per the actual QC
+convention this feeds, each faulty image is a pasted screenshot of the
+GATI portal, and the SKU ID (often the angle too) is only visible as
+pixels inside that screenshot — you must read it off the image itself
+using vision, the same way a person visually checking the screenshot
+would. Never guess a SKU ID from context or from a filename-shaped number
+elsewhere in the text; if you cannot actually read it in an attached
+image, that mention belongs in `unresolvedMentions`, not `extracted`.
 
 ## Input
 
-- `documentText`: the full extracted text of the source document, in
-  reading order. Slide/section boundaries are marked as
-  `--- SLIDE n ---` (or similar) where detectable; feedback for one SKU
-  may span more than one slide/section.
+- `documentText`: the typed text of the source document, in reading order.
+  Slide/section boundaries are marked `--- SLIDE n ---`. This is where the
+  **variant and feedback/rejection reason** are written (e.g. "Full Front
+  – Variant 1: collar sits wrong") — but never trust it for the SKU ID.
+- One attached image per pasted QC screenshot, each labeled
+  `SCREENSHOT FROM SLIDE n` (and `(image i of k)` when a slide carries more
+  than one, which is common — a bad variant shown next to a good one for
+  contrast). Read the SKU ID directly from each screenshot's visible GATI
+  portal UI. A screenshot's slide number is how you connect what you read
+  in the image to the typed variant/feedback text on that same slide.
 - `knownSkuIds`: the exact list of SKU IDs actually present in this run's
   uploaded config folder. Only ever emit entries whose `skuId` is in this
   list — a SKU mentioned in the document that isn't in this list has no
@@ -16,18 +30,22 @@ config for RCA diagnosis.
 
 ## Task
 
-Read `documentText` and identify every place it names a SKU, an angle
-(e.g. "Full Front", "Back", "Upper Crop" — client language, not the exact
-internal angle id), a variant (often "variant 1"/"variant 2", "left/right",
-or simply "the generated image" when there's only one), and the actual
-feedback/rejection reason given for it. Extract one entry per (SKU, angle,
-variant) the document actually addresses.
+For each slide: read the SKU ID (and angle, if visible) off that slide's
+screenshot(s), and read the variant + feedback reason off that slide's
+typed text (`--- SLIDE n ---` block). Combine the two into one entry per
+(SKU, angle, variant) the slide actually addresses. A SKU/angle can also
+be stated in the slide's typed text (some decks do write it out as well as
+screenshotting it) — when both are present and agree, that's just extra
+confirmation; when they disagree, prefer what you can actually verify by
+reading the screenshot pixels, since that is the authoritative source per
+this workflow, and note the discrepancy in `matchConfidence`/reasoning.
 
 Rules:
-- **Only extract what's actually stated.** Do not infer a SKU ID, angle,
-  or variant that isn't reasonably clear from the text. If a feedback
-  comment doesn't clearly name which SKU/angle/variant it's about, omit it
-  entirely rather than guessing — a wrong match is worse than a missed one.
+- **Only extract what's actually stated or actually legible.** Do not
+  infer a SKU ID, angle, or variant that isn't reasonably clear from the
+  image or the text. If a feedback comment doesn't clearly connect to a
+  SKU/angle/variant you can actually read, omit it entirely rather than
+  guessing — a wrong match is worse than a missed one.
 - If a SKU ID in the document doesn't (even loosely) match anything in
   `knownSkuIds`, omit it — don't emit an entry for a SKU we don't have a
   config for.
@@ -78,8 +96,12 @@ Return ONLY this JSON shape, no prose, no markdown fences:
 ```
 
 `matchConfidence: "low"` is for cases you're including but aren't fully
-sure about (e.g. the angle label is ambiguous, or variant numbering had to
-be assumed) — the caller surfaces these to a human for review rather than
-silently trusting them. `unresolvedMentions` is for anything you could
-find in the text but couldn't confidently turn into a structured entry at
-all — these must not be silently dropped from the response.
+sure about (e.g. the SKU ID/angle in the screenshot is small, blurry, or
+partially cropped and you're not fully certain of every character, or
+variant numbering had to be assumed) — the caller surfaces these to a
+human for review rather than silently trusting them. `unresolvedMentions`
+is for anything you found (a screenshot on a slide, a feedback comment)
+but couldn't confidently turn into a structured entry at all — e.g. a
+screenshot too illegible to read a SKU ID from, or a slide with feedback
+text but no screenshot attached — these must not be silently dropped from
+the response.

@@ -22,47 +22,100 @@ const PAYLOAD_MODEL = process.env.L1_RCA_MODEL || 'claude-sonnet-4-6';
 
 const todayDateString = () => new Date().toISOString().slice(0, 10);
 
-/** Plain-text extraction from a slide/section-aware pptx or a docx. Both
- * return one string with `--- SLIDE n ---` (pptx) or `--- SECTION n ---`
- * (docx, split on top-level headings/page breaks isn't reliable so this is
- * just numbered paragraphs) markers, since the extraction prompt looks for
- * those to help it keep feedback grouped by where it was written. */
-const extractPptxText = (buffer) => {
+// Raster formats a vision call can actually read. pptx can also embed
+// vector art (emf/wmf) as decoration/logos -- never a real QC screenshot,
+// and not something a vision model can interpret as an image, so those are
+// deliberately skipped rather than sent.
+const IMAGE_EXTENSION_MIME = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+    bmp: 'image/bmp',
+    webp: 'image/webp',
+};
+
+/** Per-slide text + embedded screenshot images from a pptx. The SKU ID
+ * (and often the angle) is a QC screenshot of the GATI portal pasted onto
+ * the slide -- it is pixels, never typed text -- so this has to resolve
+ * each slide's actual embedded image(s), not just its text runs. pptx
+ * structure: `ppt/slides/slideN.xml` references images by relationship id
+ * (`<a:blip r:embed="rIdX">`), and `ppt/slides/_rels/slideN.xml.rels` maps
+ * that id to the real file under `ppt/media/`. Returns
+ * `[{slideNumber, text, images: [{buffer, mimeType}]}]`, in slide order. */
+const extractPptxSlides = (buffer) => {
     const zip = new AdmZip(buffer);
     const slideEntries = zip
         .getEntries()
         .filter((e) => /^ppt\/slides\/slide\d+\.xml$/.test(e.entryName))
-        .sort((a, b) => {
-            const na = Number(a.entryName.match(/slide(\d+)\.xml/)[1]);
-            const nb = Number(b.entryName.match(/slide(\d+)\.xml/)[1]);
-            return na - nb;
-        });
+        .sort((a, b) => Number(a.entryName.match(/slide(\d+)\.xml/)[1]) - Number(b.entryName.match(/slide(\d+)\.xml/)[1]));
 
-    return slideEntries
-        .map((entry, i) => {
-            const xml = entry.getData().toString('utf8');
-            // Pull every <a:t>...</a:t> text run in document order -- good
-            // enough for feedback prose; we don't need real layout fidelity.
-            const runs = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => m[1]);
-            return `--- SLIDE ${i + 1} ---\n${runs.join(' ')}`;
-        })
-        .join('\n\n');
+    return slideEntries.map((entry) => {
+        const slideNumber = Number(entry.entryName.match(/slide(\d+)\.xml/)[1]);
+        const xml = entry.getData().toString('utf8');
+
+        const textRuns = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => m[1]);
+
+        const relsEntry = zip.getEntry(`ppt/slides/_rels/slide${slideNumber}.xml.rels`);
+        const relsXml = relsEntry ? relsEntry.getData().toString('utf8') : '';
+        const relMap = new Map(
+            [...relsXml.matchAll(/<Relationship Id="([^"]+)"[^>]*Target="([^"]+)"/g)]
+                .filter(([, , target]) => target.includes('/media/'))
+                .map(([, id, target]) => [id, target])
+        );
+
+        const embedIds = [...xml.matchAll(/<a:blip[^>]*r:embed="([^"]+)"/g)].map((m) => m[1]);
+        const images = [];
+        for (const embedId of embedIds) {
+            const target = relMap.get(embedId);
+            if (!target) continue;
+            const ext = target.split('.').pop().toLowerCase();
+            const mimeType = IMAGE_EXTENSION_MIME[ext];
+            if (!mimeType) continue; // vector art (emf/wmf) or unrecognized -- skip
+            const mediaPath = path.posix.normalize(path.posix.join('ppt/slides', target));
+            const mediaEntry = zip.getEntry(mediaPath);
+            if (!mediaEntry) continue;
+            images.push({ buffer: mediaEntry.getData(), mimeType });
+        }
+
+        return { slideNumber, text: textRuns.join(' '), images };
+    });
 };
 
+/** docx has no "slide" concept, and mammoth's raw-text extraction doesn't
+ * surface embedded images at all -- so unlike pptx, this is text-only for
+ * now. Flagged explicitly (not silently) since the real QC workflow this
+ * was built for is pptx-based; a docx with SKU IDs only in pasted
+ * screenshots would need the same image-extraction treatment added here
+ * if that becomes a real path. */
 const extractDocxText = async (buffer) => {
     const { value } = await mammoth.extractRawText({ buffer });
-    // mammoth gives one flat text blob -- number paragraphs so the
-    // extraction prompt still has some notion of "location" to reference.
     return value
         .split(/\n{2,}/)
         .map((para, i) => `--- SECTION ${i + 1} ---\n${para.trim()}`)
         .join('\n\n');
 };
 
-const extractDocumentText = async (buffer, originalName) => {
+/** Normalizes both source formats into one shape the extraction call
+ * consumes: `{ documentText, images }`, images labeled with which
+ * slide/section they came from (and their position on it, since a slide
+ * commonly carries 2 screenshots -- a bad variant next to a good one). */
+const extractDocumentContent = async (buffer, originalName) => {
     const lower = originalName.toLowerCase();
-    if (lower.endsWith('.pptx')) return extractPptxText(buffer);
-    if (lower.endsWith('.docx')) return extractDocxText(buffer);
+    if (lower.endsWith('.pptx')) {
+        const slides = extractPptxSlides(buffer);
+        const documentText = slides.map((s) => `--- SLIDE ${s.slideNumber} ---\n${s.text}`).join('\n\n');
+        const images = slides.flatMap((s) =>
+            s.images.map((img, i) => ({
+                ...img,
+                label: `SCREENSHOT FROM SLIDE ${s.slideNumber}${s.images.length > 1 ? ` (image ${i + 1} of ${s.images.length})` : ''}`,
+            }))
+        );
+        return { documentText, images };
+    }
+    if (lower.endsWith('.docx')) {
+        return { documentText: await extractDocxText(buffer), images: [] };
+    }
     throw new Api400Error('feedbackDoc must be a .pptx or .docx file (legacy .ppt/.doc are not supported)');
 };
 
@@ -71,17 +124,22 @@ const logSessionEvent = async (session, type, meta) => {
     await session.save();
 };
 
-/** One LLM call over the whole extracted document text -- asks for every
- * (skuId, angleName, variantIndex, feedbackText) the doc actually states,
- * scoped to the SKUs we actually have configs for. See
+/** One vision-enabled LLM call over the whole document -- asks for every
+ * (skuId, angleName, variantIndex, feedbackText) it can identify, scoped to
+ * the SKUs we actually have configs for. The SKU ID (and often the angle)
+ * is read directly off each slide's pasted QC screenshot, not off any text
+ * label -- `images` (one per embedded screenshot, labeled with its slide)
+ * is what makes that possible; `documentText` supplies the typed
+ * variant/feedback callouts alongside it. See
  * sys_payload_feedback_extraction.md for the exact contract. */
-const extractFeedbackFromDocument = async (documentText, knownSkuIds) => {
+const extractFeedbackFromDocument = async (documentText, images, knownSkuIds) => {
     const systemPrompt = fs.readFileSync(EXTRACTION_PROMPT_PATH, 'utf8');
     const response = await generate({
         provider: PAYLOAD_PROVIDER,
         model: PAYLOAD_MODEL,
         systemPrompt,
         userContent: JSON.stringify({ documentText, knownSkuIds }),
+        images,
         responseFormat: 'json',
     });
     return {
@@ -130,7 +188,7 @@ const mergeFeedbackIntoConfig = (config, entriesForSku) => {
 const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docName) => {
     const session = await L1PayloadSessionModel.findById(sessionId);
     try {
-        const documentText = await extractDocumentText(docBuffer, docName);
+        const { documentText, images } = await extractDocumentContent(docBuffer, docName);
         const knownSkuIds = [];
         const parsedBySkuId = new Map();
 
@@ -147,9 +205,13 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
         }
         session.totalSkus = knownSkuIds.length;
         await session.save();
-        await logSessionEvent(session, 'extraction_started', { totalSkus: knownSkuIds.length, docName });
+        await logSessionEvent(session, 'extraction_started', {
+            totalSkus: knownSkuIds.length,
+            docName,
+            screenshotCount: images.length,
+        });
 
-        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, knownSkuIds);
+        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, images, knownSkuIds);
         await logSessionEvent(session, 'extraction_completed', {
             entriesFound: extracted.length,
             unresolvedMentions: unresolvedMentions.length,
