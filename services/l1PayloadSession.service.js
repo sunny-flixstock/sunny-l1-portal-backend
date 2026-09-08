@@ -12,6 +12,7 @@ const {
     unwrapUploadedConfig,
     applyExplicitFeedback,
     findClientAngleIdByName,
+    getVariantOutput,
 } = require('./l1FeedbackBatch.service');
 
 const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
@@ -153,11 +154,17 @@ const extractFeedbackFromDocument = async (documentText, images, knownSkuIds) =>
  * clientAngleId first (findClientAngleIdByName), then reusing the exact
  * same mutation applyExplicitFeedback already uses for manually-entered
  * feedback in the SKU config upload tab. Returns { config, matchedCount,
- * warnings } -- never throws on an unresolved entry, since one bad match
- * shouldn't fail the whole SKU's file. */
+ * warnings, mergedItems } -- never throws on an unresolved entry, since one
+ * bad match shouldn't fail the whole SKU's file. `mergedItems` (one per
+ * successfully-merged entry, each carrying the real image URL it was
+ * mapped to) is what the Feedback Verification tab renders -- kept as
+ * individual records, not just the aggregate count, specifically so a
+ * human can visually confirm each one before this goes anywhere near
+ * RCA. */
 const mergeFeedbackIntoConfig = (config, entriesForSku) => {
     let matchedCount = 0;
     const warnings = [];
+    const mergedItems = [];
 
     for (const entry of entriesForSku) {
         const clientAngleId = findClientAngleIdByName(config, entry.angleName);
@@ -172,6 +179,15 @@ const mergeFeedbackIntoConfig = (config, entriesForSku) => {
                 { clientAngleId, variantIndex: entry.variantIndex, feedbackText: entry.feedbackText },
             ]);
             matchedCount += 1;
+            mergedItems.push({
+                clientAngleId,
+                angleName: entry.angleName,
+                variantIndex: entry.variantIndex,
+                feedbackText: entry.feedbackText,
+                matchConfidence: entry.matchConfidence ?? null,
+                imageUrl: getVariantOutput(config, clientAngleId, entry.variantIndex),
+                verification: { status: 'pending' },
+            });
             if (entry.matchConfidence === 'low') {
                 warnings.push(
                     `Low-confidence match for angle "${entry.angleName}" variant ${entry.variantIndex} -- merged, but double-check it.`
@@ -182,7 +198,7 @@ const mergeFeedbackIntoConfig = (config, entriesForSku) => {
         }
     }
 
-    return { config, matchedCount, warnings };
+    return { config, matchedCount, warnings, mergedItems };
 };
 
 const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docName) => {
@@ -227,7 +243,7 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
         for (const skuId of knownSkuIds) {
             const config = parsedBySkuId.get(skuId);
             const entriesForSku = entriesBySkuId.get(skuId) ?? [];
-            const { matchedCount, warnings } = mergeFeedbackIntoConfig(config, entriesForSku);
+            const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(config, entriesForSku);
 
             if (entriesForSku.length === 0) {
                 warnings.unshift('No feedback found for this SKU anywhere in the document.');
@@ -235,7 +251,14 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
 
             await L1PayloadFileModel.findOneAndUpdate(
                 { sessionId, skuId },
-                { sessionId, skuId, content: JSON.stringify({ configData: { [skuId]: config } }, null, 2), matchedFeedbackCount: matchedCount, warnings },
+                {
+                    sessionId,
+                    skuId,
+                    content: JSON.stringify({ configData: { [skuId]: config } }, null, 2),
+                    matchedFeedbackCount: matchedCount,
+                    mergedItems,
+                    warnings,
+                },
                 { upsert: true, new: true }
             );
 
@@ -286,6 +309,10 @@ const createPayloadSession = async ({ rawFiles, docBuffer, docName, date, create
     return session.toObject();
 };
 
+const listPayloadSessions = async () => {
+    return L1PayloadSessionModel.find().sort({ createdAt: -1 }).limit(50).lean();
+};
+
 const getPayloadSessionById = async (sessionId) => {
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
         throw new Api400Error('Invalid session id');
@@ -311,6 +338,53 @@ const getPayloadSessionFilesWithContent = async (sessionId) => {
     return L1PayloadFileModel.find({ sessionId }).sort({ skuId: 1 }).lean();
 };
 
+/** Flat list of every individually-merged feedback item across a session's
+ * files, one entry per (skuId, clientAngleId, variantIndex) -- what the
+ * Feedback Verification tab renders one card per, each carrying enough to
+ * both display (`imageUrl`, `angleName`, `feedbackText`) and to write a
+ * decision back (`skuId` + `itemIndex`, its position within that SKU's own
+ * `mergedItems` array). */
+const listFeedbackItems = async (sessionId) => {
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+        throw new Api400Error('Invalid session id');
+    }
+    const files = await L1PayloadFileModel.find({ sessionId }).select({ skuId: 1, mergedItems: 1 }).sort({ skuId: 1 }).lean();
+    const items = [];
+    files.forEach((file) => {
+        (file.mergedItems ?? []).forEach((item, itemIndex) => {
+            items.push({ skuId: file.skuId, itemIndex, ...item });
+        });
+    });
+    return items;
+};
+
+/** Records a human's visual verification of one extracted feedback item --
+ * "is this actually mapped to the right image/SKU/angle/variant, and does
+ * the feedback make sense for it" -- before it's ever sent onward to RCA.
+ * Purely a review annotation: does not touch the underlying config/content,
+ * so a "wrong" verdict doesn't silently drop or alter anything here -- the
+ * human is expected to go fix the source (re-run Payload Creation, or hand-
+ * edit before using SKU config upload) themselves. */
+const verifyFeedbackItem = async (sessionId, skuId, itemIndex, { status, verifiedBy }) => {
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+        throw new Api400Error('Invalid session id');
+    }
+    if (status !== 'correct' && status !== 'wrong') {
+        throw new Api400Error('status must be "correct" or "wrong"');
+    }
+    const file = await L1PayloadFileModel.findOne({ sessionId, skuId });
+    if (!file) {
+        throw new Api400Error(`No payload file for sku=${skuId} in session ${sessionId}`);
+    }
+    const item = file.mergedItems?.[itemIndex];
+    if (!item) {
+        throw new Api400Error(`No merged item at index ${itemIndex} for sku=${skuId}`);
+    }
+    item.verification = { status, verifiedAt: new Date(), verifiedBy: verifiedBy ?? null };
+    await file.save();
+    return { skuId, itemIndex, verification: item.verification };
+};
+
 /** Streams a zip of every staged file for a session, laid out the same way
  * the local .claude/skills/l1-feedback convention does
  * (<date>/payload/input_payload/<skuId>.json), for local inspection/edits
@@ -330,8 +404,11 @@ const streamPayloadSessionZip = async (sessionId, res) => {
 
 module.exports = {
     createPayloadSession,
+    listPayloadSessions,
     getPayloadSessionById,
     listPayloadSessionFiles,
     getPayloadSessionFilesWithContent,
+    listFeedbackItems,
+    verifyFeedbackItem,
     streamPayloadSessionZip,
 };

@@ -37,3 +37,23 @@ Authorization: Bearer {{authToken}}
 ### Download the session's staged files as a zip
 GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/download HTTP/1.1
 Authorization: Bearer {{authToken}}
+
+### List recent payload sessions
+GET {{baseUrl}}/l1-feedback/payload-sessions HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Flat list of every individually-extracted feedback item in a session,
+### for the Feedback Verification tab (one card per item: image + text)
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/feedback-items HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Record a human's visual verification of one feedback item's mapping
+POST {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/feedback-items/verify HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "skuId": "{{skuId}}",
+  "itemIndex": 0,
+  "status": "correct"
+}

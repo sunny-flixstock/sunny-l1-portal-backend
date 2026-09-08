@@ -138,6 +138,24 @@ const outfitsForAngle = (rawAngle) => (rawAngle.selectedOutfits?.length ? rawAng
 const variantsForOutfit = (outfit) =>
     Array.isArray(outfit.variants?.data) ? outfit.variants.data : Array.isArray(outfit.variants) ? outfit.variants : [];
 
+/** The actual rendered image URL for one exact (clientAngleId, variantIndex)
+ * in a raw config -- used by the Payload Creation feedback-verification tab
+ * to fetch and display the real faulty image a piece of extracted feedback
+ * was mapped to, so a human can visually confirm the mapping is right
+ * before it goes anywhere near RCA. Null if the angle/variant doesn't
+ * exist or has no output path. */
+const getVariantOutput = (config, clientAngleId, variantIndex) => {
+    for (const rawAngle of config.gtom_L1_output || []) {
+        const angleId = rawAngle.clientAngleId ?? rawAngle.clientAngle?._id;
+        if (String(angleId) !== String(clientAngleId)) continue;
+        for (const outfit of outfitsForAngle(rawAngle)) {
+            const variant = variantsForOutfit(outfit)[variantIndex];
+            if (variant) return variant.output ?? null;
+        }
+    }
+    return null;
+};
+
 /** Every variant in a raw SKU config where feedback.text is already
  * populated -- the flagged set this upload contributes. Walks both the
  * real nested shape and the simpler flat shape (see outfitsForAngle) but
@@ -547,5 +565,6 @@ module.exports = {
     applyExplicitFeedback,
     listAnglesForConfig,
     findClientAngleIdByName,
+    getVariantOutput,
     unwrapUploadedConfig,
 };

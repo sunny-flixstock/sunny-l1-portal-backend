@@ -28,6 +28,15 @@ const postPayloadSession = async (req, res, next) => {
     }
 };
 
+const getPayloadSessionList = async (req, res, next) => {
+    try {
+        const data = await l1PayloadSessionService.listPayloadSessions();
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getPayloadSession = async (req, res, next) => {
     try {
         const data = await l1PayloadSessionService.getPayloadSessionById(req.params.id);
@@ -63,10 +72,35 @@ const downloadPayloadSessionZip = async (req, res, next) => {
     }
 };
 
+const getFeedbackItems = async (req, res, next) => {
+    try {
+        const data = await l1PayloadSessionService.listFeedbackItems(req.params.id);
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const postVerifyFeedbackItem = async (req, res, next) => {
+    try {
+        const { skuId, itemIndex, status, verifiedBy } = req.body;
+        const data = await l1PayloadSessionService.verifyFeedbackItem(req.params.id, skuId, itemIndex, {
+            status,
+            verifiedBy,
+        });
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     postPayloadSession,
+    getPayloadSessionList,
     getPayloadSession,
     getPayloadSessionFiles,
     getPayloadSessionFilesWithContent,
     downloadPayloadSessionZip,
+    getFeedbackItems,
+    postVerifyFeedbackItem,
 };
