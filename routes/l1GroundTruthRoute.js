@@ -9,6 +9,8 @@ const {
     postResetToCleanBaseline,
     postRefreshGroundTruthContent,
     postResetStylingPosingToCleanV1,
+    postAdvanceStagingVersion,
+    postAdvanceStagingVersionBulk,
 } = require('../controllers/L1GroundTruth');
 const l1GroundTruthValidation = require('../validations/l1GroundTruth.validation');
 
@@ -28,10 +30,19 @@ router.post(
     postResetStylingPosingToCleanV1
 );
 
+// Manually seals the current staging draft into its own permanent version
+// number and opens a fresh draft at the same content -- approvals never
+// advance the version number themselves (see getOrCreateDraftStagingVersion's
+// doc comment); this is the only thing that does. Bulk variant covers the
+// common case of one run touching several documents at once, skipping any
+// document with nothing pending rather than erroring on it.
+router.post('/advance-staging-bulk', l1GroundTruthValidation.advanceStagingVersionBulk, postAdvanceStagingVersionBulk);
+
 router.get('/', l1GroundTruthValidation.listGroundTruthDocuments, getGroundTruthDocuments);
 router.get('/versions/:versionId', l1GroundTruthValidation.getGroundTruthVersionContent, getGroundTruthVersionContent);
 router.get('/:id/versions', l1GroundTruthValidation.getGroundTruthVersions, getGroundTruthVersions);
 router.post('/:id/promote', l1GroundTruthValidation.promoteGroundTruthVersion, postPromoteGroundTruthVersion);
+router.post('/:id/advance-staging', l1GroundTruthValidation.advanceStagingVersion, postAdvanceStagingVersion);
 // Overwrites live+staging content with an out-of-band copy (e.g. the real
 // current production styling.md/posing.md) -- this fork's copy is a
 // point-in-time seed and never tracks edits made on the real partner

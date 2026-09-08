@@ -10,7 +10,7 @@ const { applyEditToDocumentContent } = require('./l1HitlReview.service');
 const {
     DEFAULT_CLIENT,
     getAllLiveContents,
-    getOrCreateBatchStagingVersion,
+    getOrCreateDraftStagingVersion,
     isPreambleConcern,
     parsePreambleType,
 } = require('./l1GroundTruth.service');
@@ -326,11 +326,10 @@ const listGenericFeedbackRequests = async () => {
 };
 
 /** Same decision/apply mechanics as l1HitlReview.service's submitDecision --
- * reuses applyEditToDocumentContent and getOrCreateBatchStagingVersion so a
+ * reuses applyEditToDocumentContent and getOrCreateDraftStagingVersion so a
  * generic-feedback-approved edit lands in Staging exactly like an
- * SKU-issue-approved one does. `batchId` is passed as null here (this isn't
- * an L1FeedbackBatch run), which is a legitimate value for that helper --
- * every approval simply lands as its own new staging version. */
+ * SKU-issue-approved one does, stacking onto the same persistent draft
+ * version regardless of source (see that function's doc comment). */
 const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision, customInstruction, comment, decidedBy }) => {
     const request = await L1GenericFeedbackRequestModel.findById(requestId);
     if (!request) {
@@ -403,7 +402,7 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
                   detail: target.candidates[decision].detail,
               };
 
-    const stagingVersion = await getOrCreateBatchStagingVersion(groundTruthDoc, null);
+    const stagingVersion = await getOrCreateDraftStagingVersion(groundTruthDoc);
     const newContent = await applyEditToDocumentContent(stagingVersion.content, editSpec);
     stagingVersion.content = newContent;
     stagingVersion.appliedFixes.push({ source: 'generic', genericFeedbackRequestId: request._id, targetIndex });

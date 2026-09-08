@@ -12,7 +12,7 @@ const {
 const {
     DEFAULT_CLIENT,
     resolveDocumentForConcernedFile,
-    getOrCreateBatchStagingVersion,
+    getOrCreateDraftStagingVersion,
     isPreambleConcern,
     parsePreambleType,
 } = require('./l1GroundTruth.service');
@@ -244,7 +244,7 @@ const submitDecision = async ({ skuId, clientAngleId, variantIndex, decision, cu
                   detail: iteration.candidates[decision].detail,
               };
 
-    const stagingVersion = await getOrCreateBatchStagingVersion(groundTruthDoc, trace.lastBatchId);
+    const stagingVersion = await getOrCreateDraftStagingVersion(groundTruthDoc);
     const newContent = await applyEditToDocumentContent(stagingVersion.content, editSpec);
     stagingVersion.content = newContent;
     stagingVersion.appliedFixes.push({ source: 'sku', skuId, clientAngleId, variantIndex, depth });

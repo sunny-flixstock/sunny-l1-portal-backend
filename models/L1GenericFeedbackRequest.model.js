@@ -24,7 +24,7 @@ const imageSchema = new mongoose.Schema(
 // Same shape as an L1SkuTrace RCA_Iteration's `candidates` -- deliberately,
 // so the HITL approval UI and the edit-apply code path
 // (l1HitlReview.service's applyEditToDocumentContent /
-// l1GroundTruth.service's getOrCreateBatchStagingVersion) are reused as-is
+// l1GroundTruth.service's getOrCreateDraftStagingVersion) are reused as-is
 // for this second intake path instead of duplicated.
 const candidateSchema = new mongoose.Schema(
     {

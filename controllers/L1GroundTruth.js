@@ -85,6 +85,24 @@ const postResetStylingPosingToCleanV1 = async (req, res, next) => {
     }
 };
 
+const postAdvanceStagingVersion = async (req, res, next) => {
+    try {
+        const data = await l1GroundTruthService.advanceStagingVersion(req.params.id);
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const postAdvanceStagingVersionBulk = async (req, res, next) => {
+    try {
+        const data = await l1GroundTruthService.advanceStagingVersionBulk(req.body.documentIds);
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getGroundTruthDocuments,
     getGroundTruthDocument,
@@ -95,4 +113,6 @@ module.exports = {
     postResetToCleanBaseline,
     postRefreshGroundTruthContent,
     postResetStylingPosingToCleanV1,
+    postAdvanceStagingVersion,
+    postAdvanceStagingVersionBulk,
 };

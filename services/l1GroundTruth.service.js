@@ -325,24 +325,31 @@ const getLiveContentByDocumentId = async (documentId) => {
     return { fileName: doc.fileName, versionNumber: liveVersion.versionNumber, content: liveVersion.content };
 };
 
-/** Get this batch's staging version for a document, creating a new one
- * (copied from the current staging content) if this batch hasn't already
- * created one for it -- same idempotency as framework_snapshot.py's
- * same-day `new` behavior. */
-const getOrCreateBatchStagingVersion = async (doc, batchId) => {
-    const currentStagingId = doc.stagingVersionId ?? doc.liveVersionId;
-    if (!currentStagingId) {
+/** The document's current staging version, mutated in place by every
+ * approval regardless of which batch/generic-feedback request it came
+ * from -- staging is a single persistent draft, not one version per
+ * batch. This replaced the old per-batch `getOrCreateBatchStagingVersion`
+ * (which minted a new version for every distinct batchId, and *always*
+ * minted a new one for generic feedback since that path called it with
+ * `batchId: null`): the product decision is that N batches' worth of
+ * approvals should be free to stack onto one version, and a version number
+ * should only actually advance when a human explicitly asks for that via
+ * `advanceStagingVersion` below -- see that function's doc comment. */
+const getOrCreateDraftStagingVersion = async (doc) => {
+    if (doc.stagingVersionId) {
+        const staging = await L1GroundTruthVersionModel.findById(doc.stagingVersionId);
+        if (staging) {
+            return staging;
+        }
+        // stagingVersionId pointed at a version that's gone (e.g. a nuclear
+        // reset) -- fall through and branch a fresh one below.
+    }
+
+    const liveId = doc.liveVersionId;
+    if (!liveId) {
         throw new Error(`document ${doc._id} has no content to branch a staging version from`);
     }
-    const currentStaging = await L1GroundTruthVersionModel.findById(currentStagingId).lean();
-
-    if (currentStaging.batchId && String(currentStaging.batchId) === String(batchId)) {
-        // This batch already created a staging version for this doc --
-        // reuse it so multiple fixes in one run stack instead of
-        // clobbering each other.
-        return L1GroundTruthVersionModel.findById(currentStaging._id);
-    }
-
+    const live = await L1GroundTruthVersionModel.findById(liveId).lean();
     const latestVersionNumber = await L1GroundTruthVersionModel.find({ documentId: doc._id })
         .sort({ versionNumber: -1 })
         .limit(1)
@@ -353,8 +360,7 @@ const getOrCreateBatchStagingVersion = async (doc, batchId) => {
     const newVersion = await L1GroundTruthVersionModel.create({
         documentId: doc._id,
         versionNumber: nextVersionNumber,
-        content: currentStaging.content,
-        batchId,
+        content: live.content,
         appliedFixes: [],
     });
 
@@ -362,6 +368,67 @@ const getOrCreateBatchStagingVersion = async (doc, batchId) => {
     await doc.save();
 
     return newVersion;
+};
+
+/** Explicit "move to next staging version": freezes the current staging
+ * version's content (and its full `appliedFixes` history) in place under
+ * its existing version number forever, then opens a fresh mutable draft
+ * at the same content for future approvals to accumulate onto. Does not
+ * touch `liveVersionId` -- promoting a version to production stays a
+ * fully separate, explicit action via `promoteVersionToLive`. This is the
+ * only thing that ever advances `versionNumber`; approvals themselves
+ * (via `getOrCreateDraftStagingVersion`) never do. */
+const advanceStagingVersion = async (documentId) => {
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+        throw new Api400Error('Invalid document id');
+    }
+    const doc = await L1GroundTruthDocumentModel.findById(documentId);
+    if (!doc) {
+        throw new Api400Error(`Ground-truth document not found: ${documentId}`);
+    }
+    if (!doc.stagingVersionId) {
+        throw new Api400Error(`Document ${documentId} has no staging version to advance`);
+    }
+    const current = await L1GroundTruthVersionModel.findById(doc.stagingVersionId).lean();
+    if (!current) {
+        throw new Api400Error(`Staging version ${doc.stagingVersionId} no longer exists`);
+    }
+
+    const latest = await L1GroundTruthVersionModel.find({ documentId })
+        .sort({ versionNumber: -1 })
+        .limit(1)
+        .select({ versionNumber: 1 })
+        .lean();
+    const nextVersion = await L1GroundTruthVersionModel.create({
+        documentId,
+        versionNumber: (latest[0]?.versionNumber ?? 0) + 1,
+        content: current.content,
+        appliedFixes: [],
+        createdBy: 'manual-advance',
+    });
+
+    doc.stagingVersionId = nextVersion._id;
+    await doc.save();
+
+    return enrichDocument(doc.toObject());
+};
+
+/** Bulk convenience: advance every document that actually has pending
+ * staging changes (or an explicit `documentIds` list), for the common case
+ * of one run touching several ground-truth files at once. Skips documents
+ * with nothing pending rather than erroring on them. */
+const advanceStagingVersionBulk = async (documentIds) => {
+    const filter = Array.isArray(documentIds) && documentIds.length ? { _id: { $in: documentIds } } : {};
+    const docs = await L1GroundTruthDocumentModel.find(filter).lean();
+    const advanced = [];
+    for (const doc of docs) {
+        if (!doc.stagingVersionId || String(doc.stagingVersionId) === String(doc.liveVersionId ?? '')) {
+            continue; // nothing pending on this one -- skip rather than mint a no-op version
+        }
+        const result = await advanceStagingVersion(doc._id);
+        advanced.push(result);
+    }
+    return { advanced };
 };
 
 /** The current live content of every ground-truth document for a client,
@@ -534,7 +601,9 @@ module.exports = {
     resolveLiveAngleReference,
     getLiveContentByDocumentId,
     getAllLiveContents,
-    getOrCreateBatchStagingVersion,
+    getOrCreateDraftStagingVersion,
+    advanceStagingVersion,
+    advanceStagingVersionBulk,
     resetToCleanBaseline,
     resetStylingPosingToCleanV1,
 };

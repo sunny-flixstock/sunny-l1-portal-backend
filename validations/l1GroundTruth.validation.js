@@ -55,6 +55,18 @@ const resetStylingPosingToCleanV1 = celebrate({
     }),
 });
 
+const advanceStagingVersion = celebrate({
+    [Segments.PARAMS]: Joi.object({
+        id: Joi.string().required(),
+    }),
+});
+
+const advanceStagingVersionBulk = celebrate({
+    [Segments.BODY]: Joi.object({
+        documentIds: Joi.array().items(Joi.string()).optional(),
+    }),
+});
+
 module.exports = {
     listGroundTruthDocuments,
     getGroundTruthDocument,
@@ -64,4 +76,6 @@ module.exports = {
     resetToCleanBaseline,
     refreshGroundTruthContent,
     resetStylingPosingToCleanV1,
+    advanceStagingVersion,
+    advanceStagingVersionBulk,
 };

@@ -63,3 +63,18 @@ Content-Type: application/json
 {
   "confirm": true
 }
+
+### Seal the current staging draft into its own permanent version number
+### and open a fresh draft at the same content. Approvals never advance the
+### version number themselves -- this is the only thing that does.
+POST {{baseUrl}}/l1-feedback/ground-truth/{{documentId}}/advance-staging HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Same, for every document that currently has pending staging changes
+### (or pass { "documentIds": [...] } to scope it) -- the common case of one
+### run touching several ground-truth files at once.
+POST {{baseUrl}}/l1-feedback/ground-truth/advance-staging-bulk HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{}
