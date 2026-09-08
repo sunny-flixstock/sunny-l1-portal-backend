@@ -15,6 +15,8 @@ const {
     resolveLiveAngleReference,
 } = require('./l1GroundTruth.service');
 const { diagnoseSku } = require('./l1Rca.service');
+const { runBatchLevelRca } = require('./l1BatchRca.service');
+const { reconcileBatchDiagnoses } = require('./l1Reconciliation.service');
 
 /** Real uploaded SKU configs follow rca_generic_schema.json's top-level
  * shape: { configData: { "<realParentSkuId>": { gender, gtom_L1_output,
@@ -388,6 +390,9 @@ const ingestOneSku = async (skuId, config, batchId) => {
 const processBatchInBackground = async (batchId, configs) => {
     const batch = await L1FeedbackBatchModel.findById(batchId);
 
+    batch.currentPhase = 'ingesting';
+    await batch.save();
+
     for (const { skuId: fileSkuId, config: rawConfig, feedbackEntries } of configs) {
         try {
             const { realSkuId, config } = unwrapUploadedConfig(fileSkuId, rawConfig);
@@ -409,7 +414,16 @@ const processBatchInBackground = async (batchId, configs) => {
         await batch.save();
     }
 
+    // Phase 2: per-SKU RCA, one LLM call at a time, in full -- every SKU is
+    // diagnosed before batch-level clustering ever looks at any of them, so
+    // clustering always sees final per-SKU diagnoses, never partial ones.
+    // currentlyProcessingSkuId is set for the duration of each SKU's call so
+    // a poll can show "processing SKU X (Y of Z)", not just a done-count.
+    batch.currentPhase = 'diagnosing_skus';
+    await batch.save();
     for (const skuId of batch.skuIds) {
+        batch.currentlyProcessingSkuId = skuId;
+        await batch.save();
         try {
             await diagnoseSku(skuId);
             batch.diagnosedSkuIds.push(skuId);
@@ -418,9 +432,40 @@ const processBatchInBackground = async (batchId, configs) => {
             batch.errors.push({ skuId, message: `RCA failed: ${err.message}` });
             batch.events.push({ type: 'sku_diagnosis_failed', meta: { skuId, message: err.message } });
         }
+        batch.currentlyProcessingSkuId = null;
         await batch.save();
     }
 
+    // Phase 3: batch-level RCA -- looks across every diagnosed SKU together
+    // and clusters the handful of real recurring issues, only once every
+    // SKU above has a final diagnosis to look at.
+    if (batch.diagnosedSkuIds.length) {
+        batch.currentPhase = 'batch_rca';
+        await batch.save();
+        try {
+            await runBatchLevelRca(batch._id, batch.diagnosedSkuIds);
+            batch.events.push({ type: 'batch_rca_completed', meta: { skuCount: batch.diagnosedSkuIds.length } });
+        } catch (err) {
+            batch.errors.push({ message: `Batch-level RCA failed: ${err.message}` });
+            batch.events.push({ type: 'batch_rca_failed', meta: { message: err.message } });
+        }
+        await batch.save();
+
+        // Phase 4: reconcile SKU-level issues against the batch-level
+        // clusters just produced, merging duplicates into one HITL entry.
+        batch.currentPhase = 'reconciling';
+        await batch.save();
+        try {
+            const { mergedCount } = await reconcileBatchDiagnoses(batch._id);
+            batch.events.push({ type: 'reconciliation_completed', meta: { mergedCount } });
+        } catch (err) {
+            batch.errors.push({ message: `Reconciliation failed: ${err.message}` });
+            batch.events.push({ type: 'reconciliation_failed', meta: { message: err.message } });
+        }
+        await batch.save();
+    }
+
+    batch.currentPhase = null;
     // 'failed' means something genuinely went wrong -- never for a batch
     // that correctly rejected every SKU because none carried feedback.
     batch.status = batch.errors.length && !batch.skuIds.length ? 'failed' : 'diagnosed';

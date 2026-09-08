@@ -67,6 +67,22 @@ const decisionSchema = new mongoose.Schema(
     { _id: false }
 );
 
+// One absorbed SKU-level issue -- populated by the reconciliation phase for
+// a batch_level target whose cluster covers issues also independently
+// diagnosed at the SKU level. Approving the target also closes each of
+// these out on its own L1SkuTrace (writes approvedFix there too), so they
+// disappear from SKU-Based Issues instead of sitting there stale;
+// rejecting the target leaves them open again.
+const mergedSkuIssueSchema = new mongoose.Schema(
+    {
+        skuId: { type: String, required: true },
+        clientAngleId: { type: String, required: true },
+        variantIndex: { type: Number, required: true },
+        depth: { type: Number, required: true },
+    },
+    { _id: false }
+);
+
 const targetSchema = new mongoose.Schema(
     {
         // null for a preamble:* target -- no ground-truth document backs it.
@@ -80,6 +96,13 @@ const targetSchema = new mongoose.Schema(
         decision: { type: decisionSchema, default: () => ({}) },
         isPreambleSuggestion: { type: Boolean, default: false },
         preambleType: { type: String, default: null },
+        // Only populated for a kind:'batch_level' request's targets (see
+        // below) -- clusterSummary/affectedSkuIds come straight from the
+        // batch-level RCA LLM call; mergedFromSkuIssues is resolved from
+        // that by the reconciliation phase into exact issue tuples.
+        clusterSummary: { type: String, default: null },
+        affectedSkuIds: { type: [String], default: [] },
+        mergedFromSkuIssues: { type: [mergedSkuIssueSchema], default: [] },
     },
     { _id: false }
 );
@@ -115,6 +138,13 @@ const L1GenericFeedbackRequestSchema = new mongoose.Schema(
         // the same rigor as the SKU-JSON RCA path.
         realPrompt: { type: String, default: null },
         status: { type: String, enum: L1_GENERIC_FEEDBACK_STATUSES, default: 'processing' },
+        // 'manual' = submitted by a human via Submit Feedback (free text,
+        // ZIP, or an explicit requirement). 'batch_level' = auto-created by
+        // l1BatchRca.service after a batch's per-SKU RCA finishes, clustering
+        // issues across many SKUs into the same target/candidate shape so it
+        // renders and gets decided on identically in HITL Review.
+        kind: { type: String, enum: ['manual', 'batch_level'], default: 'manual' },
+        sourceBatchId: { type: mongoose.Schema.Types.ObjectId, ref: 'l1FeedbackBatch', default: null },
         diagnosis: { type: diagnosisSchema, default: () => ({}) },
         events: { type: [eventSchema], default: [] },
         errors: { type: [errorSchema], default: [] },

@@ -62,6 +62,66 @@ const derivePlaceholderOutput = (baseOutput, depth) => {
     return `${dirPath}/rca_fix_iteration_${depth}/${newFilename}`;
 };
 
+/** Writes an approvedFix onto exactly one SKU-level open issue -- the
+ * shared tail end of both a direct SKU-issue approval (submitDecision
+ * below) and a batch-level cluster's absorbed SKU issues (see
+ * l1GenericFeedback.service's submitGenericFeedbackDecision, which calls
+ * this once per `target.mergedFromSkuIssues` entry after writing the
+ * ground-truth edit once). Throws if the named issue isn't actually open
+ * at the given depth (already resolved, or never existed) -- callers
+ * decide how to handle that (e.g. skip and warn) rather than this
+ * function silently no-oping. */
+const closeOutSkuIssueWithApprovedFix = async ({
+    skuId,
+    clientAngleId,
+    variantIndex,
+    depth,
+    candidateId,
+    groundTruthFileName,
+    stagingVersionNumber,
+}) => {
+    const trace = await L1SkuTraceModel.findById(skuId);
+    if (!trace) {
+        throw new Api400Error(`No trace found for sku=${skuId}`);
+    }
+    const traceData = trace.data;
+    const variant = findVariant(traceData, clientAngleId, variantIndex);
+    const found = findOpenIssue(variant);
+    if (!found || found.depth !== depth) {
+        throw new Api400Error(
+            `sku=${skuId} clientAngleId=${clientAngleId} variantIndex=${variantIndex} has no open issue at depth=${depth}`
+        );
+    }
+
+    let owner = variant;
+    for (let d = 0; d < depth; d += 1) {
+        owner = owner.feedback[`RCA_Iteration_${d}`].approvedFix;
+    }
+    const newOutput = derivePlaceholderOutput(owner.output, depth);
+
+    found.iteration.approvedFix = {
+        candidateId,
+        variantIndex,
+        prompt: `<PENDING_PROMPT_REGENERATION — ${groundTruthFileName} was edited in staging v${stagingVersionNumber}; awaiting next GTOM prompt-composition + render pass>`,
+        output: newOutput,
+        image_description: null,
+        rework: 'none',
+        feedback: nullFeedback(),
+    };
+
+    trace.markModified('data');
+    await trace.save();
+    await logBatchEvent(trace.lastBatchId, 'issue_decided', {
+        skuId,
+        clientAngleId,
+        variantIndex,
+        depth,
+        decision: candidateId,
+        stagingVersionNumber,
+        source: 'batch_level_merge',
+    });
+};
+
 const shapeIssue = (skuId, angle, variant, iteration, depth) => {
     const owner =
         depth === 0
@@ -300,4 +360,5 @@ module.exports = {
     listOpenIssues,
     submitDecision,
     applyEditToDocumentContent,
+    closeOutSkuIssueWithApprovedFix,
 };

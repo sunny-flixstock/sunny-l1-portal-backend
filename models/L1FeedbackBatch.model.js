@@ -47,6 +47,18 @@ const L1FeedbackBatchSchema = new mongoose.Schema(
         // malformed config, a DB write failing, an RCA call throwing).
         rejectedSkuIds: { type: [String], default: [] },
         errors: { type: [batchErrorSchema], default: [] },
+        // Real-time "what's happening right now" for the progress UI --
+        // updated at the start of each SKU's RCA call and cleared when it
+        // finishes, so a poll can show "processing SKU X (Y of Z)" instead
+        // of just a done-count. `currentPhase` tracks which of the batch's
+        // sequential stages is active (ingest -> per-SKU RCA -> batch-level
+        // RCA -> cross-level reconciliation) for the same reason.
+        currentPhase: {
+            type: String,
+            enum: ['ingesting', 'diagnosing_skus', 'batch_rca', 'reconciling', null],
+            default: null,
+        },
+        currentlyProcessingSkuId: { type: String, default: null },
         createdBy: { type: String, trim: true },
     },
     { timestamps: true }

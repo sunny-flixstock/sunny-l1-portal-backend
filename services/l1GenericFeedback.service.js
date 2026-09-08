@@ -6,7 +6,7 @@ const L1GenericFeedbackRequestModel = require('../models/L1GenericFeedbackReques
 const L1GroundTruthDocumentModel = require('../models/L1GroundTruthDocument.model');
 const Api400Error = require('../errors/api400Error');
 const { generate } = require('./llm/llm.service');
-const { applyEditToDocumentContent } = require('./l1HitlReview.service');
+const { applyEditToDocumentContent, closeOutSkuIssueWithApprovedFix } = require('./l1HitlReview.service');
 const {
     DEFAULT_CLIENT,
     getAllLiveContents,
@@ -408,6 +408,27 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
     stagingVersion.appliedFixes.push({ source: 'generic', genericFeedbackRequestId: request._id, targetIndex });
     await stagingVersion.save();
 
+    // If this target is a batch-level cluster that absorbed one or more
+    // SKU-level issues (see l1Reconciliation.service), close each of those
+    // out too -- the ground-truth edit above already covers them, so they'd
+    // otherwise sit stale in SKU-Based Issues even after the merged fix
+    // they're part of gets approved here. A failure closing out one SKU
+    // doesn't undo the edit that already succeeded; it's surfaced as a
+    // warning event instead so it can be closed out manually.
+    const mergeWarnings = [];
+    for (const issue of target.mergedFromSkuIssues ?? []) {
+        try {
+            await closeOutSkuIssueWithApprovedFix({
+                ...issue,
+                candidateId: decision,
+                groundTruthFileName: groundTruthDoc.fileName,
+                stagingVersionNumber: stagingVersion.versionNumber,
+            });
+        } catch (err) {
+            mergeWarnings.push({ ...issue, message: err.message });
+        }
+    }
+
     target.decision = {
         status: 'approved',
         candidateId: decision,
@@ -425,6 +446,8 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
             decision,
             groundTruthDocumentId: groundTruthDoc._id,
             stagingVersionNumber: stagingVersion.versionNumber,
+            mergedSkuIssuesClosed: (target.mergedFromSkuIssues?.length ?? 0) - mergeWarnings.length,
+            mergeWarnings: mergeWarnings.length ? mergeWarnings : undefined,
         },
     });
     await request.save();
@@ -435,6 +458,7 @@ const submitGenericFeedbackDecision = async ({ requestId, targetIndex, decision,
         targetIndex,
         groundTruthDocumentId: groundTruthDoc._id,
         stagingVersionNumber: stagingVersion.versionNumber,
+        mergedSkuIssuesClosed: (target.mergedFromSkuIssues?.length ?? 0) - mergeWarnings.length,
     };
 };
 

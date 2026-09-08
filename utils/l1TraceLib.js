@@ -115,6 +115,20 @@ const findPendingDiagnosis = (variant) => {
     }
 };
 
+/** The feedback-chain owner at an exact depth (0 = the variant itself, N =
+ * N approved-fix hops deep) -- same traversal `findOpenIssue`/`locateSlot`
+ * do internally, exposed directly for callers (batch-level RCA,
+ * reconciliation) that already know a variant's open-issue depth (from
+ * findOpenIssue) and need that depth's own feedback.text/output, not just
+ * its RCA_Iteration. */
+const ownerAtDepth = (variant, depth) => {
+    let owner = variant;
+    for (let d = 0; d < depth; d += 1) {
+        owner = owner.feedback[`RCA_Iteration_${d}`].approvedFix;
+    }
+    return owner;
+};
+
 function* iterVariants(skuData) {
     for (const angle of skuData.gtom_L1_output || []) {
         for (const variant of angle.variants || []) {
@@ -148,6 +162,7 @@ module.exports = {
     setRejectFeedback,
     findOpenIssue,
     findPendingDiagnosis,
+    ownerAtDepth,
     iterVariants,
     pruneUntouchedVariants,
 };
