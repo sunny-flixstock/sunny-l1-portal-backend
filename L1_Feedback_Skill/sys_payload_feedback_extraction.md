@@ -31,10 +31,22 @@ Rules:
 - If a SKU ID in the document doesn't (even loosely) match anything in
   `knownSkuIds`, omit it — don't emit an entry for a SKU we don't have a
   config for.
-- `variantIndex` is 0-based. If the document doesn't distinguish between
-  variants for a SKU/angle (says nothing about "variant 1 vs 2", just
-  gives one comment), use `variantIndex: 0` and note this in
+- `variantIndex` in the output is **0-based**, but the source document
+  numbers variants **1-based** ("Variant 1", "Variant 2") — this is the
+  documented QC convention (e.g. "Full Front – Variant 1: ...", "Full
+  Front – Variant 2: ..."). Convert explicitly: **"Variant 1" → 0,
+  "Variant 2" → 1**, and so on. Never emit the document's own 1-based
+  number directly as `variantIndex` — that would silently point at the
+  wrong image. If the document doesn't distinguish between variants for a
+  SKU/angle at all (says nothing about "variant 1 vs 2", just gives one
+  comment for that angle), use `variantIndex: 0` and note this in
   `matchConfidence`.
+- An angle label may not match the real angle's word order — e.g. the
+  document may write "Upper Front Crop" for an angle whose real name is
+  ordered "Front Upper Crop" (adjective-first vs. the internal
+  front/back-first convention). Extract `angleName` exactly as written in
+  the document regardless — word-order-tolerant matching against the real
+  angle happens downstream; do not try to reorder or normalize it yourself.
 - `angleName` should be the human label as the document actually wrote it
   (e.g. "Full Front", "Back Crop") — do not attempt to translate it to an
   internal angle id yourself; that resolution happens downstream against

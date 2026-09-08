@@ -239,26 +239,36 @@ const normalizeAngleLabel = (label) =>
         .replace(/[^A-Z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '');
 
-/** Case-insensitive, separator-tolerant, substring-tolerant match of a
+/** Word SET (not sequence) behind a normalized angle label -- confirmed
+ * necessary, not theoretical: this client's real angle names read
+ * "FRONT_UPPER_CROP" / "FRONT_LOWER_CROP" (FRONT first), but QC's own
+ * documented feedback-doc convention writes "Upper Front Crop" / "Lower
+ * Front Crop" (the adjective first) -- a plain substring/exact match on
+ * the normalized string misses this real phrasing entirely, silently. */
+const angleLabelTokens = (label) => new Set(normalizeAngleLabel(label).split('_').filter(Boolean));
+
+/** Case-insensitive, separator- and word-order-tolerant match of a
  * human-typed angle label (from a feedback doc/PPT) against this config's
- * real angles -- exact match preferred, falling back to "one side contains
- * the other" since a doc might say "Full Front" for an angle actually
- * named "BZT_FULL_FRONT_SPORTS". Returns null (not a guess) if nothing or
- * more than one angle plausibly matches, since a wrong silent match would
- * apply feedback to the wrong angle. */
+ * real angles: matches when one side's word set is fully contained in the
+ * other's (the real angle name carries extra client/category tokens like
+ * "BZT"/"SPORTS" the human label omits; the human label is never expected
+ * to carry extra tokens the real name lacks). Returns null (not a guess)
+ * if nothing or more than one angle plausibly matches, since a wrong
+ * silent match would apply feedback to the wrong angle. */
 const findClientAngleIdByName = (config, angleNameGuess) => {
-    if (!angleNameGuess) return null;
-    const needle = normalizeAngleLabel(angleNameGuess);
-    if (!needle) return null;
+    const needleTokens = angleLabelTokens(angleNameGuess);
+    if (!needleTokens.size) return null;
+
+    const isSubset = (a, b) => [...a].every((t) => b.has(t));
+
     const angles = listAnglesForConfig(config)
         .filter((a) => a.clientAngleId && a.angleName)
-        .map((a) => ({ ...a, normalized: normalizeAngleLabel(a.angleName) }));
+        .map((a) => ({ ...a, tokens: angleLabelTokens(a.angleName) }));
 
-    const exact = angles.find((a) => a.normalized === needle);
-    if (exact) return exact.clientAngleId;
-
-    const partial = angles.filter((a) => a.normalized.includes(needle) || needle.includes(a.normalized));
-    return partial.length === 1 ? partial[0].clientAngleId : null;
+    const matches = angles.filter(
+        (a) => isSubset(needleTokens, a.tokens) || isSubset(a.tokens, needleTokens)
+    );
+    return matches.length === 1 ? matches[0].clientAngleId : null;
 };
 
 const pickAngleMeta = (angle) => {
