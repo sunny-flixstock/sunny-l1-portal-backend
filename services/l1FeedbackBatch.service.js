@@ -213,6 +213,52 @@ const applyExplicitFeedback = (config, feedbackEntries) => {
     return config;
 };
 
+/** Every (clientAngleId, angleName) pair actually present in a raw config
+ * -- used by the Payload Creation flow, which only has a human-readable
+ * angle label from a feedback doc/PPT, never the real clientAngleId, and
+ * needs to resolve one to the other before it can call
+ * applyExplicitFeedback (which requires the id, not the name, since a name
+ * alone isn't a reliable enough key for a mutation). */
+const listAnglesForConfig = (config) =>
+    (config.gtom_L1_output || []).map((rawAngle) => ({
+        clientAngleId: rawAngle.clientAngleId ?? rawAngle.clientAngle?._id ?? null,
+        angleName: rawAngle.clientAngle?.name ?? rawAngle.angleName ?? null,
+    }));
+
+/** Uppercase and collapse every run of non-alphanumeric characters to a
+ * single underscore, so "Full Front", "full-front", and
+ * "BZT_FULL_FRONT_SPORTS" all normalize to a comparable form -- a doc
+ * writes angle labels with spaces/hyphens, real angle names use
+ * underscores, and this is the one place both need to agree. */
+const normalizeAngleLabel = (label) =>
+    String(label ?? '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+/** Case-insensitive, separator-tolerant, substring-tolerant match of a
+ * human-typed angle label (from a feedback doc/PPT) against this config's
+ * real angles -- exact match preferred, falling back to "one side contains
+ * the other" since a doc might say "Full Front" for an angle actually
+ * named "BZT_FULL_FRONT_SPORTS". Returns null (not a guess) if nothing or
+ * more than one angle plausibly matches, since a wrong silent match would
+ * apply feedback to the wrong angle. */
+const findClientAngleIdByName = (config, angleNameGuess) => {
+    if (!angleNameGuess) return null;
+    const needle = normalizeAngleLabel(angleNameGuess);
+    if (!needle) return null;
+    const angles = listAnglesForConfig(config)
+        .filter((a) => a.clientAngleId && a.angleName)
+        .map((a) => ({ ...a, normalized: normalizeAngleLabel(a.angleName) }));
+
+    const exact = angles.find((a) => a.normalized === needle);
+    if (exact) return exact.clientAngleId;
+
+    const partial = angles.filter((a) => a.normalized.includes(needle) || needle.includes(a.normalized));
+    return partial.length === 1 ? partial[0].clientAngleId : null;
+};
+
 const pickAngleMeta = (angle) => {
     const { variants, ...meta } = angle;
     return meta;
@@ -443,4 +489,8 @@ module.exports = {
     getBatchById,
     getBatchDetail,
     listBatches,
+    applyExplicitFeedback,
+    listAnglesForConfig,
+    findClientAngleIdByName,
+    unwrapUploadedConfig,
 };

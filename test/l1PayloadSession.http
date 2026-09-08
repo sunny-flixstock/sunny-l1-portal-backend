@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:7015/api/v1
+@authToken = paste-a-token-from-auth.http-here
+
+### Create a payload session: multipart/form-data with many raw <skuId>.json
+### files under the "documents" field, plus one "feedbackDoc" (.pptx/.docx).
+### Multipart bodies aren't expressible in plain REST Client JSON -- use the
+### REST Client's multipart/form-data boundary syntax, or a real HTTP client.
+# POST {{baseUrl}}/l1-feedback/payload-sessions HTTP/1.1
+# Authorization: Bearer {{authToken}}
+# Content-Type: multipart/form-data; boundary=----boundary
+#
+# ------boundary
+# Content-Disposition: form-data; name="documents"; filename="190375736090.json"
+# Content-Type: application/json
+#
+# < ./190375736090.json
+# ------boundary
+# Content-Disposition: form-data; name="feedbackDoc"; filename="feedback.pptx"
+# Content-Type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+#
+# < ./feedback.pptx
+# ------boundary--
+
+### Poll a session's status/progress
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### List a session's staged files (match status/warnings, no content)
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/files HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### List a session's staged files WITH content (for the "Send to SKU config
+### upload" handoff)
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/files/content HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+### Download the session's staged files as a zip
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/download HTTP/1.1
+Authorization: Bearer {{authToken}}

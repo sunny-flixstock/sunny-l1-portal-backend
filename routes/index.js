@@ -28,6 +28,7 @@ router.use('/description-model', require('./descriptionModelRoute'));
 router.use('/custom-report', require('./customReportRoute'));
 router.use('/l1-feedback/ground-truth', require('./l1GroundTruthRoute'));
 router.use('/l1-feedback/generic', require('./l1GenericFeedbackRoute'));
+router.use('/l1-feedback/payload-sessions', require('./l1PayloadSessionRoute'));
 router.use('/l1-feedback', require('./l1FeedbackRoute'));
 router.use('/util', require('./utilRoute'));
 router.use('/api-docs', require('./apiDocsRoute'));
