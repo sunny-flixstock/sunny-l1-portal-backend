@@ -63,3 +63,9 @@ Content-Type: application/json
 ### unrelated to RCA or SKU config upload.
 GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/feedback-deck HTTP/1.1
 Authorization: Bearer {{authToken}}
+
+### Clear ALL payload sessions/files -- scoped only to Payload Creation,
+### never touches ground-truth documents/versions or RCA batches/traces.
+### Irreversible.
+DELETE {{baseUrl}}/l1-feedback/payload-sessions HTTP/1.1
+Authorization: Bearer {{authToken}}

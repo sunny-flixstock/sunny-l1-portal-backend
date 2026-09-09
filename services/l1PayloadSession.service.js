@@ -14,6 +14,7 @@ const {
     getVariantOutput,
     listAllCandidateImages,
 } = require('./l1FeedbackBatch.service');
+const { fetchBztSportsReworkItems } = require('./phoenixFeedback.service');
 
 const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const EXTRACTION_PROMPT_PATH = path.join(SOURCE_ROOT, 'sys_payload_feedback_extraction.md');
@@ -588,8 +589,117 @@ const streamPayloadSessionZip = async (sessionId, res) => {
     await archive.finalize();
 };
 
+/** Builds one SKU's flat-shape config (the simpler shape
+ * l1FeedbackBatch.service's outfitsForAngle/variantsForOutfit already
+ * supports natively, alongside the real nested upload shape -- no new
+ * normalization needed there) from this SKU's Phoenix-fetched items,
+ * grouped by clientAngleId. */
+const buildConfigFromPhoenixItems = (items) => {
+    const gender = items.find((i) => i.gender)?.gender ?? null;
+    const byAngle = new Map();
+    for (const item of items) {
+        if (!byAngle.has(item.clientAngleId)) {
+            byAngle.set(item.clientAngleId, { clientAngleId: item.clientAngleId, angleName: item.angleName, variants: [] });
+        }
+        byAngle.get(item.clientAngleId).variants.push({
+            variantIndex: item.variantIndex,
+            prompt: item.prompt,
+            output: item.imageUrl,
+            image_description: null,
+            rework: 'reject',
+            feedback: { text: item.feedbackText, inferredError: null, inferredFix: null, RCA_Iteration_0: null },
+        });
+    }
+    return { gender, gtom_L1_output: [...byAngle.values()] };
+};
+
+/** Phoenix-sourced counterpart to createPayloadSession: instead of a
+ * human-uploaded config folder + feedback doc run through vision-LLM
+ * screenshot matching, this pulls BZT Sports SKUs/angles/variants flagged
+ * for rework directly from the Phoenix telemetry server for a time window
+ * -- identity (clientAngleId/variantIndex) is exact from telemetry, so no
+ * image-matching step is needed. Builds the same L1PayloadSession/
+ * L1PayloadFile records the doc-upload path builds, so every downstream
+ * consumer (buildFeedbackDeckPptx, createBatchAndProcess, the Feedback
+ * Verification UI) works unmodified. See phoenixFeedback.service for the
+ * known BZT feedback-text gap (feedbackSource: 'rework_type_only'). */
+const createPayloadSessionFromPhoenix = async ({ startTime, endTime, createdBy }) => {
+    const items = await fetchBztSportsReworkItems({ startTime, endTime });
+
+    const session = await L1PayloadSessionModel.create({
+        date: todayDateString(),
+        status: 'processing',
+        sourceDocName: 'phoenix-auto-fetch (BZT Sports)',
+        createdBy,
+        totalSkus: 0,
+        events: [{ type: 'session_created', meta: { source: 'phoenix', startTime, endTime, itemCount: items.length } }],
+    });
+
+    if (!items.length) {
+        session.status = 'completed';
+        await session.save();
+        return session.toObject();
+    }
+
+    const itemsBySku = new Map();
+    for (const item of items) {
+        if (!itemsBySku.has(item.skuId)) itemsBySku.set(item.skuId, []);
+        itemsBySku.get(item.skuId).push(item);
+    }
+
+    for (const [skuId, skuItems] of itemsBySku) {
+        const config = buildConfigFromPhoenixItems(skuItems);
+        const mergedItems = skuItems.map((item) => ({
+            clientAngleId: item.clientAngleId,
+            angleName: item.angleName,
+            variantIndex: item.variantIndex,
+            feedbackText: item.feedbackText,
+            feedbackSource: item.feedbackSource,
+            imageUrl: item.imageUrl,
+            verification: { status: 'pending' },
+        }));
+
+        await L1PayloadFileModel.findOneAndUpdate(
+            { sessionId: session._id, skuId },
+            {
+                sessionId: session._id,
+                skuId,
+                content: JSON.stringify({ configData: { [skuId]: config } }, null, 2),
+                matchedFeedbackCount: mergedItems.length,
+                mergedItems,
+                warnings: skuItems.some((i) => !i.prompt || !i.imageUrl)
+                    ? ['One or more variants for this SKU are missing prompt/image evidence from S3 -- see server logs.']
+                    : [],
+            },
+            { upsert: true, new: true }
+        );
+        session.matchedCount += 1;
+    }
+
+    session.totalSkus = itemsBySku.size;
+    session.status = 'completed';
+    await logSessionEvent(session, 'phoenix_ingestion_completed', { skuCount: itemsBySku.size, itemCount: items.length });
+    return session.toObject();
+};
+
+/** Deletes every Payload Creation session and its files -- scoped ONLY to
+ * this pre-RCA staging area (L1PayloadSession/L1PayloadFile), unlike the
+ * ground-truth "Reset to clean v1" action which also collapses version
+ * history and clears RCA batches/traces. Meant for clearing out sessions
+ * created while testing the feedback-deck flow, without touching anything
+ * else -- ground-truth documents, staging versions, and RCA history are
+ * completely untouched by this. Irreversible. */
+const clearAllPayloadSessions = async () => {
+    const [sessionResult, fileResult] = await Promise.all([
+        L1PayloadSessionModel.deleteMany({}),
+        L1PayloadFileModel.deleteMany({}),
+    ]);
+    return { sessionsDeleted: sessionResult.deletedCount, filesDeleted: fileResult.deletedCount };
+};
+
 module.exports = {
     createPayloadSession,
+    createPayloadSessionFromPhoenix,
     listPayloadSessions,
     getPayloadSessionById,
     listPayloadSessionFiles,
@@ -597,4 +707,5 @@ module.exports = {
     listFeedbackItems,
     verifyFeedbackItem,
     streamPayloadSessionZip,
+    clearAllPayloadSessions,
 };

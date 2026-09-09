@@ -106,6 +106,18 @@ Content-Type: application/json
   ]
 }
 
+### One-click BZT Sports auto-run: fetch the last 24h of reworked SKUs from
+### Phoenix, build a Payload Creation session, and hand it straight to the
+### same batch RCA pipeline /batches uses. Omit windowHours/startTime/endTime
+### for the default last-24h window.
+POST {{baseUrl}}/l1-feedback/auto-run HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "windowHours": 24
+}
+
 ### List batches
 GET {{baseUrl}}/l1-feedback/batches HTTP/1.1
 Authorization: Bearer {{authToken}}

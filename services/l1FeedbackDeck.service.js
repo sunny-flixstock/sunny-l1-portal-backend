@@ -98,14 +98,20 @@ const buildFeedbackDeckPptx = async (sessionId) => {
             { x: TEXT_X, y: IMAGE_Y, w: TEXT_W, h: 1.6, valign: 'top' }
         );
 
-        slide.addText('FEEDBACK', {
+        // Items sourced from Phoenix telemetry alone (no reviewer comment
+        // available, e.g. BZT's current rework instrumentation) carry a
+        // synthesized placeholder in feedbackText, not a real QC comment --
+        // flagged visibly here rather than presented as equivalent to real
+        // reviewer text. See phoenixFeedback.service.js.
+        const isPlaceholder = item.feedbackSource === 'rework_type_only';
+        slide.addText(isPlaceholder ? 'FEEDBACK (no reviewer comment on file -- rework type only)' : 'FEEDBACK', {
             x: TEXT_X,
             y: IMAGE_Y + 1.7,
             w: TEXT_W,
             h: 0.3,
             fontSize: 11,
             bold: true,
-            color: '8C8C8C',
+            color: isPlaceholder ? 'CC7A00' : '8C8C8C',
         });
         slide.addText(`"${item.feedbackText}"`, {
             x: TEXT_X,

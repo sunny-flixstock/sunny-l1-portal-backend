@@ -1,5 +1,6 @@
 const l1FeedbackBatchService = require('../services/l1FeedbackBatch.service');
 const l1HitlReviewService = require('../services/l1HitlReview.service');
+const { runBztSportsAutoBatch } = require('../services/l1AutoRun.service');
 
 const postBatch = async (req, res, next) => {
     try {
@@ -40,7 +41,8 @@ const getBatchDetail = async (req, res, next) => {
 const getIssues = async (req, res, next) => {
     try {
         const skuIds = req.query.skuIds ? String(req.query.skuIds).split(',').filter(Boolean) : undefined;
-        const data = await l1HitlReviewService.listOpenIssues({ skuIds });
+        const includeClustered = req.query.includeClustered === 'true';
+        const data = await l1HitlReviewService.listOpenIssues({ skuIds, includeClustered });
         res.status(200).json({ data });
     } catch (err) {
         next(err);
@@ -56,6 +58,16 @@ const postIssueDecision = async (req, res, next) => {
     }
 };
 
+const postAutoRun = async (req, res, next) => {
+    try {
+        const { windowHours, startTime, endTime, createdBy } = req.body;
+        const data = await runBztSportsAutoBatch({ windowHours, startTime, endTime, createdBy });
+        res.status(201).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     postBatch,
     getBatches,
@@ -63,4 +75,5 @@ module.exports = {
     getBatchDetail,
     getIssues,
     postIssueDecision,
+    postAutoRun,
 };

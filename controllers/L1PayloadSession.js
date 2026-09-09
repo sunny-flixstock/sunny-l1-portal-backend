@@ -106,6 +106,15 @@ const downloadFeedbackDeck = async (req, res, next) => {
     }
 };
 
+const deleteAllPayloadSessions = async (req, res, next) => {
+    try {
+        const data = await l1PayloadSessionService.clearAllPayloadSessions();
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     postPayloadSession,
     getPayloadSessionList,
@@ -116,4 +125,5 @@ module.exports = {
     getFeedbackItems,
     postVerifyFeedbackItem,
     downloadFeedbackDeck,
+    deleteAllPayloadSessions,
 };

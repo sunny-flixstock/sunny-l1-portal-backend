@@ -1,5 +1,6 @@
 const L1SkuTraceModel = require('../models/L1SkuTrace.model');
 const L1FeedbackBatchModel = require('../models/L1FeedbackBatch.model');
+const L1GenericFeedbackRequestModel = require('../models/L1GenericFeedbackRequest.model');
 const Api400Error = require('../errors/api400Error');
 const { generate } = require('./llm/llm.service');
 const {
@@ -167,15 +168,54 @@ const logBatchEvent = async (batchId, type, meta) => {
     }
 };
 
-const listOpenIssues = async ({ skuIds } = {}) => {
+/** Every SKU-level issue already absorbed into a still-undecided
+ * batch-level cluster ("Generic Feedback" / L1GenericFeedbackRequest,
+ * kind: 'batch_level') -- `mergedFromSkuIssues` is written by
+ * reconcileBatchDiagnoses once a cluster's affectedSkuIds are resolved to
+ * exact issue tuples. Keyed on (skuId, clientAngleId, variantIndex, depth)
+ * since that's the exact tuple both this and submitDecision address an
+ * issue by. Only PENDING clusters count -- once a cluster is decided
+ * (approved/rejected), closeOutSkuIssueWithApprovedFix already resolved (or
+ * left rejected) every issue it covers, so there's nothing left to hide by
+ * then; the trace data itself is the source of truth for "still open." */
+const clusteredIssueKeys = async () => {
+    const requests = await L1GenericFeedbackRequestModel.find({ kind: 'batch_level' })
+        .select({ diagnosis: 1 })
+        .lean();
+    const keys = new Set();
+    for (const request of requests) {
+        for (const target of request.diagnosis?.targets ?? []) {
+            if (target.decision?.status !== 'pending') continue;
+            for (const issue of target.mergedFromSkuIssues ?? []) {
+                keys.add(`${issue.skuId}::${issue.clientAngleId}::${issue.variantIndex}::${issue.depth}`);
+            }
+        }
+    }
+    return keys;
+};
+
+/** Every still-open SKU-level issue, EXCLUDING any issue already absorbed
+ * into a pending batch-level cluster -- so the default view is issue-wise
+ * (per explicit requirement: review clusters, not one card per SKU that
+ * shares the same root cause) rather than presenting the same real problem
+ * once as a cluster AND N more times as individual SKU cards a reviewer
+ * could patch-fix by hand. Pass `includeClustered: true` to see the raw,
+ * unfiltered per-SKU list (e.g. for debugging what a cluster actually
+ * covers). */
+const listOpenIssues = async ({ skuIds, includeClustered = false } = {}) => {
     const filter = skuIds?.length ? { _id: { $in: skuIds } } : {};
-    const traces = await L1SkuTraceModel.find(filter).lean();
+    const [traces, hiddenKeys] = await Promise.all([
+        L1SkuTraceModel.find(filter).lean(),
+        includeClustered ? Promise.resolve(new Set()) : clusteredIssueKeys(),
+    ]);
 
     const issues = [];
     for (const trace of traces) {
         for (const { angle, variant } of iterVariants(trace.data)) {
             const found = findOpenIssue(variant);
             if (!found) continue;
+            const key = `${trace._id}::${angle.clientAngleId}::${variant.variantIndex}::${found.depth}`;
+            if (hiddenKeys.has(key)) continue;
             issues.push(shapeIssue(trace._id, angle, variant, found.iteration, found.depth));
         }
     }

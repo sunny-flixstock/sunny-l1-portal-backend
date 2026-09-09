@@ -37,6 +37,10 @@ const getBatch = celebrate({
 const getIssues = celebrate({
     [Segments.QUERY]: Joi.object({
         skuIds: Joi.string().optional(),
+        // Default (false/omitted): hides any SKU-level issue already
+        // absorbed into a pending batch-level cluster, so the list is
+        // issue-wise by default. 'true' shows the raw unfiltered list.
+        includeClustered: Joi.string().valid('true', 'false').optional(),
     }),
 });
 
@@ -51,10 +55,22 @@ const postIssueDecision = celebrate({
     }),
 });
 
+const postAutoRun = celebrate({
+    [Segments.BODY]: Joi.object({
+        // Default 24h if none of these are given. startTime/endTime (ISO
+        // 8601) override windowHours for a custom window.
+        windowHours: Joi.number().integer().min(1).max(24 * 30).optional(),
+        startTime: Joi.string().isoDate().optional(),
+        endTime: Joi.string().isoDate().optional(),
+        createdBy: Joi.string().optional(),
+    }),
+});
+
 module.exports = {
     createBatch,
     getBatch,
     getIssues,
     postIssueDecision,
+    postAutoRun,
 };
 module.exports.getBatchDetail = getBatch;

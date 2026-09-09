@@ -9,12 +9,16 @@ const {
     getFeedbackItems,
     postVerifyFeedbackItem,
     downloadFeedbackDeck,
+    deleteAllPayloadSessions,
 } = require('../controllers/L1PayloadSession');
 const l1PayloadSessionValidation = require('../validations/l1PayloadSession.validation');
 const payloadUpload = require('../middlewares/payloadUpload');
 
 router.post('/', payloadUpload, postPayloadSession);
 router.get('/', getPayloadSessionList);
+// Scoped to Payload Creation only -- clears L1PayloadSession/L1PayloadFile,
+// never touches ground-truth documents/versions or RCA batches/traces.
+router.delete('/', deleteAllPayloadSessions);
 router.get('/:id', l1PayloadSessionValidation.getPayloadSession, getPayloadSession);
 router.get('/:id/files', l1PayloadSessionValidation.getPayloadSession, getPayloadSessionFiles);
 router.get('/:id/files/content', l1PayloadSessionValidation.getPayloadSession, getPayloadSessionFilesWithContent);

@@ -32,4 +32,13 @@ module.exports = {
     SESSION_JWT_SECRET: process.env.SESSION_JWT_SECRET,
     FIXED_THUMB_BUCKET: "flixstudio",
     DESCRIPTION_GROUP_BATCH_SIZE: Number(process.env.DESCRIPTION_GROUP_BATCH_SIZE) || 50,
+    // Self-hosted Arize Phoenix telemetry server -- source for the
+    // one-click BZT Sports auto-run's rework detection (phoenixFeedback.service.js).
+    PHOENIX_BASE_URL: process.env.PHOENIX_BASE_URL || 'http://192.168.12.115:6007',
+    // Bucket holding nanostudio's per-execution artifacts (prompts/output
+    // images) that phoenixFeedback.service.js reads via getFileFromS3 --
+    // distinct from this app's own S3_BUCKET. Uses the same AWS_ACCESS_KEY/
+    // AWS_SECRET_KEY above; permission against this specific bucket is
+    // unverified, see the plan's Risks section.
+    NANOSTUDIO_ARTIFACTS_BUCKET: process.env.NANOSTUDIO_ARTIFACTS_BUCKET || 'ai-log-tracking',
 };
