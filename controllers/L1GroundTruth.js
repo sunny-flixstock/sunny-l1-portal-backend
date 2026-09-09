@@ -76,9 +76,9 @@ const postRefreshGroundTruthContent = async (req, res, next) => {
     }
 };
 
-const postResetStylingPosingToCleanV1 = async (req, res, next) => {
+const postResetGroundTruthToCleanV1 = async (req, res, next) => {
     try {
-        const data = await l1GroundTruthService.resetStylingPosingToCleanV1();
+        const data = await l1GroundTruthService.resetGroundTruthToCleanV1();
         res.status(200).json({ data });
     } catch (err) {
         next(err);
@@ -112,7 +112,7 @@ module.exports = {
     postSeedGroundTruthDocuments,
     postResetToCleanBaseline,
     postRefreshGroundTruthContent,
-    postResetStylingPosingToCleanV1,
+    postResetGroundTruthToCleanV1,
     postAdvanceStagingVersion,
     postAdvanceStagingVersionBulk,
 };

@@ -8,6 +8,21 @@ Posing rules for BZT Female Sports imagery — governs stance, hand placement, h
 
 These are client-agnostic generation-quality principles. They are not specific to BZT or to this client's garments, and any similar pose-library job can reuse them as-is.
 
+### Top Enforcement Priorities (P0/P1)
+
+These two rules are this framework's highest-priority checks, verified first on every generated variant, ahead of every other rule in this file:
+- **P0 — Body-to-face proportion ratio** (full rule further below, under Global Rules): the 7.25–7.5 crown-to-sole ÷ crown-to-chin target on `full_front`/`full_back`.
+- **P1 — Ground-contact shadow** (rule immediately below): a visible, correctly-cast shadow under the feet on `full_front`/`full_back`.
+
+**Rule:** On `full_front` and `full_back` shots only, the model must cast a soft, naturally soft-edged ground-contact shadow directly beneath the feet, visible on the seamless studio floor in every generated variant — a shadow-free floor under the feet is a confirmed QC rejection. The shadow is grounded exactly at the actual foot/shoe contact point(s); it reads as a soft, diffused mid-gray tone blending naturally into the backdrop — never a hard-edged black silhouette, never a stylized or graphic shape. It consistently falls toward camera-left, as if cast by a single soft key light positioned high and to camera-right — the same light direction on every shot, every variant, both angles. Shadow length and shape follow the actual stance: a static, feet-together or feet-apart stance casts a short, contained shadow close to the feet; a dynamic, wide, or bent-over stance casts a correspondingly longer, more visible shadow trail in the same camera-left direction. The shadow appears only on the floor plane — never cast onto a backdrop wall, never onto the model's own body or garment. Does not apply to `front_upper_crop`/`front_lower_crop`, which do not show the floor.
+**Why:** QC-flagged P1 defect: current generations are producing a completely shadow-free floor under the model on `full_front`/`full_back`, which reads as an obviously composited studio cutout rather than a real photograph. The client's own approved reference photography consistently shows this exact soft, camera-left-falling ground-contact shadow on every full-body shot — it is the pattern to match, not an optional stylistic touch.
+
+**Rule:** The model's body build — shoulder width, torso width, waist, and limb thickness — must match the reference model image's actual physique exactly, on every shot and every variant; never render the body broader, bulkier, heavier-set, or more muscular than the reference shows, and never render it thinner, frailer, or smaller-framed either. A pose's stance or a garment's volume may change how much of the body is visible, but must never be used to justify widening or narrowing the model's actual frame. This is independent of the body-to-face height ratio above — that rule governs vertical proportion (how tall the figure reads); this rule governs horizontal build (how wide/heavy the figure reads) — both must hold at once, and neither corrects for the other.
+**Why:** Confirmed client rejections describe the model reading "like a giant being" with a body that "looks broader" than intended, and separately as looking "tiny" — both are the same underlying defect from opposite directions: the generation drifting the model's actual build away from the reference physique. Fixing height alone (the ratio rule) does not fix width; both must be enforced together, or a tall-but-bulky or slender-but-short figure can still pass the ratio check while failing this one.
+
+**Rule:** The model's apparent age, facial expression, and face shape/structure must match the reference model image exactly, on every shot and every variant — never render a younger, teen-like, or otherwise age-shifted face; never invent a different expression than the reference's own; never round out, enlarge, or otherwise reshape the face's actual bone structure. This holds independently of camera angle, crop, or pose — a `full_back` or profile shot that only shows part of the face must still read as the same identity as the reference's front-facing shots.
+**Why:** Confirmed client rejections describe generations where "facial expressions changed, looks like a teen," and separately where the "face shape becomes more round" and "bigger" — identity-drift defects distinct from hair preservation and from the body-to-face ratio: neither of those rules governs age, expression, or face shape, so this gap persists even with both fully enforced.
+
 **Rule:** A dynamic pose must read as deliberate and controlled, never a stumble, wobble, or accident; a static pose keeps both feet flat and grounded.
 **Why:** An uncontrolled-looking pose reads as an unintentional candid rather than a deliberate athletic or fashion pose, regardless of shot type.
 
@@ -51,8 +66,17 @@ These are client-agnostic generation-quality principles. They are not specific t
 **Rule:** Every pose must read as one single, coherent, natural human action — stance, hand/arm position, torso angle, and head/gaze together, not individually-valid body parts assembled from unrelated poses.
 **Why:** This is a real, standing rejection reason distinct from any single mechanism like hand placement or clothing type. A pose can satisfy every other rule in this framework and still fail this one if the overall gesture reads as disjointed or borrowed — for example, a clenched or raised fist during a counterbalance reading as an unrelated boxing-guard gesture, or a hand tucked behind the lower back reading as a borrowed gesture rather than a natural counter-arm. This is a qualitative standard with no numeric threshold, but it is still a hard requirement: a pose that fails it needs its Params rewritten, not shipped on a technicality.
 
-**Rule:** On `full_front` and `full_back` shots only (this target does not currently apply to `front_upper_crop`/`front_lower_crop`, where the sole landmark is out of frame), every pose must read as part of an elongated, athletic body silhouette with a proportionally smaller head, targeting a body-to-face pixel ratio (crown-to-sole height ÷ crown-to-chin head height) as close to 7.5 as possible without exceeding it — 7.25 to 7.5 is the acceptable band; anything below 7.25 or above 7.5 is a rejection. The bottom landmark is chosen by a priority cascade over the two feet, then a specific point on the selected foot. Foot selection: (1) prefer whichever foot's sole is in full flat contact with the ground — not lifted, not raised on the ball or toe, not heel-raised; (2) if both feet are flat and grounded, use the more weight-bearing, straighter load-bearing leg (typically the one under the torso's center of gravity); (3) if weight distribution reads as even or ambiguous — including a true side-by-side symmetric stance with no forward/back depth difference at all — default consistently to the leg positioned further back in the stance, or, when there is no depth difference to fall back on, always the model's own left leg, so the same convention is used every time rather than switching foot per shot. Point on that foot: for flat shoes, sneakers, or bare feet, use the lowest outsole layer actually touching the ground (the true ground-contact plane) — never the upper/midsole layer above it; for heeled shoes, use the point where the heel component attaches to the sole/shank of the footwear (the heel-to-sole junction) — never the heel's ground-contact tip, and never the top edge of the upper. This point must stay visible and unobstructed in frame — never cropped by the frame edge, hidden behind the other foot, or turned away from camera — which this file's own full_front/full_back feet-in-frame rule already requires. As a concrete anchor: the figure should read as roughly 7.3 to 7.5 head-heights tall overall, crown to sole — the head occupying a little over an eighth of total height, a tall, leggy editorial proportion rather than an average studio stand — achieved through natural verticality and confident posture, never by making the head read as anatomically undersized or by altering the model's actual face. This is a rendering-quality target the pose and generation should achieve; it is never an instruction to depict, letter, or overlay any measurement figures, ratios, proportion maps, or numeric body-landmark labels onto the image itself.
-**Why:** Directly addresses client feedback requiring a specific body-to-face ratio, now with a hard ceiling as well as a floor — overshooting past 7.5 is a rejection in the same way undershooting below 7.25 is. The numeric anchor (~7.3-7.5 head-heights tall) is included because purely qualitative language ("elongated, smaller head") alone has been measured to plateau near the low end of the acceptable band (~7.28); a concrete anchor is needed to consistently move closer to 7.5. This applies only to `full_front`/`full_back` for now since `front_upper_crop`/`front_lower_crop` don't show the sole landmark this ratio depends on. The generated photo must always read as an ordinary, clean product shot — the ratio is something the model achieves through posture and proportion, never something it is asked to display.
+**Rule — Body-to-Face Ratio (P0, `full_front`/`full_back` only — does not apply to `front_upper_crop`/`front_lower_crop`, sole landmark out of frame).** Follow this build sequence for every variant:
+1. **Target:** crown-to-sole height ÷ crown-to-chin head height = 7.25–7.5, aim 7.4–7.5. Below 7.25 or above 7.5 = rejection.
+2. **Segment blueprint:** head+neck ≈1 head-height unit; torso (shoulder to hip) ≈2 units; leg (hip to sole) ≈4.25–4.5 units; total ≈7.25–7.5 units. If the leg segment reads short, extend the leg line (posture, verticality, stance) until it isn't — do not shrink the head to fix the math.
+3. **Circle/oval check (the client's own literal QC method, checked independently of step 1):** picture a circle/oval the same size as the model's head, stacked edge to edge from crown to sole. 7.25–7.5 of those circles/ovals must exactly reach the sole — not short, not past it. Satisfy this directly, not just the division in step 1; both must hold at once.
+4. **Overrides the reference photo.** This ratio beats the reference model photo's own natural proportions, without exception, on every variant. The reference still governs face, hair, skin tone, and build — never this ratio.
+5. **Select the bottom-landmark foot:** (a) the foot flat and fully grounded; (b) if both feet are flat, the more weight-bearing/straighter load-bearing leg; (c) if weight looks even or symmetric, the leg positioned further back, or the model's own left leg as the final tie-break — same convention every time.
+6. **Select the point on that foot:** flat shoes/sneakers/bare feet → lowest outsole layer touching the ground; heeled shoes → the heel-to-sole junction.
+7. **Keep that point visible and unobstructed** — never cropped, hidden behind the other foot, or turned from camera.
+8. **Never depict this on the image.** No measurement figures, ratios, proportion maps, or landmark labels rendered onto the photo — this is a posture/proportion outcome only. If numeric guidance causes stray text as a side effect, that's tolerable only in the background, never on the model, face, or garment.
+
+**Why:** Client requirement, with a hard floor (7.25) and ceiling (7.5) — qualitative language alone ("elongated, smaller head") has been measured to plateau near 7.28, so a numeric anchor plus the client's own circle-count method are both needed. Applies only where the sole landmark is in frame. The photo must always read as an ordinary product shot — the ratio is achieved, never displayed.
 
 **Rule:** The generated image should never contain visible text, numbers, or labels of any kind, and no rule in this file should be read as calling for one. If pursuing the body-to-face ratio target above ever causes the generation to produce such text as an unintended side effect, that is tolerable only when it lands entirely in the background/negative space, never overlapping or touching the model, face, hair, garment, or product — text or numbers appearing on the model or garment itself is a hard failure regardless of cause, since the background (unlike the product) is stripped out in the downstream editing pass.
 **Why:** Real generation output has shown that detailed numeric proportion guidance can occasionally cause the image model to render body-landmark labels as literal on-image text. A background-only occurrence is a recoverable, low-cost side effect; the same defect on the model or garment would corrupt the actual product photo and is never acceptable.
@@ -98,9 +122,11 @@ A relaxed hand-at-the-side, a pocketed hand, or hands clasped together is the fa
 6. Head stays level and forward, only the gaze/eyes cast downward — discouraged, lower preference.
 
 On rear-facing shots:
-1. A flat, straight, un-turned back-of-head — fallback only, must never dominate across variants.
-2. A near-profile turn with the ear visible — the primary recommended back-view movement.
-3. Turned to one side and tilted down, tracking an implied piece of equipment or the ground.
+1. A near-profile turn to the LEFT, enough that part of the face (cheek/jaw line) is visible, not just the ear.
+2. A near-profile turn to the RIGHT, enough that part of the face (cheek/jaw line) is visible, not just the ear.
+
+**Rule:** On `full_back`, a flat, fully un-turned back-of-head is never acceptable on any variant — this replaces the softer "must never dominate" framing above specifically for `full_back`. Across the two generated variants of the same `full_back` shot, the head must turn to opposite sides — one variant option 1 (left), the other option 2 (right) — never the same side twice, and never both flat.
+**Why:** Confirmed client rejection pattern: `full_back` generations with a flat or barely-turned back-of-head were rejected specifically for showing no face at all, while the client's own approved references consistently show a near-profile turn with part of the face visible. This is now a hard requirement for `full_back`, not a soft preference.
 
 ---
 
@@ -148,7 +174,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Rule:** The running-stride entries are one eligible option among many, not a default — target roughly one selection in ten eligible jobs. Their Priority is set toward the bottom of the eligible pool accordingly.
 **Why:** Real output showed these entries selected in roughly 19 of 20 eligible jobs even though neither held a top Priority value. Priority demotion is applied as a mitigation, not a guaranteed fix — this is a stronger sign that the true cause of over-selection may sit in the selection/weighting layer outside this file; if over-selection persists after this change, that layer needs the fix, not another content edit.
 
-**Rule:** `full_front` carries no wide-stance restriction — dynamic poses are fully eligible there; its lean toward static entries is a soft default from the original reference set, not a hard ban. `full_back` carries a purely static/silhouette register, alongside one contained standing entry (`arms_overhead_stretch_back_pose`) that doesn't match the wide-stance pattern the ban above targets.
+**Rule:** `full_front` carries no wide-stance restriction — dynamic poses are fully eligible there; its lean toward static entries is a soft default from the original reference set, not a hard ban. `full_back` carries a purely static/silhouette register: `relaxed_arms_natural_drop_back_pose`, `forward_ease_wrists_loose_back_pose`, `squared_neutral_stance_back_pose`, and `contained_outerwear_stance_back_pose` — all client-approved, contained standing poses that don't match the wide-stance pattern the ban above targets.
 **Why:** Multiple full-body, front-facing dynamic poses were explicitly approved on movement grounds alone, unlike `full_back`.
 
 **Rule:** `front_upper_crop` carries the dynamic register almost exclusively, and `front_lower_crop` is where kneeling/floor-based leg work lives — both need real movement, not a static hold. `full_front`'s dynamic entries are fully eligible but remain secondary to its static/neutral primary register — selected occasionally, not as the default landing spot whenever a dynamic variant is wanted.
@@ -160,7 +186,6 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 ---
 
 ## Entry Library
-
 
 ### resistance_band_chest_pull_pose
 **Label:** Resistance Band Chest-Height Pull
@@ -304,6 +329,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: tank tops, sports bras, leggings, tights
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing balanced on one leg, opposite foot placed against the inner standing thigh or calf, knee turned out
 - **arm_position:** both arms raised straight overhead, palms together or fingers laced
 - **torso_angle:** frontal to slight three-quarter, tall and lengthened through the spine
@@ -312,56 +338,6 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - **weight_distribution:** fully loaded onto the standing leg
 - **recommended_framing:** front_upper_crop or full_front — the raised-arm line needs headroom
 - **garment_visibility_priority:** stretches the torso panel and underarm construction fully into view
-
----
-
-### arms_overhead_stretch_back_pose
-**Label:** Overhead Arms Stretch, Symmetric (Back View)
-
-**Priority:** 13
-
-**Angles:** full_back
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: sports bras, tank tops, leggings, tights, shorts
-
-**Conflicts with:** athletic_back_view_pose
-
-**Renamed and reworked from this file's earlier resistance-band variant: the equipment is removed per the full_back no-props rule, keeping the symmetric overhead-arm silhouette that made the original pose distinct from the plain standing baseline.** Both arms move together, symmetrically — never an asymmetric single-arm reach with the torso leaning or twisting.
-
-**Params:**
-- **stance:** standing, feet grounded, stable and symmetric — weight even on both feet, no lean to either side
-- **hand_placement:** both arms raised straight overhead, hands clasped together or fingers laced — hands empty, no equipment
-- **torso_angle:** facing away from camera (rear view), upright and centered — no lateral bend, no twist toward either side
-- **head_orientation:** level, or turned gently to one side — vary the exact degree/side across the two generated variants rather than repeating an identical angle on both
-- **weight_distribution:** even, grounded, symmetric
-- **recommended_framing:** full_back
-- **garment_visibility_priority:** back-panel seams and strap crossings read clearly under the symmetric overhead extension
-
----
-
-### relaxed_hand_behind_back_pose
-**Label:** Rear View, One Hand Relaxed Behind the Back
-
-**Priority:** 15
-
-**Angles:** full_back
-
-**Applies when:**
-- Roles: hero_garment, top, bottom
-- Categories: tank tops, sports bras, shorts, leggings, tights
-
-**Renamed and reworked: the held prop is removed per the full_back no-props rule, keeping the contained, standing hand-behind-back placement as a variation distinct from the plain arms-at-sides baseline. A contained, standing hold, not the wide-stance pattern the `full_back` ban excludes.**
-
-**Params:**
-- **stance:** standing straight, weight settled, squared away from the camera
-- **hand_placement:** one hand relaxed, resting lightly behind the back at waist height, not touching garment; other arm relaxed at the side
-- **torso_angle:** facing away from camera, squared
-- **head_orientation:** draws from the Head Movements vocabulary rather than a generic tilt — vary which named movement lands on each of the two generated variants
-- **weight_distribution:** static, centered balance
-- **recommended_framing:** full_back
-- **garment_visibility_priority:** back branding and strap construction stay fully legible with both hands clear of the torso
 
 ---
 
@@ -457,6 +433,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: shorts, leggings, tights
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** forward-bent ready stance, knees softly bent, feet staggered — narrow/staggered, skirt-safe
 - **hand_placement:** both hands held low in front of the body as if gripping a racket in the ready position
 - **torso_angle:** three-quarter, leaning forward
@@ -482,6 +459,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: shorts, leggings
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing, feet shoulder-width apart, a subtle forward hinge from the hips — mild and modest, not a deep bend; skirt-safe
 - **hand_placement:** both hands held low and together in front of the body, as if gripping a club
 - **torso_angle:** facing forward, leaning down and forward slightly from the waist
@@ -579,7 +557,6 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - **garment_visibility_priority:** shows the bra/tank underbust line and legging waistband under the recovery position
 
 ---
-
 
 ### standing_dumbbell_curl_bent_elbow_pose
 **Label:** Standing Dumbbell Curl, Bent Elbow, Close Crop
@@ -709,6 +686,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Renamed and reworked: the planted club is removed per the full_front/full_back no-props rule. The upright, narrow, skirt-safe stance is kept as a register distinct from this file's other golf/tennis entries, which lean forward-hinged or dynamic rather than upright.**
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing straight, feet close together, grounded — narrow, skirt-safe
 - **hand_placement:** both hands relaxed, fingers loosely together, hanging at the sides — not resting on the hip
 - **torso_angle:** three-quarter to side profile
@@ -733,6 +711,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Renamed and reworked: the racket is removed per the full_front/full_back no-props rule. The one-leg stretch line reads naturally without an object to reach for.**
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing on one leg, opposite leg raised straight behind in a held stretch — narrow base, skirt-safe
 - **hand_placement:** one hand reaching down toward the ground, fingers relaxed and loosely together, not touching the floor or the body; other arm extended for balance, not touching the body
 - **torso_angle:** three-quarter, slight forward lean
@@ -802,6 +781,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Renamed and reworked: the racket is removed per the full_front/full_back no-props rule. The held, grounded stride and dynamic forward lean are kept — both hands are empty, natural counterbalance takes the place of the raised racket.**
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** a held, grounded stride — both feet planted, front leg forward, never a walking gait
 - **hand_placement:** both hands empty, one arm swinging naturally forward and up for counterbalance, the other driven back — fingers relaxed and loosely together, never touching the body
 - **torso_angle:** three-quarter to profile, dynamic forward lean
@@ -876,6 +856,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Conflicts with:** athletic_standard_frontal_stance
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** crouched or kneeling stance with one knee raised high
 - **hand_placement:** one hand hovering beside the raised knee, fingers relaxed and loosely together, without touching it; opposite hand relaxed at the side or interacting with footwear (gripping a shoe is fine, distinct from resting on garment fabric) — never resting on the hip
 - **torso_angle:** three-quarter turn
@@ -905,6 +886,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Bottom category: skirts, dresses (role-scoped to the bottom garment actually worn — never satisfied merely because a top/hero_garment like a sports bra matches; a client-confirmed rejection showed this exact wide crouch/hands-near-knees stance generated on a pleated tennis skirt)
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** deeply crouched squat stance with knees bent sharply
 - **foot_position:** flat on the ground, shoulder-width apart
 - **hand_placement:** right hand hovering beside the right knee, fingers relaxed and loosely together, without touching it; left hand hovering near the left shin, fingers relaxed and loosely together, without touching it
@@ -930,6 +912,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: skirts, dresses
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** kneeling or lunging stance with one leg bent forward and the rear leg bent upward behind the body
 - **hand_placement:** hands gripping the elevated foot/shoe (footwear, not garment) or braced on the floor
 - **torso_angle:** profile or three-quarter turn, leaning forward slightly
@@ -985,6 +968,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Bottom category: skirts, dresses (role-scoped to the bottom garment actually worn — never satisfied merely because a top/hero_garment matches; a client-confirmed rejection showed this same wide stance family generated on a pleated tennis skirt)
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** wide stance with one leg bent and extended to the side
 - **hand_placement:** one hand in a pocket (still eligible per the Global Rules), or both hands relaxed at the sides, fingers loosely together, without touching the hips or thighs — never resting on the hips/waist or the bent-knee thigh, in any angle
 - **torso_angle:** three-quarter turn (right or left)
@@ -1012,6 +996,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Conflicts with:** athletic_dynamic_stride_pose, athletic_seated_stretch_pose, athletic_crouched_pose
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** feet shoulder-width apart, standing tall but not rigid — a real person's natural resting stance, not a braced or squared-off mannequin hold
 - **hand_placement:** arms hanging naturally at the sides with relaxed fingers — no equipment or accessory on `full_front`
 - **torso_angle:** facing camera directly
@@ -1023,8 +1008,61 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 
 ---
 
-### athletic_back_view_pose
-**Label:** Rear View Sport-Luxe Static Presentation
+### relaxed_arms_natural_drop_back_pose
+**Label:** Rear View, Both Arms Natural Relaxed Drop
+
+**Priority:** 13
+
+**Angles:** full_back
+
+**Applies when:**
+- Roles: hero_garment, top, bottom, outerwear
+- Categories: sweatshirts & hoodies, leggings, sweatpants, shorts, tops, t-shirts, jackets, sports bras, tank tops, tights
+- Fit: relaxed, fitted, skin-tight
+
+**Conflicts with:** squared_neutral_stance_back_pose
+
+Client-approved reference pose. Both arms hang naturally at the sides with a soft, slight elbow bend, hands clear of the body — never rigid-straight, never reaching overhead. This is the primary contained-movement register for `full_back`, alongside `squared_neutral_stance_back_pose`, `forward_ease_wrists_loose_back_pose`, and `contained_outerwear_stance_back_pose`.
+
+**Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
+- **stance:** standing straight, weight even and grounded, torso squared to camera
+- **hand_placement:** both arms hang naturally at the sides with a soft, slight elbow bend, hands loosely open and clear of the body, fingers relaxed — arms extended down along the sides, never lifted overhead
+- **torso_angle:** facing away from camera (rear view), squared — no angular or three-quarter turn
+- **head_orientation:** draws from the Head Movements vocabulary's rear-facing hard rule — a near-profile turn with part of the face visible on every variant, alternating sides (one variant left, the other right); a flat, un-turned back-of-head is never acceptable here
+- **weight_distribution:** even, grounded
+- **recommended_framing:** full_back
+- **garment_visibility_priority:** back-panel seams, straps, and branding stay fully legible with both hands clear of the torso
+
+---
+
+### forward_ease_wrists_loose_back_pose
+**Label:** Rear View, Arms Bent With Wrists Drawn Forward
+
+**Priority:** 15
+
+**Angles:** full_back
+
+**Applies when:**
+- Roles: hero_garment, top, bottom
+- Categories: sports bras, tank tops, leggings, tights, shorts, t-shirts, sweatshirts & hoodies
+
+Client-approved reference pose. Both arms bend gently at the elbow with the hands drawn loosely toward the front of the body, out of frame from directly behind — a soft, unforced bend, distinct from the straight-arm baseline of `relaxed_arms_natural_drop_back_pose`. Never an overhead reach.
+
+**Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
+- **stance:** standing straight, weight even and grounded, torso squared to camera
+- **hand_placement:** both arms bend gently at the elbow with a soft, unforced curve, hands drawn loosely toward the front of the body, low enough to sit just out of frame or only barely visible from directly behind
+- **torso_angle:** facing away from camera (rear view), squared — no angular or three-quarter turn
+- **head_orientation:** draws from the Head Movements vocabulary's rear-facing hard rule — a near-profile turn with part of the face visible on every variant, alternating sides (one variant left, the other right); a flat, un-turned back-of-head is never acceptable here
+- **weight_distribution:** even, grounded
+- **recommended_framing:** full_back
+- **garment_visibility_priority:** back-panel seams, straps, and branding stay fully legible; the soft forward bend keeps both elbows clear of the garment's rear detailing
+
+---
+
+### squared_neutral_stance_back_pose
+**Label:** Rear View Squared Neutral Standing Presentation
 
 **Priority:** 26
 
@@ -1035,18 +1073,44 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: sweatshirts & hoodies, leggings, sweatpants, shorts, tops, t-shirts, jackets
 - Fit: relaxed, fitted, skin-tight
 
-**Conflicts with:** arms_overhead_stretch_back_pose
+**Conflicts with:** relaxed_arms_natural_drop_back_pose
 
-**This is `full_back`'s primary register**, per the `full_back` wide-stance ban in Non-Negotiable Rules above — the wide-stance/high-movement `full_back` entries were adapted into crop poses, leaving this static entry and one moderate standing entry (`arms_overhead_stretch_back_pose`) as `full_back`'s actual pool.
+Client-approved reference pose — the plain neutral baseline. Standing straight with both arms relaxed straight down at the sides, minimal movement, a contained silhouette. Distinct from `relaxed_arms_natural_drop_back_pose` by having no elbow bend at all — the plainest, most neutral of the four `full_back` entries.
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing straight facing away from camera with a back view
-- **hand_placement:** arms resting naturally at the sides — no equipment or accessory on `full_back`
-- **torso_angle:** facing away from camera (rear view)
+- **hand_placement:** arms relaxed straight down at the sides, minimal bend, hands loosely open — no equipment or accessory on `full_back`
+- **torso_angle:** facing away from camera (rear view), squared — no angular or three-quarter turn
 - **weight_distribution:** even weight distribution across both legs
-- **head_orientation:** turned to a near-profile or over-the-shoulder angle, varied across variants — favor this over a flat, un-turned back-of-head; a completely flat rear head on every variant is a confirmed client rejection
+- **head_orientation:** draws from the Head Movements vocabulary's rear-facing hard rule — a near-profile turn with part of the face visible on every variant, alternating sides (one variant left, the other right); a flat, un-turned back-of-head is never acceptable here
 - **recommended_framing:** full_back — primary static register for this angle
 - **garment_visibility_priority:** rear garment details, straps, back logos, and hem lines must be fully centered and unobstructed
+
+---
+
+### contained_outerwear_stance_back_pose
+**Label:** Rear View, Contained Stance for Bulkier Outerwear
+
+**Priority:** 27
+
+**Angles:** full_back
+
+**Applies when:**
+- Roles: hero_garment, outerwear, top
+- Categories: jackets, sweatshirts & hoodies
+
+Client-approved reference pose. Standing straight with both arms relaxed at the sides but held with a small, natural gap from the torso — enough to keep a bulkier outerwear piece's silhouette, hood construction, and side seams unobstructed, without reading as a wide-stance or dynamic pose.
+
+**Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
+- **stance:** standing straight facing away from camera with a back view
+- **hand_placement:** both arms relaxed at the sides with a small natural gap from the torso, hands loosely open — never lifted overhead, never pressed against the garment
+- **torso_angle:** facing away from camera (rear view), squared — no angular or three-quarter turn
+- **weight_distribution:** even weight distribution across both legs
+- **head_orientation:** draws from the Head Movements vocabulary's rear-facing hard rule — a near-profile turn with part of the face visible on every variant, alternating sides (one variant left, the other right); a flat, un-turned back-of-head is never acceptable here
+- **recommended_framing:** full_back
+- **garment_visibility_priority:** outerwear silhouette, hood construction, and side-seam/hem details stay unobstructed by the arms
 
 ---
 
@@ -1063,6 +1127,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Fit: relaxed, slim
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing with feet approximately shoulder-width apart, one foot slightly advanced — a natural, unposed stand, not a braced mannequin hold
 - **hand_placement:** both arms hanging naturally at the sides with fingers relaxed
 - **head_orientation:** straight, facing forward — vary the exact degree/side across the two generated variants rather than repeating an identical angle on both
@@ -1085,6 +1150,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Fit: regular, slim, wide-leg
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing straight with feet slightly apart or shoulder-width
 - **hand_placement:** both hands tucked into trouser/sweatpant pockets — only when a worn garment's `pockets` attribute reports real pockets; pocket is an eligible fallback per the Global Rules, drawn from the shared fallback-gesture pool, not a default — should not be selected when any more athletic-register entry is eligible
 - **torso_angle:** facing camera
@@ -1111,6 +1177,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Categories: dresses, skirts
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** feet shoulder-width apart, even weight distribution
 - **hand_placement:** both hands resting in trouser/sweatpant pockets — only when real pockets exist; pocket is an eligible fallback per the Global Rules, drawn from the shared fallback-gesture pool, not a default
 - **torso_angle:** three-quarter right turn
@@ -1138,6 +1205,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 **Renamed and reworked: the duffel bag is removed per the full_front/full_back no-props rule. The asymmetric shoulder/hip shift is kept as a distinct body-shape variation, independent of any carried item.**
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** feet slightly apart, weight distributed primarily on the right leg
 - **shoulder_alignment:** left raised, right dropped
 - **hip_alignment:** shifted right
@@ -1159,6 +1227,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Fit: slim, regular, a-line
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** standing straight with feet close together or slightly offset — narrow, skirt-safe
 - **hand_placement:** both arms relaxed, fingers loosely together, hanging naturally — not resting on the hip; no equipment or accessory on `full_front`
 - **head_orientation:** turned to the side, looking back over the shoulder or averted — vary the exact degree/side across the two generated variants rather than repeating an identical angle on both
@@ -1181,6 +1250,7 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 - Fit: oversized, relaxed
 
 **Params:**
+- **body_proportion_check (P0, non-negotiable):** before finalizing this pose's composite_direction, the crown-to-sole span — picture a circle/oval the same size as this model's own head, stacked repeatedly from crown straight down to sole — must land at 7.25–7.5 head-sized circles/ovals (units) — roughly head+neck ≈1 unit, torso (shoulder to hip) ≈2 units, leg (hip to sole) ≈4.25–4.5 units. This overrides any conflicting signal from the reference photo's own proportions, on every variant, without exception — extend posture, verticality, and leg-line description until the count is met; never shorten the described stance to fit the frame instead.
 - **stance:** seated on the floor, knees bent and drawn up
 - **hand_placement:** both hands clasped together over one bent knee — hands touch each other, not the garment
 - **torso_angle:** three-quarter turn
@@ -1196,6 +1266,8 @@ Rules specific to BZT Female Sports that are not Global, Equipment & Props, or H
 
 Every item below must be checked and confirmed "not violated" against the specific pose selection before it is used to build a generation prompt.
 
+- [ ] **P0** — On `full_front`/`full_back` only, the body-to-face pixel ratio is as close to 7.5 as possible without exceeding it (7.25-7.5 acceptable; below 7.25 or above 7.5 is a rejection), achieved through posture, proportion, and the ~7.3-7.5-head-heights-tall anchor — never by instructing the generation to display measurement figures or labels (Global Rules)
+- [ ] **P1** — On `full_front`/`full_back` only, a soft, camera-left-falling ground-contact shadow is visible under the feet on every variant — never a shadow-free floor (Global Rules)
 - [ ] Dynamic poses read deliberate and controlled, never a stumble or accident; static poses stay grounded (Global Rules)
 - [ ] Entry's own alignment call is followed — asymmetric stays asymmetric, level stance stays clean and confident (Global Rules)
 - [ ] No hand touches the garment, in any shot, in any angle (Global Rules)
@@ -1212,6 +1284,7 @@ Every item below must be checked and confirmed "not violated" against the specif
 - [ ] A hand may grip or hold equipment against the body, but never the garment (Equipment & Props)
 - [ ] A relaxed, pocketed, or clasped-hand fallback is never substituted for a pose whose own Params call for an equipment interaction (Equipment & Props)
 - [ ] Head/gaze follows the entry's own stated options and differs meaningfully between the two generated variants; no flat back-of-head on every rear variant (Head Movements)
+- [ ] On `full_back`, part of the face is visible via a near-profile turn on every variant, alternating left/right across the two variants — never a flat, fully un-turned back-of-head (Head Movements)
 - [ ] No walking or mid-stride gait, on any shot type (Non-Negotiable Rules — Negative)
 - [ ] Footwear matches the activity; never barefoot when feet are in frame (Non-Negotiable Rules — Negative)
 - [ ] Any wide-legged, open-stance, or straddle pose is never selected when the hero garment worn is a skirt or dress (Non-Negotiable Rules — Negative)
@@ -1224,5 +1297,6 @@ Every item below must be checked and confirmed "not violated" against the specif
 - [ ] The running-stride poses are not over-selected — target roughly 1 in 10 eligible jobs (Non-Negotiable Rules — Positive)
 - [ ] Dynamic register stays primary on `front_upper_crop`/`front_lower_crop`; `full_front`/`full_back` stay static-primary with dynamic entries used only occasionally (Non-Negotiable Rules — Positive)
 - [ ] The fallback-gesture pool rotates between a pocketed hand (garment has a real pocket), a relaxed-at-the-side hand, an equipment carry, and clasped hands — never an invented pocket (Non-Negotiable Rules — Positive)
-- [ ] On `full_front`/`full_back` only, the body-to-face pixel ratio is as close to 7.5 as possible without exceeding it (7.25-7.5 acceptable; below 7.25 or above 7.5 is a rejection), achieved through posture, proportion, and the ~7.3-7.5-head-heights-tall anchor — never by instructing the generation to display measurement figures or labels (Global Rules)
+- [ ] The model's body build (shoulder/torso width, limb thickness) matches the reference physique exactly — never rendered broader/bulkier or thinner/smaller-framed (Global Rules)
+- [ ] The model's apparent age, facial expression, and face shape match the reference exactly — never younger, teen-like, rounder, or bigger-faced (Global Rules)
 - [ ] No visible text, numbers, or labels appear on the image; any incidental occurrence stays confined to the background, never touching the model or garment (Global Rules)

@@ -8,7 +8,7 @@ const {
     postSeedGroundTruthDocuments,
     postResetToCleanBaseline,
     postRefreshGroundTruthContent,
-    postResetStylingPosingToCleanV1,
+    postResetGroundTruthToCleanV1,
     postAdvanceStagingVersion,
     postAdvanceStagingVersionBulk,
 } = require('../controllers/L1GroundTruth');
@@ -20,14 +20,14 @@ router.post('/seed', postSeedGroundTruthDocuments);
 // Destructive local/dev reset -- irreversible, gated on { confirm: true }
 // rather than auth (same convenience carve-out as /seed above).
 router.post('/reset', l1GroundTruthValidation.resetToCleanBaseline, postResetToCleanBaseline);
-// Narrower, non-destructive reset scoped to just the 4 styling/posing docs
-// -- collapses stacked test/real staging versions back to a clean v1 from
-// the real production .md files, without touching feedback/batch history
-// (see resetStylingPosingToCleanV1's doc comment). Gated the same way.
+// Narrower, non-destructive reset scoped to all 8 ground-truth docs --
+// collapses stacked test/real staging versions back to a clean v1 from the
+// real production .md files, without touching feedback/batch history (see
+// resetGroundTruthToCleanV1's doc comment). Gated the same way.
 router.post(
-    '/reset-styling-posing-v1',
-    l1GroundTruthValidation.resetStylingPosingToCleanV1,
-    postResetStylingPosingToCleanV1
+    '/reset-ground-truth-v1',
+    l1GroundTruthValidation.resetGroundTruthToCleanV1,
+    postResetGroundTruthToCleanV1
 );
 
 // Manually seals the current staging draft into its own permanent version

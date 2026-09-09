@@ -19,7 +19,7 @@ A mid-length shot capturing the model from the top of the head to the mid-thigh,
 
 * Model is captured in active, sport-specific poses (e.g., stretching, running, or holding equipment) to demonstrate fabric stretch and range of motion
 * The entire upper garment is visible, including the neckline, armholes, and hemline
-* Lower garments are cropped to show the waistband, rise, and upper thigh area, ensuring the relationship between pieces is clear
+* The frame cuts the lower garment at the upper thigh — the garment itself continues at full length out of frame; only the upper thigh area is visible
 * Technical details such as mesh paneling, perforations, heat-sealed logos, and moisture-wicking textures are rendered with high clarity
 * Headwear and accessories (caps, visors, sunglasses, gloves) are fully included to complete the performance look
 * Arms may be raised or bent, but must not obscure primary branding or key construction features of the torso

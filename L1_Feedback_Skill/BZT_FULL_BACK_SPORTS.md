@@ -20,7 +20,7 @@ Full-body rear shot capturing the model from head to toe. Focuses on back silhou
 * Model's back faces camera; head will be in profile
 * Entire outfit visible from nape to footwear
 * Arms clear of the torso to show side/back seams
-* Highlights technical details: racerbacks, hoods, and waistbands
+* Highlights technical details: racerbacks and hoods
 * Balanced framing with consistent head/foot margins
 * Clean studio lighting to define fabric texture and seams
 

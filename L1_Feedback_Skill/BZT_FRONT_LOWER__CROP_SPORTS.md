@@ -19,7 +19,7 @@ A lower-body focused shot that captures the model from the mid-torso to the feet
 
 * The waistband of the lower garment is fully visible, clearly showing the rise, closure details, or elastic construction
 * The entire length of the garment is captured, including hemlines, side seams, and specialized cuffs or inner linings
-* The upper body is cropped at the mid-torso, typically showing the navel or the bottom edge of a top to provide a clear view of the waist fit.
+* The upper body is cut by the frame at the mid-torso, typically showing the navel or the bottom edge of a top to provide a clear view of the waist fit.
 * Footwear and socks are included in the frame to provide a complete styling reference and ground the model
 * Performance props (e.g., yoga mats, sports balls, golf clubs, or weights) are frequently used to signal the product's functional category
 * Posing is active or athletic—such as kneeling, stepping, or holding equipment—to demonstrate fabric stretch and mobility

@@ -22,7 +22,7 @@ A full-body, front-facing shot that captures the model from head to toe. This sh
 * Consistent "breathing room" maintained at the top and bottom of the frame to prevent the model from touching the edges
 * Clean, high-key neutral background (white) with minimal floor shadows
 * Posing is natural and functional; arms may hang at sides or hold a relevant accessory (e.g., sports equipment)
-* All front-facing garment details—including logos, necklines, waistbands, and fabric textures—are sharp and legible
+* All front-facing garment details—including logos, necklines, and fabric textures—are sharp and legible
 * Footwear is fully included, showcasing the break of the trouser or the length of the sock
 
 ***

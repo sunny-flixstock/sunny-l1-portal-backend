@@ -49,7 +49,7 @@ const refreshGroundTruthContent = celebrate({
     }),
 });
 
-const resetStylingPosingToCleanV1 = celebrate({
+const resetGroundTruthToCleanV1 = celebrate({
     [Segments.BODY]: Joi.object({
         confirm: Joi.boolean().valid(true).required(),
     }),
@@ -75,7 +75,7 @@ module.exports = {
     promoteGroundTruthVersion,
     resetToCleanBaseline,
     refreshGroundTruthContent,
-    resetStylingPosingToCleanV1,
+    resetGroundTruthToCleanV1,
     advanceStagingVersion,
     advanceStagingVersionBulk,
 };

@@ -509,34 +509,30 @@ const resetToCleanBaseline = async () => {
     };
 };
 
-// Only these 4 -- the client's gendered styling/posing docs -- are ever
-// touched by resetStylingPosingToCleanV1 below. Angle/crop files are
-// intentionally out of scope (they're not being iterated on right now and
-// were already at a clean v1).
-const STYLING_POSING_FILENAMES = Object.freeze([
-    'BZT_Male_Sports_Styling_PROD.md',
-    'BZT_Male_Sports_Posing_PROD.md',
-    'BZT_Female_Sports_Styling_PROD.md',
-    'BZT_Female_Sports_Posing_PROD.md',
-]);
+// All 8 of BZT's ground-truth docs -- the 4 gendered styling/posing files
+// AND the 4 ungendered angle/crop files -- reused from SEED_DOCS so this
+// list can never drift from what's actually seeded. Angle files used to be
+// excluded here (they weren't being iterated on); that's no longer true,
+// so resetGroundTruthToCleanV1 below now covers all 8 uniformly.
+const ALL_GROUND_TRUTH_FILENAMES = Object.freeze(SEED_DOCS.map((d) => d.fileName));
 
 /** Narrow, non-destructive counterpart to resetToCleanBaseline: collapses
- * only the 4 styling/posing documents back to a fresh version 1 built from
- * the real production .md files on disk (both Staging and Live point at
- * it), discarding whatever stacked-up staging/live versions accumulated
- * from prior test/real approvals. Unlike resetToCleanBaseline, this never
+ * all 8 ground-truth documents back to a fresh version 1 built from the
+ * real production .md files on disk (both Staging and Live point at it),
+ * discarding whatever stacked-up staging/live versions accumulated from
+ * prior test/real approvals. Unlike resetToCleanBaseline, this never
  * touches L1FeedbackBatch/L1SkuTrace/L1GenericFeedbackRequest documents --
  * existing HITL diagnoses/candidates must survive untouched so they can be
  * re-judged against the clean baseline. Any target on a generic-feedback
- * request that points at one of these 4 documents and was already decided
+ * request that points at one of these 8 documents and was already decided
  * (approved/rejected) has its decision reset to pending -- the underlying
  * ground-truth version it referenced no longer exists after this reset, so
  * leaving it "decided" would permanently hide the Approve/Reject buttons
  * for a target the human never actually got to re-judge against v1. Only
  * the decision sub-document is cleared; candidates/diagnosis/images are
  * untouched. */
-const resetStylingPosingToCleanV1 = async () => {
-    const docs = await L1GroundTruthDocumentModel.find({ fileName: { $in: STYLING_POSING_FILENAMES } });
+const resetGroundTruthToCleanV1 = async () => {
+    const docs = await L1GroundTruthDocumentModel.find({ fileName: { $in: ALL_GROUND_TRUTH_FILENAMES } });
     const resetDocs = [];
     const resetDocIds = [];
 
@@ -551,7 +547,7 @@ const resetStylingPosingToCleanV1 = async () => {
             content,
             batchId: null,
             appliedFixes: [],
-            createdBy: 'reset-styling-posing-v1',
+            createdBy: 'reset-ground-truth-v1',
         });
 
         doc.stagingVersionId = v1._id;
@@ -605,5 +601,5 @@ module.exports = {
     advanceStagingVersion,
     advanceStagingVersionBulk,
     resetToCleanBaseline,
-    resetStylingPosingToCleanV1,
+    resetGroundTruthToCleanV1,
 };

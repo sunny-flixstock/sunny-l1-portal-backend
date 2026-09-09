@@ -23,15 +23,43 @@ footwear:
   long_bottom_categories: [sweatpants, trousers]
   shots: all
   sentence: "The leg of the {bottom} falls down and over the sneaker/cleat collar and any crew sock; it is never inserted, stuffed, or tucked into the sock or footwear shaft."
-rules: []
+rules: [hero_based_tuck_state, shirt_tuck_no_half, bottom_never_tucked_into_footwear, untucked_polo_over_shorts, tucked_tshirt_with_sweatpants, color_blocked_sweatshirt_pairing, hem_logo_never_tucked_in]
 ```
-<!-- TEMPORARY STOPGAP: rules: left empty above on purpose. Incident: extract_rule_texts matches only `## rule_id` (two hashes), but this file's Entry Library uses `### rule_id` (three hashes) throughout, so all 6 ids were coming back "not found," leaving the validator on generic defaults alone. Renaming just these 6 headings to `##` was tested and rejected on the Female file (same structure applies here): the entries are not adjacent, so each renamed heading would capture everything up to the next one — dozens to hundreds of lines of unrelated rules swallowed into the wrong rule's extracted text, worse than an empty list. The real fix is a one-line regex change in extract_rule_texts (src/tuck_check/tuck_matrix.py, staging_v4 branch): match `##+` instead of exactly `##`. Once that ships, restore this list to: [hero_based_tuck_state, shirt_tuck_no_half, bottom_never_tucked_into_footwear, untucked_polo_over_shorts, tucked_tshirt_with_sweatpants, color_blocked_sweatshirt_pairing] -->
+<!-- The 7 ids above are now backed by real `## id` sections directly below (machine-read duplicates of the corresponding `### id` entries in the Entry Library, condensed to prose only — extract_rule_texts in src/tuck_check/tuck_matrix.py only matches exactly `## rule_id`, two hashes, so the `### id` entries themselves can never be found by it). These 7 sections are grouped consecutively and immediately followed by `## GLOBAL RULES` on purpose: extract_rule_texts captures from a matched `## id` heading up to the next line starting with `## `, so keeping them adjacent with no `### ` entry able to intervene is what keeps each one's extracted text scoped to just its own paragraph — do not separate them or insert other `## `-level headings between them. If any of the 7 corresponding `### id` entries in the Entry Library below is edited, update its mirror here to match. Note on `hero_based_tuck_state`'s hero=upper override below: the tuck-matrix's own `shot_classes`/`hero_roles` fields above still list `full_front`/`full_back` as `reference_led` because the current schema cannot express "reference-led except when hero=upper" — that nuance lives only in this rule's prose (and its Entry Library counterpart below), which is what the tuck validator/editor agents actually read via `rules:`/`extract_rule_texts`. Do not "fix" the YAML fields to try to encode this without first confirming the schema supports it. -->
+
+## hero_based_tuck_state
+The waist styling of an upper worn over a bottom is decided by shot type and hero role, not by the upper's fit alone. **Hard override, on every shot type including `full_front`/`full_back`: when the hero is an upper, it is never tucked in — always worn over the waistband, hanging loose, hem level on both sides.** For every other case (hero is a bottom, or the upper in question is a co-worn non-hero garment): on `full_front`/`full_back`, reproduce exactly the tucked/untucked state the styled reference shows; on `front_upper_crop`/`front_lower_crop`, if the hero is a bottom, the upper is worn fully inside the waistband so the bottom's waistband and rise read cleanly. Any tuck-in decision anywhere in this rule is further gated by `hem_logo_never_tucked_in`: a garment with a relevant lower-hem logo/print is never tucked in, regardless of hero role or shot type. Describe the tuck state plainly as tucked-in or untucked-over — never a lopsided, one-sided, or half-in/half-out result. Never write the literal words "waistband" or "drawstring" into the generated image-composition prompt text — describe the visual outcome only (hem position, fabric drape, tucked/untucked state); naming the internal garment-construction term in the final prompt is a hard error, independent of whether the described tuck state itself is correct.
+
+## hem_logo_never_tucked_in
+An upper garment — hero or co-worn — that carries a relevant, sell-critical logo or print at or near its lower hem is never tucked in, on any shot type, regardless of what `hero_based_tuck_state` would otherwise select; only fully tucked-out is eligible for that garment. When the upper carries no such lower-hem logo/print, either fully tucked-in or fully tucked-out remains eligible per `hero_based_tuck_state`'s normal logic — never a half/partial tuck either way, per `shirt_tuck_no_half`.
+
+## shirt_tuck_no_half
+A collared shirt or polo is always either fully tucked (hem inside the waistband all the way around) or fully untucked (hem over the waistband, level all the way around). Never one side tucked while the other hangs out, and never a hem caught or hitched behind the waistband on one side only.
+
+## bottom_never_tucked_into_footwear
+A long bottom's leg (sweatpants, trousers, joggers) always falls down and over the sneaker/cleat collar and any crew sock — it is never inserted, stuffed, or tucked into the sock or footwear shaft. Socks/hosiery are rendered only when actually provided as an asset; when provided, sock height must stay strictly below the bottom garment's hem.
+
+## untucked_polo_over_shorts
+A polo shirt styled over athletic shorts is worn untucked, over the bottom's waistband, as a single top layer — not tucked in.
+
+## tucked_tshirt_with_sweatpants
+A t-shirt worn with technical sweatpants is tucked or loosely tucked into the sweatpants' waistband — not left hanging over it.
+
+## color_blocked_sweatshirt_pairing
+A color-blocked sweatshirt paired with athletic shorts is worn untucked, over the shorts, with its ribbed hem resting at hip level — not tucked in.
 
 ---
 
 ## GLOBAL RULES
 
 These are client-agnostic generation-quality principles — they hold regardless of category, brand, or shot type.
+
+### Top Enforcement Priorities (P0)
+
+This is this framework's highest-priority check, verified first on every generated variant, ahead of every other rule in this file:
+- **P0 — Body-to-face proportion ratio** (enforced from the Posing file, not duplicated here — see `Body-to-Face Proportion Target` below): the 7.25–7.5 crown-to-sole ÷ crown-to-chin target on `full_front`/`full_back`.
+
+(P1 — ground-contact shadow — is enforced from the Posing file only; it is a camera/lighting concern with no styling-specific content, so it is not duplicated here.)
 
 ### Hero Garment Visibility
 
@@ -59,9 +87,7 @@ These are client-agnostic generation-quality principles — they hold regardless
 
 ### Body-to-Face Proportion Target
 
-**Rule:** On `full_front` and `full_back` shots only (this target does not currently apply to `front_upper_crop`/`front_lower_crop`, where the sole landmark is out of frame), styling choices — garment proportions, layering, and how each piece is described — must reinforce an elongated body silhouette and a proportionally smaller head, supporting a body-to-face pixel ratio (crown-to-sole height ÷ crown-to-chin head height) as close to 7.5 as possible without exceeding it — 7.25 to 7.5 is the acceptable band; anything below 7.25 or above 7.5 is a rejection. The bottom landmark is chosen by a priority cascade over the two feet, then a specific point on the selected foot. Foot selection: (1) prefer whichever foot's sole is in full flat contact with the ground — not lifted, not raised on the ball or toe, not heel-raised; (2) if both feet are flat and grounded, use the more weight-bearing, straighter load-bearing leg (typically the one under the torso's center of gravity); (3) if weight distribution reads as even or ambiguous — including a true side-by-side symmetric stance with no forward/back depth difference at all — default consistently to the leg positioned further back in the stance, or, when there is no depth difference to fall back on, always the model's own left leg, so the same convention is used every time rather than switching foot per shot. Point on that foot: for flat shoes, sneakers, or bare feet, use the lowest outsole layer actually touching the ground (the true ground-contact plane) — never the upper/midsole layer above it; for heeled shoes, use the point where the heel component attaches to the sole/shank of the footwear (the heel-to-sole junction) — never the heel's ground-contact tip, and never the top edge of the upper. This point must stay visible and unobstructed in frame — never cropped by the frame edge, hidden behind the other foot, or turned away from camera — which the posing framework's own full_front/full_back feet-in-frame rule already requires. As a concrete anchor: the figure should read as roughly 7.3 to 7.5 head-heights tall overall, crown to sole — the head occupying a little over an eighth of total height, a tall, leggy editorial proportion rather than an average studio stand. This is a rendering-quality target the generation should achieve; it is never an instruction to depict, letter, or overlay any measurement figures, ratios, proportion maps, or numeric body-landmark labels onto the image itself.
-
-**Why:** Addresses the client's explicit requirement for a specific body-to-face ratio, now with a hard ceiling as well as a floor — overshooting past 7.5 is a rejection in the same way undershooting below 7.25 is. The numeric anchor (~7.3-7.5 head-heights tall) is included because purely qualitative language ("elongated, smaller head") alone has been measured to plateau near the low end of the acceptable band (~7.28); a concrete anchor is needed to consistently move closer to 7.5. This applies only to `full_front`/`full_back` for now since `front_upper_crop`/`front_lower_crop` don't show the sole landmark this ratio depends on. The generated photo must always read as an ordinary, clean product shot — the ratio is something the generation achieves, never something it is asked to display.
+This requirement is enforced from the Posing file only (P0 there) — its build sequence (target band, segment blueprint, circle/oval check, foot-selection cascade) has no styling-specific content, so it is not duplicated here. Styling choices should not work against it: avoid describing a silhouette, layering, or proportion choice that visually compresses or shortens the figure on `full_front`/`full_back`.
 
 ### No Visible Text or Measurement Labels On the Image
 
@@ -80,6 +106,12 @@ Rules below depend on BZT's own garment/category set and angle vocabulary (`full
 **Rule:** Reproduce every garment's worn length exactly as its flat/mannequin reference shows — never lengthen or shorten a hem. State where each hem falls relative to a body landmark (e.g. "the hoodie hem sits at the high hip," "the shorts hem hits mid-thigh," "the track pant breaks at the ankle"). This holds for every category: a cropped jacket doesn't extend to the low hip, a hip-length tee doesn't become tunic-length, sleeves end exactly where the reference shows. Where a shot's own framing crops below the stated hem, the garment is simply out of frame — within frame it must read at its true reference length.
 
 **Why:** Worn length is a fixed product property; altering it misrepresents the actual garment being sold.
+
+### Garment Construction Symmetry
+
+**Rule:** A garment's construction — shoulder seams, armholes, sleeve set, side seams, and collar — must render symmetrically left-to-right, matching the product/mannequin reference exactly on both sides of the body. Never distort, angle, or reconstruct one shoulder or armhole differently from the other, and never render a seam or construction line as more geometric, sharp, or angular than the reference's actual soft, natural garment structure shows. This holds on every angle and every variant.
+
+**Why:** Confirmed client rejection: a generated shot showed the wearer's right shoulder cut reading as more geometric/angular than a natural athletic garment structure, with the armhole section rendered asymmetrically between the two sides of the body — the same garment construction must never render differently on each side.
 
 ### Hero-Governed Tuck State
 
@@ -291,12 +323,32 @@ Accessories are NOT restricted to full-front/mood only, because BZT's own pose l
 * Roles: hero_garment, top, bottom, base_layer
 * Categories: t-shirts, tank tops, polos, shirts, shorts, sweatpants, trousers, sweatshirts & hoodies
 
-The waist styling of an upper worn over a bottom is decided by the SHOT TYPE and the HERO garment's role, not by the upper's fit alone. `full_front` and `full_back` are REFERENCE-LED — reproduce exactly the tucked/untucked state the styled reference shows (`item_characteristics`'s `worn_state`). On `front_upper_crop` and `front_lower_crop`: if the HERO is an upper (tee/polo/shirt), it is worn OVER the waistband, hanging loose, its hem level on both sides; if the HERO is a bottom (shorts/sweatpants/trousers), the upper is worn fully INSIDE the waistband so the bottom's waistband and rise read cleanly — the upper is still worn, per `co_worn_garment_never_bare` above, just tucked in rather than left off.
+The waist styling of an upper worn over a bottom is decided by the SHOT TYPE and the HERO garment's role, not by the upper's fit alone. **Hard override, applies on every shot type including `full_front`/`full_back`: when the HERO garment is an upper (tee/polo/shirt), it is never tucked in — always worn OVER the waistband, hanging loose, its hem level on both sides.** For every other case — the HERO is a bottom, or the garment being tucked is a co-worn (non-hero) upper — `full_front` and `full_back` are REFERENCE-LED, reproducing exactly the tucked/untucked state the styled reference shows (`item_characteristics`'s `worn_state`); on `front_upper_crop` and `front_lower_crop`, if the HERO is a bottom (shorts/sweatpants/trousers), the upper is worn fully INSIDE the waistband so the bottom's waistband and rise read cleanly — the upper is still worn, per `co_worn_garment_never_bare` above, just tucked in rather than left off. Any tuck-in decision anywhere in this rule is further gated by `hem_logo_never_tucked_in` below — a garment with a relevant lower-hem logo/print is never tucked in, regardless of hero role or shot type.
 
 **Params:**
 
-* **tuck_state:** SHOT- and HERO-governed; describe plainly as tucked-in or untucked-over — never a lopsided, one-sided, or half-in/half-out result (a HARD ERROR).
+* **tuck_state:** SHOT- and HERO-governed (with the hero-upper override and the logo gate above taking precedence); describe plainly as tucked-in or untucked-over — never a lopsided, one-sided, or half-in/half-out result (a HARD ERROR).
 * **visibility_priority:** an upper worn inside the waistband reveals the hero bottom's waistband/drawstring; an upper worn over the waistband reveals the hero upper's full hem and length.
+
+***
+
+### hem_logo_never_tucked_in
+
+**Label:** Lower-Hem Logo/Print Overrides Tuck-In (HARD RULE)
+
+**Priority:** 1
+
+**Applies when:**
+
+* Roles: hero_garment, top, base_layer
+* Categories: t-shirts, tank tops, shirts, polos, sweatshirts & hoodies
+
+An upper garment — hero or co-worn — that carries a relevant, sell-critical logo or print at or near its lower hem is never tucked in, on any shot type, regardless of what `hero_based_tuck_state` would otherwise select; only fully tucked-out is eligible for that garment. When the upper carries no such lower-hem logo/print, either fully tucked-in or fully tucked-out remains eligible per `hero_based_tuck_state`'s normal logic — never a half/partial tuck either way, per `shirt_tuck_no_half`.
+
+**Params:**
+
+* **tuck_state:** fully tucked-out whenever a relevant lower-hem logo/print is present; otherwise governed by `hero_based_tuck_state`.
+* **visibility_priority:** a lower-hem logo/print must remain fully visible and unobstructed by the waistband — this is the reason tucking is disallowed in that case.
 
 ***
 
@@ -364,7 +416,7 @@ The waist styling of an upper worn over a bottom is decided by the SHOT TYPE and
 * Roles: hero_garment, top, base_layer
 * Categories: t-shirts, shirts, polos, sweatshirts & hoodies
 
-A garment's sleeve LENGTH is a fixed product property and is never changed: sleeveless stays sleeveless, short stays short, long stays long — never add, extend, or invent a sleeve. The STATE of a genuine long sleeve (worn down vs. pushed up) is pose-led, not fixed: on the still, level entries (`static_full_body_pose`, `athleisure_frontal_standing_pose`) sleeves stay worn DOWN by default; on a Tier-1/Tier-2 dynamic pose whose own Params imply active exertion (`weighted_equipment_curl_pose`, `dynamic_sprint_stride_pose`, `overhead_arms_flex_pose`), a relaxed push-up/roll reflecting real motion is correct and should NOT be forced back down.
+A garment's sleeve LENGTH is a fixed product property and is never changed: sleeveless stays sleeveless, short stays short, long stays long — never add, extend, or invent a sleeve. The STATE of a genuine long sleeve (worn down vs. pushed up) is pose-led, not fixed: on the still, level entries (`static_full_body_pose`, `athleisure_frontal_standing_pose`) sleeves stay worn DOWN by default; on a Tier-1/Tier-2 dynamic pose whose own Params imply active exertion (`weighted_equipment_curl_pose`, `dynamic_sprint_stride_pose`, `shoulder_rested_equipment_carry_pose`), a relaxed push-up/roll reflecting real motion is correct and should NOT be forced back down.
 
 **Params:**
 
@@ -589,6 +641,7 @@ A garment's sleeve LENGTH is a fixed product property and is never changed: slee
 **Params:**
 
 * **tuck_state:** neatly tucked into waistband
+* **logo_gate:** applies only when the t-shirt has no relevant lower-hem logo/print — see `hem_logo_never_tucked_in`; if it does, use an untucked register instead
 * **waist_definition:** defined clean waistband with visible athletic drawstring or elastic
 * **proportion_strategy:** balanced athletic silhouette emphasizing waist clean lines
 * **stacking_behavior:** crew socks paired with low-profile athletic footwear
@@ -633,6 +686,7 @@ A garment's sleeve LENGTH is a fixed product property and is never changed: slee
 **Params:**
 
 * **tuck_state:** tucked or loosely tucked into waistband of sweatpants
+* **logo_gate:** applies only when the t-shirt has no relevant lower-hem logo/print — see `hem_logo_never_tucked_in`; if it does, use an untucked register instead
 * **waist_definition:** clean waist transition highlighting technical fabric texture and pocket details
 * **proportion_strategy:** relaxed lower volume anchored by a clean tucked upper base layer
 * **visibility_priority:** waistband and drawstring detail visible
@@ -808,14 +862,15 @@ A garment's sleeve LENGTH is a fixed product property and is never changed: slee
 
 Before returning any generated shot, validate it against every checklist item below — each is a hard-error condition, not a stylistic preference.
 
+- [ ] **P0** — Enforced from the Posing file, not this one — see that file's checklist. Styling only avoids describing a silhouette/proportion choice that visually compresses the figure on `full_front`/`full_back` (`Body-to-Face Proportion Target`).
 - [ ] No sock is rendered when no socks/hosiery asset was provided for the job (`sock_provision_gate`, in `bottom_never_tucked_into_footwear`).
 - [ ] No provided sock rises above the bottom garment's own hem line (`sock_height_ceiling`, in `bottom_never_tucked_into_footwear`).
 - [ ] No co-worn garment (top, bottom, base_layer, or outerwear) is dropped or rendered bare, regardless of which garment is tagged hero (`co_worn_garment_never_bare`, `hero_emphasis_without_omission`).
 - [ ] No bottom hem is tucked or stuffed into a sock or footwear shaft (`hem_over_footwear`, in `bottom_never_tucked_into_footwear`).
 - [ ] No tuck state is left lopsided, one-sided, or half-in/half-out (`hero_based_tuck_state`, `shirt_tuck_no_half`).
 - [ ] No garment's worn length is lengthened or shortened relative to its reference (`garment_length_reference_fidelity`).
+- [ ] Garment construction (shoulder seams, armholes, sleeve set, side seams) renders symmetrically left-to-right, matching the reference on both sides (`Garment Construction Symmetry`).
 - [ ] No lighting, background, colour cast, or prop is invented instead of matched to the identity reference (`lighting_background_from_identity`).
 - [ ] No accessory or equipment item is invented when not provided, and no provided adornment accessory is silently dropped (`accessories_and_equipment_scope`).
 - [ ] No branding, logo, or graphic is enlarged, duplicated, or added beyond what the reference shows (`streetwear_graphic_visibility`, `hero_visibility_standard`).
-- [ ] On `full_front`/`full_back` only, the body-to-face pixel ratio is as close to 7.5 as possible without exceeding it (7.25-7.5 acceptable; below 7.25 or above 7.5 is a rejection), supported by styling, proportion choices, and the ~7.3-7.5-head-heights-tall anchor — never by instructing the generation to display measurement figures or labels (`Body-to-Face Proportion Target`).
 - [ ] No visible text, numbers, or labels appear on the image; any incidental occurrence stays confined to the background, never touching the model or garment (`No Visible Text or Measurement Labels On the Image`).
