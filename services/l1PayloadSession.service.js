@@ -11,17 +11,30 @@ const { generate } = require('./llm/llm.service');
 const {
     unwrapUploadedConfig,
     applyExplicitFeedback,
-    findClientAngleIdByName,
     getVariantOutput,
+    listAllCandidateImages,
 } = require('./l1FeedbackBatch.service');
 
 const SOURCE_ROOT = path.resolve(__dirname, '..', 'L1_Feedback_Skill');
 const EXTRACTION_PROMPT_PATH = path.join(SOURCE_ROOT, 'sys_payload_feedback_extraction.md');
+const IMAGE_MATCHING_PROMPT_PATH = path.join(SOURCE_ROOT, 'sys_payload_image_matching.md');
 
 const PAYLOAD_PROVIDER = process.env.L1_RCA_PROVIDER || 'anthropic';
 const PAYLOAD_MODEL = process.env.L1_RCA_MODEL || 'claude-sonnet-4-6';
 
 const todayDateString = () => new Date().toISOString().slice(0, 10);
+
+// `.lean()` reads return a Buffer-typed field as the driver's raw BSON
+// Binary wrapper (a plain object with a `.buffer` property), not a real
+// Buffer -- Buffer.from() on that produces a silent empty buffer rather
+// than an error. Handle every shape that can actually reach here (same
+// helper as l1GenericFeedback.service's toBuffer).
+const toBuffer = (raw) => {
+    if (Buffer.isBuffer(raw)) return raw;
+    if (raw?.buffer) return Buffer.from(raw.buffer);
+    if (Array.isArray(raw?.data)) return Buffer.from(raw.data);
+    return Buffer.from(raw ?? []);
+};
 
 // Raster formats a vision call can actually read. pptx can also embed
 // vector art (emf/wmf) as decoration/logos -- never a real QC screenshot,
@@ -126,13 +139,17 @@ const logSessionEvent = async (session, type, meta) => {
 };
 
 /** One vision-enabled LLM call over the whole document -- asks for every
- * (skuId, angleName, variantIndex, feedbackText) it can identify, scoped to
- * the SKUs we actually have configs for. The SKU ID (and often the angle)
- * is read directly off each slide's pasted QC screenshot, not off any text
- * label -- `images` (one per embedded screenshot, labeled with its slide)
- * is what makes that possible; `documentText` supplies the typed
- * variant/feedback callouts alongside it. See
- * sys_payload_feedback_extraction.md for the exact contract. */
+ * (skuId, sourceLabel, feedbackText) it can identify, scoped to the SKUs we
+ * actually have configs for. The QC PPT no longer states an angle or
+ * variant anywhere -- that's resolved separately, per SKU, by
+ * matchScreenshotsToVariants below, by comparing images directly. The SKU
+ * ID is read directly off each slide's pasted QC screenshot, not off any
+ * text label -- `images` (one per embedded screenshot, labeled with its
+ * slide) is what makes that possible; `documentText` supplies the typed
+ * feedback callouts alongside it. `sourceLabel` on each returned entry is
+ * how the code reconnects it back to its actual image bytes for the
+ * matching step. See sys_payload_feedback_extraction.md for the exact
+ * contract. */
 const extractFeedbackFromDocument = async (documentText, images, knownSkuIds) => {
     const systemPrompt = fs.readFileSync(EXTRACTION_PROMPT_PATH, 'utf8');
     const response = await generate({
@@ -149,52 +166,128 @@ const extractFeedbackFromDocument = async (documentText, images, knownSkuIds) =>
     };
 };
 
-/** Merges every extracted feedback entry for one SKU into its raw config,
- * resolving the doc's human angle label to the config's real
- * clientAngleId first (findClientAngleIdByName), then reusing the exact
- * same mutation applyExplicitFeedback already uses for manually-entered
- * feedback in the SKU config upload tab. Returns { config, matchedCount,
- * warnings, mergedItems } -- never throws on an unresolved entry, since one
- * bad match shouldn't fail the whole SKU's file. `mergedItems` (one per
- * successfully-merged entry, each carrying the real image URL it was
- * mapped to) is what the Feedback Verification tab renders -- kept as
- * individual records, not just the aggregate count, specifically so a
- * human can visually confirm each one before this goes anywhere near
- * RCA. */
-const mergeFeedbackIntoConfig = (config, entriesForSku) => {
+/** Fetches one remote image's raw bytes + mime type -- used to pull a SKU's
+ * real candidate renders (from its config's own imageUrls) into a vision
+ * call. Mirrors l1FeedbackDeck.service's fetchImageForSlide but without the
+ * pixel-dimension read, which nothing here needs. */
+const fetchImageBuffer = async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get('content-type');
+    const ext = url.split('.').pop()?.split(/[?#]/)[0]?.toLowerCase();
+    const mimeType = contentType?.startsWith('image/') ? contentType : IMAGE_EXTENSION_MIME[ext] || 'image/jpeg';
+    return { buffer, mimeType };
+};
+
+/** Stage B: for one SKU, figures out which of its real candidate images
+ * each extracted screenshot actually shows -- the only signal left now
+ * that the PPT doesn't name an angle/variant anymore. Fetches every real
+ * candidate this SKU's config actually has (listAllCandidateImages) plus
+ * each screenshot's already-in-hand image bytes, and asks one vision call
+ * to match screenshots to candidates by visual content alone. Returns one
+ * result per item in `items`, in the same order, as
+ * `{ item, candidate, confidence, reasoning }` -- `candidate: null` when
+ * the model couldn't confidently pick one (never forced). Never throws on
+ * a fetch/LLM hiccup for this one SKU -- returns every item unmatched with
+ * a reason instead, so one bad SKU can't take down the whole session. */
+const matchScreenshotsToVariants = async (config, items) => {
+    const candidates = listAllCandidateImages(config);
+    if (!candidates.length) {
+        return items.map((item) => ({ item, candidate: null, confidence: null, reasoning: 'This SKU has no candidate images to match against.' }));
+    }
+
+    try {
+        const candidateImages = await Promise.all(
+            candidates.map(async (c, i) => {
+                const { buffer, mimeType } = await fetchImageBuffer(c.imageUrl);
+                return { buffer, mimeType, label: `CANDIDATE ${i + 1}: ${c.angleName ?? 'Unknown angle'} V${c.variantIndex + 1}` };
+            })
+        );
+        const screenshotImages = items.map((item, i) => ({
+            buffer: item.screenshotImage.buffer,
+            mimeType: item.screenshotImage.mimeType,
+            label: `SCREENSHOT FOR ITEM ${i + 1}`,
+        }));
+
+        const systemPrompt = fs.readFileSync(IMAGE_MATCHING_PROMPT_PATH, 'utf8');
+        const response = await generate({
+            provider: PAYLOAD_PROVIDER,
+            model: PAYLOAD_MODEL,
+            systemPrompt,
+            userContent: '',
+            images: [...candidateImages, ...screenshotImages],
+            responseFormat: 'json',
+        });
+        const matches = Array.isArray(response?.matches) ? response.matches : [];
+
+        return items.map((item, i) => {
+            const label = `SCREENSHOT FOR ITEM ${i + 1}`;
+            const match = matches.find((m) => m.itemLabel === label) ?? matches[i];
+            const candidateNumber = match?.matchedCandidate;
+            const candidate = Number.isInteger(candidateNumber) ? candidates[candidateNumber - 1] : null;
+            return {
+                item,
+                candidate: candidate ?? null,
+                confidence: match?.confidence ?? null,
+                reasoning: match?.reasoning ?? null,
+            };
+        });
+    } catch (err) {
+        return items.map((item) => ({ item, candidate: null, confidence: null, reasoning: `Image-matching call failed: ${err.message}` }));
+    }
+};
+
+/** Merges every screenshot-matched feedback entry for one SKU into its raw
+ * config, using the exact (clientAngleId, variantIndex) matchScreenshotsToVariants
+ * already resolved -- no more label fuzzy-matching, since the source
+ * document no longer gives a label to match. Reuses the same mutation
+ * applyExplicitFeedback already uses for manually-entered feedback in the
+ * SKU config upload tab. Returns { config, matchedCount, warnings,
+ * mergedItems } -- never throws on an unmatched entry, since one bad match
+ * shouldn't fail the whole SKU's file. `mergedItems` (one per
+ * successfully-merged entry, carrying both the real image URL it was
+ * mapped to AND the original screenshot) is what the Feedback Verification
+ * tab renders side by side -- kept as individual records, not just the
+ * aggregate count, specifically so a human can visually confirm each one
+ * before this goes anywhere near RCA. */
+const mergeFeedbackIntoConfig = (config, matchResults) => {
     let matchedCount = 0;
     const warnings = [];
     const mergedItems = [];
 
-    for (const entry of entriesForSku) {
-        const clientAngleId = findClientAngleIdByName(config, entry.angleName);
-        if (!clientAngleId) {
+    for (const { item, candidate, confidence, reasoning } of matchResults) {
+        if (!candidate) {
             warnings.push(
-                `Feedback found for angle "${entry.angleName}" (variant ${entry.variantIndex}) but no matching angle in this SKU's config -- not merged.`
+                `Feedback "${item.feedbackText.slice(0, 80)}" (${item.sourceLabel}) could not be confidently matched to any of this SKU's candidate images -- not merged.${reasoning ? ` (${reasoning})` : ''}`
             );
             continue;
         }
         try {
             applyExplicitFeedback(config, [
-                { clientAngleId, variantIndex: entry.variantIndex, feedbackText: entry.feedbackText },
+                { clientAngleId: candidate.clientAngleId, variantIndex: candidate.variantIndex, feedbackText: item.feedbackText },
             ]);
             matchedCount += 1;
             mergedItems.push({
-                clientAngleId,
-                angleName: entry.angleName,
-                variantIndex: entry.variantIndex,
-                feedbackText: entry.feedbackText,
-                matchConfidence: entry.matchConfidence ?? null,
-                imageUrl: getVariantOutput(config, clientAngleId, entry.variantIndex),
+                clientAngleId: candidate.clientAngleId,
+                angleName: candidate.angleName,
+                variantIndex: candidate.variantIndex,
+                feedbackText: item.feedbackText,
+                matchConfidence: confidence ?? null,
+                matchReasoning: reasoning ?? null,
+                imageUrl: getVariantOutput(config, candidate.clientAngleId, candidate.variantIndex),
+                screenshotImage: { data: item.screenshotImage.buffer, mimeType: item.screenshotImage.mimeType },
                 verification: { status: 'pending' },
             });
-            if (entry.matchConfidence === 'low') {
+            if (confidence === 'low') {
                 warnings.push(
-                    `Low-confidence match for angle "${entry.angleName}" variant ${entry.variantIndex} -- merged, but double-check it.`
+                    `Low-confidence image match for "${candidate.angleName}" V${candidate.variantIndex + 1} (${item.sourceLabel}) -- merged, but double-check it.`
                 );
             }
         } catch (err) {
-            warnings.push(`Angle "${entry.angleName}" matched but variant ${entry.variantIndex} does not exist -- not merged. (${err.message})`);
+            warnings.push(`Matched "${candidate.angleName}" V${candidate.variantIndex + 1} (${item.sourceLabel}) but could not merge -- (${err.message})`);
         }
     }
 
@@ -233,21 +326,35 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
             unresolvedMentions: unresolvedMentions.length,
         });
 
+        // Stage A only names each item's screenshot by its sourceLabel
+        // (e.g. "SCREENSHOT FROM SLIDE 4 (image 1 of 2)") -- reconnect that
+        // back to the actual image bytes extractDocumentContent already
+        // pulled out of the pptx, since Stage B (image matching) needs the
+        // real pixels, not just a label.
+        const imagesByLabel = new Map(images.map((img) => [img.label, img]));
+        const unmatchedLabelWarnings = [];
         const entriesBySkuId = new Map();
         for (const entry of extracted) {
             if (!parsedBySkuId.has(entry.skuId)) continue; // extraction prompt is told not to do this, but don't trust it blindly
+            const screenshotImage = imagesByLabel.get(entry.sourceLabel);
+            if (!screenshotImage) {
+                unmatchedLabelWarnings.push(`SKU ${entry.skuId}: extracted entry referenced "${entry.sourceLabel}" but no image with that label was found -- skipped.`);
+                continue;
+            }
             if (!entriesBySkuId.has(entry.skuId)) entriesBySkuId.set(entry.skuId, []);
-            entriesBySkuId.get(entry.skuId).push(entry);
+            entriesBySkuId.get(entry.skuId).push({ ...entry, screenshotImage: { buffer: screenshotImage.buffer, mimeType: screenshotImage.mimeType } });
         }
 
         for (const skuId of knownSkuIds) {
             const config = parsedBySkuId.get(skuId);
-            const entriesForSku = entriesBySkuId.get(skuId) ?? [];
-            const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(config, entriesForSku);
+            const itemsForSku = entriesBySkuId.get(skuId) ?? [];
+            const matchResults = itemsForSku.length ? await matchScreenshotsToVariants(config, itemsForSku) : [];
+            const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(config, matchResults);
 
-            if (entriesForSku.length === 0) {
+            if (itemsForSku.length === 0) {
                 warnings.unshift('No feedback found for this SKU anywhere in the document.');
             }
+            warnings.push(...unmatchedLabelWarnings.filter((w) => w.startsWith(`SKU ${skuId}:`)));
 
             await L1PayloadFileModel.findOneAndUpdate(
                 { sessionId, skuId },
@@ -341,9 +448,13 @@ const getPayloadSessionFilesWithContent = async (sessionId) => {
 /** Flat list of every individually-merged feedback item across a session's
  * files, one entry per (skuId, clientAngleId, variantIndex) -- what the
  * Feedback Verification tab renders one card per, each carrying enough to
- * both display (`imageUrl`, `angleName`, `feedbackText`) and to write a
+ * both display (`imageUrl` the AI-matched candidate, `screenshotImageUrl`
+ * the original QC screenshot it was matched from, `angleName`,
+ * `feedbackText`, `matchConfidence`/`matchReasoning`) and to write a
  * decision back (`skuId` + `itemIndex`, its position within that SKU's own
- * `mergedItems` array). */
+ * `mergedItems` array). The stored `screenshotImage` Buffer is converted
+ * to a `data:` URL here (never handed out as a raw Buffer) so the frontend
+ * can drop it straight into an `<img src>` next to the matched candidate. */
 const listFeedbackItems = async (sessionId) => {
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
         throw new Api400Error('Invalid session id');
@@ -351,8 +462,11 @@ const listFeedbackItems = async (sessionId) => {
     const files = await L1PayloadFileModel.find({ sessionId }).select({ skuId: 1, mergedItems: 1 }).sort({ skuId: 1 }).lean();
     const items = [];
     files.forEach((file) => {
-        (file.mergedItems ?? []).forEach((item, itemIndex) => {
-            items.push({ skuId: file.skuId, itemIndex, ...item });
+        (file.mergedItems ?? []).forEach(({ screenshotImage, ...item }, itemIndex) => {
+            const screenshotImageUrl = screenshotImage?.data
+                ? `data:${screenshotImage.mimeType};base64,${toBuffer(screenshotImage.data).toString('base64')}`
+                : null;
+            items.push({ skuId: file.skuId, itemIndex, ...item, screenshotImageUrl });
         });
     });
     return items;

@@ -14,19 +14,37 @@ const verificationSchema = new mongoose.Schema(
     { _id: false }
 );
 
+// The original QC screenshot this item's angle/variant was matched from --
+// persisted (not just used in-flight for the matching LLM call) so
+// Feedback Verification can show it next to the resolved candidate image.
+// Small enough per-item to store directly, same pattern as
+// L1GenericFeedbackRequest.images.
+const screenshotImageSchema = new mongoose.Schema(
+    {
+        data: { type: Buffer, required: true },
+        mimeType: { type: String, required: true },
+    },
+    { _id: false }
+);
+
 // One individually-extracted (angle, variant, feedback) item merged into
 // this SKU's config -- kept as its own record (not just an aggregate
 // count) specifically so the Feedback Verification tab can render one card
-// per item: the real image it was mapped to, the feedback text, and a
-// human verification action.
+// per item: the original screenshot, the real image it was matched to, and
+// the feedback text. clientAngleId/angleName/variantIndex are now resolved
+// by comparing the screenshot against this SKU's own real candidate images
+// (see l1PayloadSession.service's matchScreenshotsToVariants) -- the
+// source document no longer states them.
 const mergedItemSchema = new mongoose.Schema(
     {
         clientAngleId: { type: String, required: true },
-        angleName: { type: String, default: null }, // as written in the source doc/PPT
+        angleName: { type: String, default: null }, // from the matched candidate, not extracted text
         variantIndex: { type: Number, required: true },
         feedbackText: { type: String, required: true },
         matchConfidence: { type: String, enum: ['high', 'medium', 'low', null], default: null },
-        imageUrl: { type: String, default: null }, // the actual variant.output this item was mapped to
+        matchReasoning: { type: String, default: null }, // why the image-matching step picked this candidate
+        imageUrl: { type: String, default: null }, // the actual variant.output this item was matched to
+        screenshotImage: { type: screenshotImageSchema, default: null },
         verification: { type: verificationSchema, default: () => ({}) },
     },
     { _id: false }

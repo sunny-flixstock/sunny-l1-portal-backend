@@ -156,6 +156,28 @@ const getVariantOutput = (config, clientAngleId, variantIndex) => {
     return null;
 };
 
+/** Every generated candidate image actually present in a raw config --
+ * every (angle, variant) combination this SKU has, with its real output
+ * URL. Used by the Payload Creation image-matching step (a QC screenshot
+ * no longer names its angle/variant, so the only way to find out which
+ * one it shows is to compare it against every real candidate this SKU
+ * actually has). Deliberately not hardcoded to "6" -- walks whatever
+ * angles/variants this specific config actually contains. */
+const listAllCandidateImages = (config) => {
+    const candidates = [];
+    for (const rawAngle of config.gtom_L1_output || []) {
+        const clientAngleId = rawAngle.clientAngleId ?? rawAngle.clientAngle?._id ?? null;
+        const angleName = rawAngle.clientAngle?.name ?? rawAngle.angleName ?? null;
+        for (const outfit of outfitsForAngle(rawAngle)) {
+            variantsForOutfit(outfit).forEach((variant, variantIndex) => {
+                if (!variant.output) return;
+                candidates.push({ clientAngleId, angleName, variantIndex, imageUrl: variant.output });
+            });
+        }
+    }
+    return candidates;
+};
+
 /** Every variant in a raw SKU config where feedback.text is already
  * populated -- the flagged set this upload contributes. Walks both the
  * real nested shape and the simpler flat shape (see outfitsForAngle) but
@@ -566,5 +588,6 @@ module.exports = {
     listAnglesForConfig,
     findClientAngleIdByName,
     getVariantOutput,
+    listAllCandidateImages,
     unwrapUploadedConfig,
 };
