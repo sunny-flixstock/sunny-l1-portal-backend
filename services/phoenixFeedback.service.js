@@ -5,6 +5,24 @@ const PHOENIX_BASE_URL = config.PHOENIX_BASE_URL;
 const OUTFIT_RENDERING_PROJECT = 'outfit_rendering';
 const ARTIFACTS_BUCKET = config.NANOSTUDIO_ARTIFACTS_BUCKET;
 
+// KNOWN GAP, confirmed by reading nanostudio's actual source (not
+// guessed): fetchVariantEvidence below can never return a real image URL.
+// The outfit_variant_image_generation/output.json artifact this fetches
+// only ever holds a path on the pipeline's local, ephemeral run directory
+// (nanostudio/src/drivers/outfit_variant_image_generation_driver.py) --
+// gati reclaims that directory minutes after the run ends
+// (log_shipper.py's own docstring), and this artifact is shipped as-is,
+// never rewritten. The real CDN URL is only ever written onto a totally
+// separate structure (the final SKU config's
+// gtom_L1_output[].selectedOutfits[].variants.data[].output, rewritten by
+// gati_adapter.py: publish_results) which this fetch path has no
+// reference back to. Until a real way to look up that rewritten URL for a
+// given (skuId, clientAngleId, variantIndex, executionId) is found,
+// imageUrl is always null for Phoenix-sourced items -- the deck/RCA both
+// degrade gracefully for this (a "could not load image" slide, and RCA
+// text-only for that variant), so this doesn't block the pipeline, but it
+// does mean it can't yet do the vision-based diagnosis it's meant to.
+
 // Every root span (no parent) in outfit_rendering carries a flat
 // `nanostudio.rework_type` attribute -- this is the reliable, always-present
 // original-vs-rework signal, confirmed present for every client. A separate
@@ -103,26 +121,36 @@ const artifactKey = ({ skuId, role, executionId, step }) =>
     `nanostudio/logs/sku=${skuId}/outfit_rendering/role=${role}/artifacts/${executionId}/${step}/output.json`;
 
 /** Fetches the outfit_variant_image_generation step's output.json for one
- * execution, which is expected to hold the real per-variant prompt +
- * generated image path -- the RCA evidence the schema needs. NOT verified
- * against a real file this session (S3 credentials weren't reachable from
- * the exploration sandbox) -- this is written defensively: on any shape
- * mismatch or fetch failure, logs a warning and returns an empty map
+ * execution. Shape CONFIRMED against nanostudio's actual producer,
+ * `outfit_variant_image_generation_driver.py` (its own docstring + the
+ * exact code that writes it): `{ variants_output: [{ prompt, output }] }`,
+ * one entry per variant in array order (no explicit index field -- position
+ * IS the variant index). `prompt` is the real final composed prompt text,
+ * safe to use as RCA evidence.
+ *
+ * `output` is NOT safe to use as an image URL, confirmed by reading both
+ * this driver and the artifact-shipping path: at the moment this file is
+ * written, `output` is a path on the pipeline's *local, ephemeral* run
+ * directory (gati reclaims that directory "minutes after" the run ends,
+ * per `log_shipper.py`'s own docstring) -- it is never rewritten to a real
+ * CDN URL before being archived. The actual CDN rewrite happens
+ * separately, in `gati_adapter.py: publish_results`, onto a different
+ * structure entirely (`variants.data[].output` on the final SKU config),
+ * which this artifact has no reference back to. So: `prompt` from here is
+ * trustworthy; `imageUrl` is always returned null until a real source for
+ * the rewritten URL is found (see this file's header comment). Defensive
+ * on any fetch/parse failure -- logs a warning and returns an empty map
  * rather than throwing, so one SKU's missing artifact never takes down the
- * whole fetch. First real run against aistylingasset's own AWS credentials
- * should confirm/adjust the parsing below. */
+ * whole fetch. */
 const fetchVariantEvidence = async ({ skuId, role, executionId }) => {
     const key = artifactKey({ skuId, role, executionId, step: 'outfit_variant_image_generation' });
     try {
         const obj = await getFileFromS3({ key, bucketName: ARTIFACTS_BUCKET });
         const parsed = JSON.parse(obj.Body.toString('utf8'));
-        // Expected shape (best guess, unverified): either an array of
-        // { variantIndex, prompt, output } or an object keyed by variant.
-        const variants = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.variants) ? parsed.variants : [];
+        const variants = Array.isArray(parsed?.variants_output) ? parsed.variants_output : [];
         const byIndex = new Map();
         variants.forEach((v, i) => {
-            const variantIndex = v.variantIndex ?? v.variant_index ?? i;
-            byIndex.set(variantIndex, { prompt: v.prompt ?? null, imageUrl: v.output ?? v.imageUrl ?? null });
+            byIndex.set(i, { prompt: v.prompt || null, imageUrl: null });
         });
         return byIndex;
     } catch (err) {
