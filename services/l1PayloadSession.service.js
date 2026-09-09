@@ -298,29 +298,40 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
     const session = await L1PayloadSessionModel.findById(sessionId);
     try {
         const { documentText, images } = await extractDocumentContent(docBuffer, docName);
-        const knownSkuIds = [];
-        const parsedBySkuId = new Map();
+        // Two separate ID spaces are in play here, deliberately kept apart:
+        // `realSkuId` (unwrapUploadedConfig's resolved configData key, e.g.
+        // a parentSku ObjectId) is this SKU's stable identity everywhere
+        // downstream -- staging, download, the eventual handoff to SKU
+        // config upload/RCA -- and must never change here. But it's an
+        // internal id a QC screenshot never shows; what the pptx actually
+        // displays (and what the uploaded filename itself is) is the
+        // human-facing SKU/barcode. So `fileSkuId` is what gets sent to the
+        // extraction LLM as `knownSkuIds` and what extracted entries are
+        // grouped by -- `parsedByFileSkuId` is the bridge back to the real
+        // config + its real identity for everything after matching.
+        const fileSkuIds = [];
+        const parsedByFileSkuId = new Map();
 
         for (const file of rawFiles) {
             try {
                 const raw = JSON.parse(file.buffer.toString('utf8'));
                 const fileSkuId = file.originalname.replace(/\.json$/i, '');
                 const { realSkuId, config } = unwrapUploadedConfig(fileSkuId, raw);
-                parsedBySkuId.set(realSkuId, config);
-                knownSkuIds.push(realSkuId);
+                parsedByFileSkuId.set(fileSkuId, { realSkuId, config });
+                fileSkuIds.push(fileSkuId);
             } catch (err) {
                 session.errors.push({ skuId: file.originalname, message: `Failed to parse: ${err.message}` });
             }
         }
-        session.totalSkus = knownSkuIds.length;
+        session.totalSkus = fileSkuIds.length;
         await session.save();
         await logSessionEvent(session, 'extraction_started', {
-            totalSkus: knownSkuIds.length,
+            totalSkus: fileSkuIds.length,
             docName,
             screenshotCount: images.length,
         });
 
-        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, images, knownSkuIds);
+        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, images, fileSkuIds);
         await logSessionEvent(session, 'extraction_completed', {
             entriesFound: extracted.length,
             unresolvedMentions: unresolvedMentions.length,
@@ -333,35 +344,35 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
         // real pixels, not just a label.
         const imagesByLabel = new Map(images.map((img) => [img.label, img]));
         const unmatchedLabelWarnings = [];
-        const entriesBySkuId = new Map();
+        const entriesByFileSkuId = new Map();
         for (const entry of extracted) {
-            if (!parsedBySkuId.has(entry.skuId)) continue; // extraction prompt is told not to do this, but don't trust it blindly
+            if (!parsedByFileSkuId.has(entry.skuId)) continue; // extraction prompt is told not to do this, but don't trust it blindly
             const screenshotImage = imagesByLabel.get(entry.sourceLabel);
             if (!screenshotImage) {
                 unmatchedLabelWarnings.push(`SKU ${entry.skuId}: extracted entry referenced "${entry.sourceLabel}" but no image with that label was found -- skipped.`);
                 continue;
             }
-            if (!entriesBySkuId.has(entry.skuId)) entriesBySkuId.set(entry.skuId, []);
-            entriesBySkuId.get(entry.skuId).push({ ...entry, screenshotImage: { buffer: screenshotImage.buffer, mimeType: screenshotImage.mimeType } });
+            if (!entriesByFileSkuId.has(entry.skuId)) entriesByFileSkuId.set(entry.skuId, []);
+            entriesByFileSkuId.get(entry.skuId).push({ ...entry, screenshotImage: { buffer: screenshotImage.buffer, mimeType: screenshotImage.mimeType } });
         }
 
-        for (const skuId of knownSkuIds) {
-            const config = parsedBySkuId.get(skuId);
-            const itemsForSku = entriesBySkuId.get(skuId) ?? [];
+        for (const fileSkuId of fileSkuIds) {
+            const { realSkuId, config } = parsedByFileSkuId.get(fileSkuId);
+            const itemsForSku = entriesByFileSkuId.get(fileSkuId) ?? [];
             const matchResults = itemsForSku.length ? await matchScreenshotsToVariants(config, itemsForSku) : [];
             const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(config, matchResults);
 
             if (itemsForSku.length === 0) {
                 warnings.unshift('No feedback found for this SKU anywhere in the document.');
             }
-            warnings.push(...unmatchedLabelWarnings.filter((w) => w.startsWith(`SKU ${skuId}:`)));
+            warnings.push(...unmatchedLabelWarnings.filter((w) => w.startsWith(`SKU ${fileSkuId}:`)));
 
             await L1PayloadFileModel.findOneAndUpdate(
-                { sessionId, skuId },
+                { sessionId, skuId: realSkuId },
                 {
                     sessionId,
-                    skuId,
-                    content: JSON.stringify({ configData: { [skuId]: config } }, null, 2),
+                    skuId: realSkuId,
+                    content: JSON.stringify({ configData: { [realSkuId]: config } }, null, 2),
                     matchedFeedbackCount: matchedCount,
                     mergedItems,
                     warnings,
