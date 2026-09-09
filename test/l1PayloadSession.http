@@ -57,3 +57,9 @@ Content-Type: application/json
   "itemIndex": 0,
   "status": "correct"
 }
+
+### Download a feedback deck (.pptx, one slide per merged item, full-
+### resolution images) for a session -- pure visibility/analysis artifact,
+### unrelated to RCA or SKU config upload.
+GET {{baseUrl}}/l1-feedback/payload-sessions/{{sessionId}}/feedback-deck HTTP/1.1
+Authorization: Bearer {{authToken}}

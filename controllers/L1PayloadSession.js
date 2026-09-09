@@ -1,4 +1,5 @@
 const l1PayloadSessionService = require('../services/l1PayloadSession.service');
+const { buildFeedbackDeckPptx } = require('../services/l1FeedbackDeck.service');
 const Api400Error = require('../errors/api400Error');
 
 // multipart/form-data -- not celebrate-validated (multipart bodies aren't
@@ -94,6 +95,17 @@ const postVerifyFeedbackItem = async (req, res, next) => {
     }
 };
 
+const downloadFeedbackDeck = async (req, res, next) => {
+    try {
+        const { buffer, filename } = await buildFeedbackDeckPptx(req.params.id);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(buffer);
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     postPayloadSession,
     getPayloadSessionList,
@@ -103,4 +115,5 @@ module.exports = {
     downloadPayloadSessionZip,
     getFeedbackItems,
     postVerifyFeedbackItem,
+    downloadFeedbackDeck,
 };
