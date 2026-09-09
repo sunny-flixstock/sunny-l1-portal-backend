@@ -333,6 +333,14 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
                 const raw = JSON.parse(file.buffer.toString('utf8'));
                 const fileSkuId = file.originalname.replace(/\.json$/i, '');
                 const { realSkuId, config } = unwrapUploadedConfig(fileSkuId, raw);
+                // A folder of raw configs can pick up non-SKU files (a
+                // manifest, a stray _report.json) -- every real config has
+                // an angles array, however it's produced, so reject
+                // anything without one loudly instead of silently staging
+                // an empty SKU that can never match any feedback.
+                if (!Array.isArray(config?.gtom_L1_output) || !config.gtom_L1_output.length) {
+                    throw new Error('does not look like a SKU config -- no gtom_L1_output angles found');
+                }
                 const barcode = barcodeForConfig(config, fileSkuId);
                 const updatedAt = raw?.updatedAt ? new Date(raw.updatedAt).getTime() : null;
                 if (!filesByBarcode.has(barcode)) filesByBarcode.set(barcode, []);
