@@ -182,19 +182,31 @@ const fetchImageBuffer = async (url) => {
     return { buffer, mimeType };
 };
 
-/** Stage B: for one SKU, figures out which of its real candidate images
- * each extracted screenshot actually shows -- the only signal left now
- * that the PPT doesn't name an angle/variant anymore. Fetches every real
- * candidate this SKU's config actually has (listAllCandidateImages) plus
- * each screenshot's already-in-hand image bytes, and asks one vision call
- * to match screenshots to candidates by visual content alone. Returns one
- * result per item in `items`, in the same order, as
+/** Real uploads can carry two different files for the exact same
+ * human-facing barcode SKU -- not duplicates, but sequential versions
+ * (e.g. a rework regenerated one or more variants, producing a newer
+ * config/parentSku entirely). The QC doc only ever shows the barcode,
+ * never which version it means, and a stale version is never going
+ * anywhere downstream regardless of what a screenshot might coincidentally
+ * resemble -- so feedback always routes to whichever file for a barcode
+ * was updated most recently (see processSessionInBackground), never
+ * decided by image content. `config.patternDict.sku`/`.barcode`
+ * (confirmed present on every real config) is the reliable identity to
+ * group files by; falls back to the filename for configs with no
+ * patternDict rather than erroring. */
+const barcodeForConfig = (config, fallback) => config?.patternDict?.sku ?? config?.patternDict?.barcode ?? fallback;
+
+/** Stage B: figures out which of one SKU's real candidate images each
+ * extracted screenshot actually shows -- the only signal left now that
+ * the PPT doesn't name an angle/variant anymore. Fetches every candidate's
+ * real bytes plus each screenshot's already-in-hand image bytes, and asks
+ * one vision call to match screenshots to candidates by visual content
+ * alone. Returns one result per item in `items`, in the same order, as
  * `{ item, candidate, confidence, reasoning }` -- `candidate: null` when
  * the model couldn't confidently pick one (never forced). Never throws on
- * a fetch/LLM hiccup for this one SKU -- returns every item unmatched with
- * a reason instead, so one bad SKU can't take down the whole session. */
-const matchScreenshotsToVariants = async (config, items) => {
-    const candidates = listAllCandidateImages(config);
+ * a fetch/LLM hiccup -- returns every item unmatched with a reason
+ * instead, so one bad SKU can't take down the whole session. */
+const matchScreenshotsToVariants = async (candidates, items) => {
     if (!candidates.length) {
         return items.map((item) => ({ item, candidate: null, confidence: null, reasoning: 'This SKU has no candidate images to match against.' }));
     }
@@ -298,40 +310,48 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
     const session = await L1PayloadSessionModel.findById(sessionId);
     try {
         const { documentText, images } = await extractDocumentContent(docBuffer, docName);
-        // Two separate ID spaces are in play here, deliberately kept apart:
-        // `realSkuId` (unwrapUploadedConfig's resolved configData key, e.g.
-        // a parentSku ObjectId) is this SKU's stable identity everywhere
-        // downstream -- staging, download, the eventual handoff to SKU
-        // config upload/RCA -- and must never change here. But it's an
-        // internal id a QC screenshot never shows; what the pptx actually
-        // displays (and what the uploaded filename itself is) is the
-        // human-facing SKU/barcode. So `fileSkuId` is what gets sent to the
-        // extraction LLM as `knownSkuIds` and what extracted entries are
-        // grouped by -- `parsedByFileSkuId` is the bridge back to the real
-        // config + its real identity for everything after matching.
-        const fileSkuIds = [];
-        const parsedByFileSkuId = new Map();
+        // Three separate ID spaces are in play here, deliberately kept
+        // apart: `realSkuId` (unwrapUploadedConfig's resolved configData
+        // key, e.g. a parentSku ObjectId) is this SKU's stable identity
+        // everywhere downstream -- staging, download, the eventual handoff
+        // to SKU config upload/RCA -- and must never change here. Neither
+        // it nor the raw filename is necessarily what the doc shows,
+        // though -- what a QC screenshot actually displays is the
+        // human-facing barcode (config.patternDict.sku). A barcode can
+        // legitimately map to more than one uploaded file at once: not
+        // duplicates, but sequential versions (a rework regenerated one or
+        // more variants, producing a new config/parentSku). So
+        // grouping/extraction works in barcode-space (`filesByBarcode`,
+        // one entry per barcode, possibly >1 file/version each, resolved
+        // to the newest by `updatedAt` further down) -- `fileSkuId` only
+        // survives as a human-readable tag on which physical file within a
+        // barcode group something came from.
+        const filesByBarcode = new Map();
 
         for (const file of rawFiles) {
             try {
                 const raw = JSON.parse(file.buffer.toString('utf8'));
                 const fileSkuId = file.originalname.replace(/\.json$/i, '');
                 const { realSkuId, config } = unwrapUploadedConfig(fileSkuId, raw);
-                parsedByFileSkuId.set(fileSkuId, { realSkuId, config });
-                fileSkuIds.push(fileSkuId);
+                const barcode = barcodeForConfig(config, fileSkuId);
+                const updatedAt = raw?.updatedAt ? new Date(raw.updatedAt).getTime() : null;
+                if (!filesByBarcode.has(barcode)) filesByBarcode.set(barcode, []);
+                filesByBarcode.get(barcode).push({ fileSkuId, realSkuId, config, updatedAt });
             } catch (err) {
                 session.errors.push({ skuId: file.originalname, message: `Failed to parse: ${err.message}` });
             }
         }
-        session.totalSkus = fileSkuIds.length;
+        const knownBarcodes = [...filesByBarcode.keys()];
+        const totalFiles = [...filesByBarcode.values()].reduce((sum, files) => sum + files.length, 0);
+        session.totalSkus = totalFiles;
         await session.save();
         await logSessionEvent(session, 'extraction_started', {
-            totalSkus: fileSkuIds.length,
+            totalSkus: totalFiles,
             docName,
             screenshotCount: images.length,
         });
 
-        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, images, fileSkuIds);
+        const { extracted, unresolvedMentions } = await extractFeedbackFromDocument(documentText, images, knownBarcodes);
         await logSessionEvent(session, 'extraction_completed', {
             entriesFound: extracted.length,
             unresolvedMentions: unresolvedMentions.length,
@@ -344,48 +364,81 @@ const processSessionInBackground = async (sessionId, rawFiles, docBuffer, docNam
         // real pixels, not just a label.
         const imagesByLabel = new Map(images.map((img) => [img.label, img]));
         const unmatchedLabelWarnings = [];
-        const entriesByFileSkuId = new Map();
+        const entriesByBarcode = new Map();
         for (const entry of extracted) {
-            if (!parsedByFileSkuId.has(entry.skuId)) continue; // extraction prompt is told not to do this, but don't trust it blindly
+            if (!filesByBarcode.has(entry.skuId)) continue; // extraction prompt is told not to do this, but don't trust it blindly
             const screenshotImage = imagesByLabel.get(entry.sourceLabel);
             if (!screenshotImage) {
                 unmatchedLabelWarnings.push(`SKU ${entry.skuId}: extracted entry referenced "${entry.sourceLabel}" but no image with that label was found -- skipped.`);
                 continue;
             }
-            if (!entriesByFileSkuId.has(entry.skuId)) entriesByFileSkuId.set(entry.skuId, []);
-            entriesByFileSkuId.get(entry.skuId).push({ ...entry, screenshotImage: { buffer: screenshotImage.buffer, mimeType: screenshotImage.mimeType } });
+            if (!entriesByBarcode.has(entry.skuId)) entriesByBarcode.set(entry.skuId, []);
+            entriesByBarcode.get(entry.skuId).push({ ...entry, screenshotImage: { buffer: screenshotImage.buffer, mimeType: screenshotImage.mimeType } });
         }
 
-        for (const fileSkuId of fileSkuIds) {
-            const { realSkuId, config } = parsedByFileSkuId.get(fileSkuId);
-            const itemsForSku = entriesByFileSkuId.get(fileSkuId) ?? [];
-            const matchResults = itemsForSku.length ? await matchScreenshotsToVariants(config, itemsForSku) : [];
-            const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(config, matchResults);
+        for (const barcode of knownBarcodes) {
+            const filesForBarcode = filesByBarcode.get(barcode);
+            const itemsForBarcode = entriesByBarcode.get(barcode) ?? [];
 
-            if (itemsForSku.length === 0) {
+            // A shared barcode is a version history, not a set of
+            // candidates to pick between by image content -- the most
+            // recently updated file is the only one that's still "live";
+            // anything older is superseded and gets no feedback, no
+            // matter what a screenshot might coincidentally resemble.
+            const [current, ...superseded] = [...filesForBarcode].sort((a, b) => (b.updatedAt ?? -Infinity) - (a.updatedAt ?? -Infinity));
+
+            const candidates = listAllCandidateImages(current.config);
+            const matchResults = itemsForBarcode.length ? await matchScreenshotsToVariants(candidates, itemsForBarcode) : [];
+            const { matchedCount, warnings, mergedItems } = mergeFeedbackIntoConfig(current.config, matchResults);
+
+            if (itemsForBarcode.length === 0) {
                 warnings.unshift('No feedback found for this SKU anywhere in the document.');
             }
-            warnings.push(...unmatchedLabelWarnings.filter((w) => w.startsWith(`SKU ${fileSkuId}:`)));
+            if (superseded.length) {
+                warnings.push(
+                    `This is the most recently updated of ${filesForBarcode.length} uploaded files sharing barcode ${barcode} -- feedback for this barcode is routed here.`
+                );
+            }
+            if (current.updatedAt == null && filesForBarcode.length > 1) {
+                warnings.push(`Could not determine which of the ${filesForBarcode.length} files sharing barcode ${barcode} is newest (no updatedAt) -- defaulted to upload order.`);
+            }
+            warnings.push(...unmatchedLabelWarnings.filter((w) => w.startsWith(`SKU ${barcode}:`)));
 
             await L1PayloadFileModel.findOneAndUpdate(
-                { sessionId, skuId: realSkuId },
+                { sessionId, skuId: current.realSkuId },
                 {
                     sessionId,
-                    skuId: realSkuId,
-                    content: JSON.stringify({ configData: { [realSkuId]: config } }, null, 2),
+                    skuId: current.realSkuId,
+                    content: JSON.stringify({ configData: { [current.realSkuId]: current.config } }, null, 2),
                     matchedFeedbackCount: matchedCount,
                     mergedItems,
                     warnings,
                 },
                 { upsert: true, new: true }
             );
-
             if (matchedCount > 0) {
                 session.matchedCount += 1;
             } else {
                 session.unmatchedCount += 1;
             }
             await session.save();
+
+            for (const stale of superseded) {
+                await L1PayloadFileModel.findOneAndUpdate(
+                    { sessionId, skuId: stale.realSkuId },
+                    {
+                        sessionId,
+                        skuId: stale.realSkuId,
+                        content: JSON.stringify({ configData: { [stale.realSkuId]: stale.config } }, null, 2),
+                        matchedFeedbackCount: 0,
+                        mergedItems: [],
+                        warnings: [`Superseded by a newer upload of the same barcode (${barcode}) in this batch -- no feedback is routed here.`],
+                    },
+                    { upsert: true, new: true }
+                );
+                session.unmatchedCount += 1;
+                await session.save();
+            }
         }
 
         if (unresolvedMentions.length) {
