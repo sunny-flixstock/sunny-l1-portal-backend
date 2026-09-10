@@ -32,13 +32,14 @@ module.exports = {
     SESSION_JWT_SECRET: process.env.SESSION_JWT_SECRET,
     FIXED_THUMB_BUCKET: "flixstudio",
     DESCRIPTION_GROUP_BATCH_SIZE: Number(process.env.DESCRIPTION_GROUP_BATCH_SIZE) || 50,
-    // Self-hosted Arize Phoenix telemetry server -- source for the
-    // one-click BZT Sports auto-run's rework detection (phoenixFeedback.service.js).
-    PHOENIX_BASE_URL: process.env.PHOENIX_BASE_URL || 'http://192.168.12.115:6007',
-    // Bucket holding nanostudio's per-execution artifacts (prompts/output
-    // images) that phoenixFeedback.service.js reads via getFileFromS3 --
-    // distinct from this app's own S3_BUCKET. Uses the same AWS_ACCESS_KEY/
-    // AWS_SECRET_KEY above; permission against this specific bucket is
-    // unverified, see the plan's Risks section.
-    NANOSTUDIO_ARTIFACTS_BUCKET: process.env.NANOSTUDIO_ARTIFACTS_BUCKET || 'ai-log-tracking',
+    // NanoStudio Telemetry API -- the one-click BZT Sports auto-run's sole
+    // data source (phoenixFeedback.service.js): real QC feedback text and
+    // durable CloudFront image URLs, already joined per (sku, angle,
+    // variant). Superseded the old raw-Phoenix-span + S3-artifact
+    // approach entirely -- that path could never resolve a real image URL
+    // (see phoenixFeedback.service.js's git history for why), this API
+    // gives one directly. Key is minted on the telemetry box itself, not
+    // self-service -- see http://<host>/ (this API's own console) for how.
+    NANOSTUDIO_TELEMETRY_API_URL: process.env.NANOSTUDIO_TELEMETRY_API_URL || 'http://192.168.12.115:6100',
+    NANOSTUDIO_TELEMETRY_API_KEY: process.env.NANOSTUDIO_TELEMETRY_API_KEY,
 };

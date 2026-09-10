@@ -41,13 +41,12 @@ const mergedItemSchema = new mongoose.Schema(
         angleName: { type: String, default: null }, // from the matched candidate, not extracted text
         variantIndex: { type: Number, required: true },
         feedbackText: { type: String, required: true },
-        // 'reviewer_text' = a real QC comment (the doc-upload path, or a
-        // future richer Phoenix source). 'rework_type_only' = synthesized
-        // from a rework-type label alone, because the source (BZT's current
-        // Phoenix instrumentation) carries no reviewer comment text -- see
-        // phoenixFeedback.service.js. Distinguishes the two visibly in the
-        // deck/verification UI rather than presenting a guess as real text.
-        feedbackSource: { type: String, enum: ['reviewer_text', 'rework_type_only'], default: 'reviewer_text' },
+        // 'reviewer_text' = a real QC comment from the doc-upload path.
+        // 'qc_rework' = real QC feedback text from the NanoStudio Telemetry
+        // API's auto-run path (phoenixFeedback.service.js) -- also real
+        // reviewer text, tagged separately only to record which path a
+        // given item came in through.
+        feedbackSource: { type: String, enum: ['reviewer_text', 'qc_rework'], default: 'reviewer_text' },
         matchConfidence: { type: String, enum: ['high', 'medium', 'low', null], default: null },
         matchReasoning: { type: String, default: null }, // why the image-matching step picked this candidate
         imageUrl: { type: String, default: null }, // the actual variant.output this item was matched to

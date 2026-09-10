@@ -1,263 +1,147 @@
 const config = require('../config');
-const { getFileFromS3 } = require('./amazonS3Service');
 
-const PHOENIX_BASE_URL = config.PHOENIX_BASE_URL;
-const OUTFIT_RENDERING_PROJECT = 'outfit_rendering';
-const ARTIFACTS_BUCKET = config.NANOSTUDIO_ARTIFACTS_BUCKET;
+const TELEMETRY_BASE_URL = config.NANOSTUDIO_TELEMETRY_API_URL;
+const TELEMETRY_API_KEY = config.NANOSTUDIO_TELEMETRY_API_KEY;
 
-// KNOWN GAP, confirmed by reading nanostudio's actual source (not
-// guessed): fetchVariantEvidence below can never return a real image URL.
-// The outfit_variant_image_generation/output.json artifact this fetches
-// only ever holds a path on the pipeline's local, ephemeral run directory
-// (nanostudio/src/drivers/outfit_variant_image_generation_driver.py) --
-// gati reclaims that directory minutes after the run ends
-// (log_shipper.py's own docstring), and this artifact is shipped as-is,
-// never rewritten. The real CDN URL is only ever written onto a totally
-// separate structure (the final SKU config's
-// gtom_L1_output[].selectedOutfits[].variants.data[].output, rewritten by
-// gati_adapter.py: publish_results) which this fetch path has no
-// reference back to. Until a real way to look up that rewritten URL for a
-// given (skuId, clientAngleId, variantIndex, executionId) is found,
-// imageUrl is always null for Phoenix-sourced items -- the deck/RCA both
-// degrade gracefully for this (a "could not load image" slide, and RCA
-// text-only for that variant), so this doesn't block the pipeline, but it
-// does mean it can't yet do the vision-based diagnosis it's meant to.
+// `assetAutoUpdate` is system-driven, not QC-driven -- excluded per
+// explicit user decision (unchanged from the old Phoenix-based fetch).
+// Confirmed against real data this session: the API's own `has_feedback`
+// filter does NOT already exclude it (assetAutoUpdate rows can carry real
+// qc_feedback text too), so this still needs to be filtered explicitly --
+// done server-side via `rework_type_ne`. Every other rework_type
+// (variantRegenerate, imageRegenerate, assetManualUpdate, manualPrompt,
+// heroReplace, and whatever gets added later) is QC-driven and in scope --
+// an allowlist would silently miss new types the way the old
+// IN_SCOPE_REWORK_TYPES list already had (manualPrompt/heroReplace showed
+// up in real data this session with no code change expecting them).
+const EXCLUDED_REWORK_TYPE = 'assetAutoUpdate';
 
-// Every root span (no parent) in outfit_rendering carries a flat
-// `nanostudio.rework_type` attribute -- this is the reliable, always-present
-// original-vs-rework signal, confirmed present for every client. A separate
-// `Rework Run` span (nanostudio.pipeline: "outfit_rework") ALSO exists,
-// carrying real reviewer text per angle in its sku_config
-// (gtom_L1_output[].reworkFeedback) -- confirmed real and working, but only
-// observed for ZLD so far. Checked the actual nanostudio source
-// (src/sdk/outfit_review_pipeline.py's ReworkPlan/prepare_rework_plan/
-// run_outfit_review_rework) and found NO client-specific branching -- the
-// rework-handling code is generic. So the most likely read is simply that
-// no BZT Sports SKU has been reworked yet, not that BZT can't produce this.
-// fetchReworkRunFeedback below queries for it WITHOUT hardcoding to any one
-// client, and is used to upgrade a placeholder to real reviewer text the
-// moment real `Rework Run` data exists for BZT too -- no code change needed
-// when that happens. `assetAutoUpdate` is deliberately excluded from
-// IN_SCOPE_REWORK_TYPES -- system-driven, not QC-driven -- per explicit
-// user decision.
-const IN_SCOPE_REWORK_TYPES = ['variantRegenerate', 'imageRegenerate', 'assetManualUpdate'];
-const REWORK_RUN_SPAN_NAME = 'Rework Run';
+// Full field list this endpoint actually returns, confirmed live against
+// http://<telemetry-host>/v1/feedback-pairs (the API rejects an unknown
+// `select` field by naming every valid one in the 400 body -- this list
+// was read directly off that response, not guessed). Selected explicitly
+// rather than relying on default_select so a future default-set change on
+// the server can't silently drop a field this code depends on.
+const SELECT_FIELDS = [
+    'sku_id', 'sku_name', 'angle', 'angle_instance', 'outfit_index', 'variant_index',
+    'prompt', 'image_urls', 'qc_feedback', 'rework_type', 'verdict', 'trace_id',
+].join(',');
 
-const REWORK_TYPE_LABELS = {
-    variantRegenerate: 'variant regenerate',
-    imageRegenerate: 'image regenerate',
-    assetManualUpdate: 'manual prompt update',
-};
-
-const isSportsJob = (jobName) => typeof jobName === 'string' && jobName.includes('Sports');
-
-/** One page of the Phoenix spans list endpoint. Never pass an unscoped
- * (no start_time/end_time) client_name-only query here -- confirmed this
- * session that it can return 100+MB pages. */
-const fetchSpansPage = async (params) => {
-    const url = new URL(`${PHOENIX_BASE_URL}/v1/projects/${OUTFIT_RENDERING_PROJECT}/spans`);
+const telemetryRequest = async (path, params) => {
+    if (!TELEMETRY_API_KEY) {
+        throw new Error('NANOSTUDIO_TELEMETRY_API_KEY is not set -- required to query the NanoStudio Telemetry API');
+    }
+    const url = new URL(`${TELEMETRY_BASE_URL}${path}`);
     for (const [key, value] of Object.entries(params)) {
-        if (Array.isArray(value)) {
-            value.forEach((v) => url.searchParams.append(key, v));
-        } else if (value != null) {
-            url.searchParams.append(key, value);
-        }
+        if (value != null) url.searchParams.set(key, value);
     }
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: { 'X-API-Key': TELEMETRY_API_KEY } });
+    const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(`Phoenix spans request failed: HTTP ${response.status} (${url})`);
+        throw new Error(`Telemetry API request failed: HTTP ${response.status} (${body.error || body.detail || url})`);
     }
-    return response.json();
+    return body;
 };
 
-/** Every BZT root span (no parent) in outfit_rendering within the window,
- * fully paginated. Filters to Sports jobs client-side -- the Phoenix
- * attribute filter can't substring-match `job_name`, confirmed this
- * session. */
-const fetchBztSportsRootSpans = async ({ startTime, endTime }) => {
-    const spans = [];
-    let cursor;
-    do {
-        const page = await fetchSpansPage({
-            parent_id: 'null',
-            attribute: 'nanostudio.client_name:BZT',
-            start_time: startTime,
-            end_time: endTime,
-            limit: 1000,
-            cursor,
-        });
-        spans.push(...page.data);
-        cursor = page.next_cursor;
-    } while (cursor);
-
-    return spans.filter((s) => isSportsJob(s.attributes?.['nanostudio.job_name']));
-};
-
-/** Variant index for a given (execution, angle, composition) comes from
- * the sibling `Vertex Image Studio Image Edit Driver` spans' `step_name`
- * (e.g. ".../variant_2") -- confirmed present on these spans this session,
- * no S3 access needed for this part. */
-const resolveVariantIndices = async ({ executionId }) => {
-    const page = await fetchSpansPage({
-        name: 'Vertex Image Studio Image Edit Driver',
-        attribute: [`nanostudio.execution_id:"${executionId}"`],
-        limit: 20,
+/** Every feedback-pairs row for BZT Sports in the window, fully paginated
+ * via the API's own keyset cursor. Filters server-side to what's cheap to
+ * push down (client, job name, has_feedback, verdict=current so a
+ * superseded slot's stale feedback is never re-surfaced, rework_type !=
+ * the excluded system-driven type); `variant_index` and a genuine
+ * `rework_type` are checked client-side below since neither is
+ * server-filterable as "not null". */
+const fetchFeedbackPairsPage = async ({ startTime, endTime, cursor }) =>
+    telemetryRequest('/v1/feedback-pairs', {
+        client: 'BZT',
+        job_name_contains: 'Sports',
+        has_feedback: true,
+        verdict: 'current',
+        rework_type_ne: EXCLUDED_REWORK_TYPE,
+        from: startTime,
+        to: endTime,
+        limit: 1000,
+        cursor,
+        select: SELECT_FIELDS,
     });
-    const indices = new Set();
-    for (const span of page.data) {
-        const stepName = span.attributes?.['nanostudio.step_name'] || '';
-        const match = stepName.match(/variant_(\d+)/);
-        if (match) indices.add(Number(match[1]) - 1); // step_name is 1-based, variantIndex is 0-based
-    }
-    return [...indices].sort((a, b) => a - b);
+
+/** angle_instance is `<clientAngleId>_<n>` where `n` is NOT outfit_index
+ * (confirmed live: a real row had outfit_index=0 but angle_instance suffix
+ * "_2" -- caught by testing against real data rather than one coincidental
+ * example where the two happened to match). What IS confirmed, against
+ * two different known-good real clientAngleId values this session
+ * (BZT_FULL_FRONT_SPORTS's 6a5e2dc478005a8928ef99dc,
+ * BZT_FULL_BACK_SPORTS's 6a5e2a9378005a8928ef8803): the part before the
+ * LAST underscore is always the real clientAngleId, whatever `n` means --
+ * safe because a Mongo ObjectId is exactly 24 hex characters and can never
+ * itself contain an underscore. `/v1/feedback-pairs` has no
+ * `angle_type_id` field to fetch this more directly (confirmed against
+ * the API's own field list -- only `/v1/spans` exposes it). */
+const clientAngleIdFromInstance = (angleInstance) => {
+    if (!angleInstance) return null;
+    const lastUnderscore = angleInstance.lastIndexOf('_');
+    return lastUnderscore === -1 ? angleInstance : angleInstance.slice(0, lastUnderscore);
 };
 
-/** The deterministic S3 key pattern confirmed this session from real
- * `output.value` span attributes:
- * nanostudio/logs/sku=<skuId>/outfit_rendering/role=<role>/artifacts/<executionId>/<step>/output.json
- * Constructed directly rather than re-fetched from a span, since the
- * pattern is stable and this avoids an extra Phoenix round-trip per item. */
-const artifactKey = ({ skuId, role, executionId, step }) =>
-    `nanostudio/logs/sku=${skuId}/outfit_rendering/role=${role}/artifacts/${executionId}/${step}/output.json`;
-
-/** Fetches the outfit_variant_image_generation step's output.json for one
- * execution. Shape CONFIRMED against nanostudio's actual producer,
- * `outfit_variant_image_generation_driver.py` (its own docstring + the
- * exact code that writes it): `{ variants_output: [{ prompt, output }] }`,
- * one entry per variant in array order (no explicit index field -- position
- * IS the variant index). `prompt` is the real final composed prompt text,
- * safe to use as RCA evidence.
- *
- * `output` is NOT safe to use as an image URL, confirmed by reading both
- * this driver and the artifact-shipping path: at the moment this file is
- * written, `output` is a path on the pipeline's *local, ephemeral* run
- * directory (gati reclaims that directory "minutes after" the run ends,
- * per `log_shipper.py`'s own docstring) -- it is never rewritten to a real
- * CDN URL before being archived. The actual CDN rewrite happens
- * separately, in `gati_adapter.py: publish_results`, onto a different
- * structure entirely (`variants.data[].output` on the final SKU config),
- * which this artifact has no reference back to. So: `prompt` from here is
- * trustworthy; `imageUrl` is always returned null until a real source for
- * the rewritten URL is found (see this file's header comment). Defensive
- * on any fetch/parse failure -- logs a warning and returns an empty map
- * rather than throwing, so one SKU's missing artifact never takes down the
- * whole fetch. */
-const fetchVariantEvidence = async ({ skuId, role, executionId }) => {
-    const key = artifactKey({ skuId, role, executionId, step: 'outfit_variant_image_generation' });
-    try {
-        const obj = await getFileFromS3({ key, bucketName: ARTIFACTS_BUCKET });
-        const parsed = JSON.parse(obj.Body.toString('utf8'));
-        const variants = Array.isArray(parsed?.variants_output) ? parsed.variants_output : [];
-        const byIndex = new Map();
-        variants.forEach((v, i) => {
-            byIndex.set(i, { prompt: v.prompt || null, imageUrl: null });
-        });
-        return byIndex;
-    } catch (err) {
-        console.log(`WARN: could not fetch/parse artifact ${key}: ${err.message}`);
-        return new Map();
-    }
+/** The composed prompt's very first lines are always the hardcoded gender
+ * preamble ("MODEL GENDER — the model is an adult MALE/FEMALE fashion
+ * model..." -- confirmed present verbatim on every real prompt this
+ * session, both fetched from this API and from manually-uploaded configs
+ * earlier this session). Nothing in the feedback-pairs schema carries
+ * gender as its own field, so this is the one reliable place to recover
+ * it -- needed downstream to resolve the right gendered ground-truth docs
+ * (BZT_{Male,Female}_Sports_{Styling,Posing}_PROD.md). Null (not a guess)
+ * if the preamble wording ever changes. */
+const extractGenderFromPrompt = (prompt) => {
+    const match = /adult (male|female) fashion model/i.exec(prompt || '');
+    return match ? match[1].toLowerCase() : null;
 };
 
-/** Real reviewer feedback text, keyed by `${skuId}::${clientAngleId}`,
- * sourced from `Rework Run` spans in the window -- see the note above
- * IN_SCOPE_REWORK_TYPES. Queried without hardcoding to any one client, so
- * this starts returning real BZT entries the moment real `Rework Run` data
- * exists for BZT too, with no code change. Empty map (not an error) when
- * none exist yet, which is expected for BZT today. */
-const fetchReworkRunFeedback = async ({ startTime, endTime, clientName }) => {
-    const feedback = new Map();
+/** Every BZT Sports (SKU, angle, variant) with real, current QC feedback
+ * in the window, shaped for l1PayloadSession.service's
+ * createPayloadSessionFromPhoenix to consume directly. `skuId` is the
+ * real Mongo id (the API's own `sku_id`) -- the same stable identity
+ * `unwrapUploadedConfig` resolves for manually-uploaded configs elsewhere
+ * in this app, kept consistent here so RCA/HITL trace continuity works
+ * the same way regardless of which path a SKU came in through.
+ * `feedbackText`/`feedbackSource` are always real now (`qc_feedback` from
+ * a real QC rework event) -- the old 'rework_type_only' placeholder this
+ * function used to fall back to no longer applies; this API never returns
+ * `has_feedback=true` without real text. */
+const fetchBztSportsReworkItems = async ({ startTime, endTime }) => {
+    const items = [];
     let cursor;
     do {
-        const page = await fetchSpansPage({
-            name: REWORK_RUN_SPAN_NAME,
-            attribute: `nanostudio.client_name:${clientName}`,
-            start_time: startTime,
-            end_time: endTime,
-            limit: 200,
-            cursor,
-        });
-        for (const span of page.data) {
-            const skuId = span.attributes?.['nanostudio.sku_id'];
-            const rawConfig = span.attributes?.['nanostudio.sku_config'];
-            if (!skuId || !rawConfig) continue;
-            let parsedConfig;
-            try {
-                parsedConfig = JSON.parse(rawConfig);
-            } catch {
-                continue; // malformed sku_config on this span -- skip, don't fail the whole fetch
-            }
-            for (const angle of parsedConfig.gtom_L1_output || []) {
-                const clientAngleId = angle.clientAngleId ?? angle.clientAngle?._id;
-                const reworkType = angle.ReworkType;
-                const texts = angle.reworkFeedback;
-                if (!clientAngleId || !reworkType || reworkType === 'none' || !Array.isArray(texts) || !texts.length) continue;
-                feedback.set(`${skuId}::${clientAngleId}`, { text: texts.filter(Boolean).join('; '), reworkType });
-            }
-        }
-        cursor = page.next_cursor;
-    } while (cursor);
-    return feedback;
-};
+        const page = await fetchFeedbackPairsPage({ startTime, endTime, cursor });
+        for (const row of page.data) {
+            // Neither check is expressible as a server-side filter (see
+            // fetchFeedbackPairsPage's comment) -- variant_index null rows
+            // are the coarser parent span covering every variant an
+            // execution touched (confirmed live: always redundant with
+            // per-variant sibling rows, never the only record of a real
+            // event), and a null rework_type is a non-rework QC marking,
+            // not something this pipeline is about.
+            if (row.variant_index == null || !row.rework_type) continue;
+            if (!row.sku_id || !row.image_urls?.length) continue; // can't identify/display this item without these
 
-/** Every BZT Sports (SKU, angle, variant) flagged for rework in the given
- * window, in scope per IN_SCOPE_REWORK_TYPES. Returns items shaped for
- * l1PayloadSession.service's createPayloadSessionFromPhoenix to consume
- * directly. `feedbackText`/`feedbackSource` are a KNOWN GAP: BZT's Phoenix
- * instrumentation carries no reviewer comment text (confirmed exhaustively
- * this session), so feedbackText is synthesized from the rework type label
- * alone, and feedbackSource is tagged 'rework_type_only' so this is visibly
- * distinguishable from real reviewer text ('reviewer_text') downstream. */
-const fetchBztSportsReworkItems = async ({ startTime, endTime }) => {
-    const [rootSpans, reworkRunFeedback] = await Promise.all([
-        fetchBztSportsRootSpans({ startTime, endTime }),
-        fetchReworkRunFeedback({ startTime, endTime, clientName: 'BZT' }),
-    ]);
-    const reworkSpans = rootSpans.filter((s) => IN_SCOPE_REWORK_TYPES.includes(s.attributes?.['nanostudio.rework_type']));
-
-    const items = [];
-    for (const span of reworkSpans) {
-        const a = span.attributes;
-        const skuId = a['nanostudio.sku_id'];
-        const executionId = a['nanostudio.execution_id'];
-        const clientAngleId = a['nanostudio.angle_type_id'];
-        const angleName = a['nanostudio.angle_display'];
-        const reworkType = a['nanostudio.rework_type'];
-        const role = a['nanostudio.role'];
-        const gender = a['nanostudio.gender'] ?? null;
-
-        if (!skuId || !executionId || !clientAngleId) continue; // can't identify this item without these
-
-        const [variantIndices, evidenceByIndex] = await Promise.all([
-            resolveVariantIndices({ executionId }),
-            fetchVariantEvidence({ skuId, role, executionId }),
-        ]);
-
-        // Real reviewer text, when available, always wins over the
-        // rework-type-only placeholder -- see fetchReworkRunFeedback.
-        const realFeedback = reworkRunFeedback.get(`${skuId}::${clientAngleId}`);
-
-        const indices = variantIndices.length ? variantIndices : [...evidenceByIndex.keys()];
-        for (const variantIndex of indices.length ? indices : [0]) {
-            const evidence = evidenceByIndex.get(variantIndex) ?? { prompt: null, imageUrl: null };
             items.push({
-                skuId,
-                gender,
-                clientAngleId,
-                angleName,
-                variantIndex,
-                prompt: evidence.prompt,
-                imageUrl: evidence.imageUrl,
-                reworkType,
-                feedbackText: realFeedback?.text || `Flagged for rework: ${REWORK_TYPE_LABELS[reworkType] || reworkType}`,
-                feedbackSource: realFeedback?.text ? 'reviewer_text' : 'rework_type_only',
+                skuId: row.sku_id,
+                skuName: row.sku_name,
+                gender: extractGenderFromPrompt(row.prompt),
+                clientAngleId: clientAngleIdFromInstance(row.angle_instance),
+                angleName: row.angle,
+                variantIndex: row.variant_index,
+                prompt: row.prompt || null,
+                imageUrl: row.image_urls[0],
+                reworkType: row.rework_type,
+                feedbackText: row.qc_feedback,
+                feedbackSource: 'qc_rework',
             });
         }
-    }
+        cursor = page.next_cursor;
+    } while (cursor);
     return items;
 };
 
 module.exports = {
     fetchBztSportsReworkItems,
-    IN_SCOPE_REWORK_TYPES,
 };

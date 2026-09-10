@@ -613,16 +613,16 @@ const buildConfigFromPhoenixItems = (items) => {
     return { gender, gtom_L1_output: [...byAngle.values()] };
 };
 
-/** Phoenix-sourced counterpart to createPayloadSession: instead of a
+/** Telemetry-sourced counterpart to createPayloadSession: instead of a
  * human-uploaded config folder + feedback doc run through vision-LLM
- * screenshot matching, this pulls BZT Sports SKUs/angles/variants flagged
- * for rework directly from the Phoenix telemetry server for a time window
- * -- identity (clientAngleId/variantIndex) is exact from telemetry, so no
- * image-matching step is needed. Builds the same L1PayloadSession/
- * L1PayloadFile records the doc-upload path builds, so every downstream
- * consumer (buildFeedbackDeckPptx, createBatchAndProcess, the Feedback
- * Verification UI) works unmodified. See phoenixFeedback.service for the
- * known BZT feedback-text gap (feedbackSource: 'rework_type_only'). */
+ * screenshot matching, this pulls BZT Sports SKUs/angles/variants with
+ * real, current QC feedback directly from the NanoStudio Telemetry API for
+ * a time window -- identity (clientAngleId/variantIndex), the real
+ * CloudFront image URL, and the real QC feedback text all come straight
+ * from that API, so no image-matching step is needed. Builds the same
+ * L1PayloadSession/L1PayloadFile records the doc-upload path builds, so
+ * every downstream consumer (buildFeedbackDeckPptx, createBatchAndProcess,
+ * the Feedback Verification UI) works unmodified. */
 const createPayloadSessionFromPhoenix = async ({ startTime, endTime, createdBy }) => {
     const items = await fetchBztSportsReworkItems({ startTime, endTime });
 
@@ -667,8 +667,8 @@ const createPayloadSessionFromPhoenix = async ({ startTime, endTime, createdBy }
                 content: JSON.stringify({ configData: { [skuId]: config } }, null, 2),
                 matchedFeedbackCount: mergedItems.length,
                 mergedItems,
-                warnings: skuItems.some((i) => !i.prompt || !i.imageUrl)
-                    ? ['One or more variants for this SKU are missing prompt/image evidence from S3 -- see server logs.']
+                warnings: skuItems.some((i) => !i.prompt)
+                    ? ['One or more variants for this SKU have no recorded prompt from the Telemetry API -- RCA will run text-evidence-free for those.']
                     : [],
             },
             { upsert: true, new: true }
