@@ -54,12 +54,9 @@ A color-blocked sweatshirt paired with athletic shorts is worn untucked, over th
 
 These are client-agnostic generation-quality principles — they hold regardless of category, brand, or shot type.
 
-### Top Enforcement Priorities (P0)
+### Top Enforcement Priority
 
-This is this framework's highest-priority check, verified first on every generated variant, ahead of every other rule in this file:
-- **P0 — Body-to-face proportion ratio** (enforced from the Posing file, not duplicated here — see `Body-to-Face Proportion Target` below): the 7.25–7.5 crown-to-sole ÷ crown-to-chin target on `full_front`/`full_back`.
-
-(P1 — ground-contact shadow — is enforced from the Posing file only; it is a camera/lighting concern with no styling-specific content, so it is not duplicated here.)
+The ground-contact shadow requirement (P1) is enforced from the Posing file only; it is a camera/lighting concern with no styling-specific content, so it is not duplicated here.
 
 ### Hero Garment Visibility
 
@@ -85,15 +82,11 @@ This is this framework's highest-priority check, verified first on every generat
 
 **Why:** Inventing an unprovided item and dropping a provided item are both real, equally serious defects — one adds fiction, the other loses information the client actually supplied. Minimalism keeps the presentation reading as authentic rather than overstyled.
 
-### Body-to-Face Proportion Target
-
-This requirement is enforced from the Posing file only (P0 there) — its build sequence (target band, segment blueprint, circle/oval check, foot-selection cascade) has no styling-specific content, so it is not duplicated here. Styling choices should not work against it: avoid describing a silhouette, layering, or proportion choice that visually compresses or shortens the figure on `full_front`/`full_back`.
-
 ### No Visible Text or Measurement Labels On the Image
 
-**Rule:** The generated image should never contain visible text, numbers, or labels of any kind, and no rule in this file should be read as calling for one. If pursuing the body-to-face ratio target above ever causes the generation to produce such text as an unintended side effect, that is tolerable only when it lands entirely in the background/negative space, never overlapping or touching the model, face, hair, garment, or product — text or numbers appearing on the model or garment itself is a hard failure regardless of cause, since the background (unlike the product) is stripped out in the downstream editing pass.
+**Rule:** The generated image should never contain visible text, numbers, or labels of any kind, and no rule in this file should be read as calling for one. If any numeric or proportion-style guidance elsewhere ever causes the generation to produce such text as an unintended side effect, that is tolerable only when it lands entirely in the background/negative space, never overlapping or touching the model, face, hair, garment, or product — text or numbers appearing on the model or garment itself is a hard failure regardless of cause, since the background (unlike the product) is stripped out in the downstream editing pass.
 
-**Why:** Real generation output has shown that detailed numeric proportion guidance can occasionally cause the image model to render body-landmark labels as literal on-image text. A background-only occurrence is a recoverable, low-cost side effect; the same defect on the model or garment would corrupt the actual product photo and is never acceptable.
+**Why:** Detailed numeric proportion guidance has been observed to occasionally cause the image model to render body-landmark labels as literal on-image text. A background-only occurrence is a recoverable, low-cost side effect; the same defect on the model or garment would corrupt the actual product photo and is never acceptable.
 
 ---
 
@@ -862,7 +855,6 @@ A garment's sleeve LENGTH is a fixed product property and is never changed: slee
 
 Before returning any generated shot, validate it against every checklist item below — each is a hard-error condition, not a stylistic preference.
 
-- [ ] **P0** — Enforced from the Posing file, not this one — see that file's checklist. Styling only avoids describing a silhouette/proportion choice that visually compresses the figure on `full_front`/`full_back` (`Body-to-Face Proportion Target`).
 - [ ] No sock is rendered when no socks/hosiery asset was provided for the job (`sock_provision_gate`, in `bottom_never_tucked_into_footwear`).
 - [ ] No provided sock rises above the bottom garment's own hem line (`sock_height_ceiling`, in `bottom_never_tucked_into_footwear`).
 - [ ] No co-worn garment (top, bottom, base_layer, or outerwear) is dropped or rendered bare, regardless of which garment is tagged hero (`co_worn_garment_never_bare`, `hero_emphasis_without_omission`).
